@@ -2,6 +2,7 @@ mod span;
 
 use std::str::Chars;
 
+#[derive(Debug)]
 pub(crate) struct ParseContext<'a> {
     pub(crate) cursor: Cursor<'a>,
 }
@@ -14,6 +15,7 @@ impl<'a> ParseContext<'a> {
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct Cursor<'a> {
     string: &'a str,
     chars: Chars<'a>,
