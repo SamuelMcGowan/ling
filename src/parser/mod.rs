@@ -1,3 +1,5 @@
+mod span;
+
 use std::str::Chars;
 
 pub(crate) struct ParseContext<'a> {
