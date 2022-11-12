@@ -1,3 +1,5 @@
+mod parser;
+
 use anyhow::{bail, Context, Result};
 
 fn main() -> Result<()> {
