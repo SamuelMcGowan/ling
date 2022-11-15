@@ -5,8 +5,8 @@ use super::ParseContext;
 impl<'a> ParseContext<'a> {
     pub fn lex_token(&mut self) -> Option<Token> {
         loop {
-            let c = self.cursor.next()?;
             let start_pos = self.cursor.byte_pos();
+            let c = self.cursor.next()?;
 
             let kind = match c {
                 c if c.is_ascii_whitespace() => continue,
