@@ -19,7 +19,7 @@ pub(crate) enum TokenKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Punct {
+pub(crate) enum Punct {
     LParen,
     RParen,
     LBrace,
@@ -59,7 +59,7 @@ pub enum Punct {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Keyword {
+pub(crate) enum Keyword {
     Func,
     Return,
 
@@ -81,7 +81,7 @@ pub enum Keyword {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Error {
+pub(crate) enum Error {
     UnexpectedChar(char),
 }
 

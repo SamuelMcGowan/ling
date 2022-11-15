@@ -1,13 +1,12 @@
 use std::ops::Range;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Span {
+pub(crate) struct Span {
     start: usize,
     end: usize,
 }
 
 impl Span {
-    #[inline]
     pub fn new(start: usize, end: usize) -> Self {
         Self {
             start,
@@ -15,32 +14,26 @@ impl Span {
         }
     }
 
-    #[inline]
     pub fn start(&self) -> usize {
         self.start
     }
 
-    #[inline]
     pub fn end(&self) -> usize {
         self.end
     }
 
-    #[inline]
     pub fn len(&self) -> usize {
         self.end - self.start
     }
 
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.start == self.end
     }
 
-    #[inline]
     pub fn range(&self) -> Range<usize> {
         self.start..self.end
     }
 
-    #[inline]
     pub fn union(&self, other: Self) -> Self {
         Self {
             start: self.start.min(other.start),
@@ -48,7 +41,6 @@ impl Span {
         }
     }
 
-    #[inline]
     pub fn intersection(&self, other: Self) -> Option<Self> {
         let start = self.start.max(other.start);
         let end = self.end.min(other.end);
@@ -62,7 +54,6 @@ impl Span {
 }
 
 impl std::fmt::Debug for Span {
-    #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.range().fmt(f)
     }

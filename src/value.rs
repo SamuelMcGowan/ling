@@ -1,4 +1,4 @@
 #[derive(Debug)]
-pub enum Value {
+pub(crate) enum Value {
     Bool(bool),
 }
