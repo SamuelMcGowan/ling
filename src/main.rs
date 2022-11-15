@@ -1,6 +1,10 @@
 pub(crate) mod parser;
 
+pub(crate) mod chunk;
+pub(crate) mod value;
+
 use anyhow::{bail, Context, Result};
+use chunk::Chunk;
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -17,7 +21,9 @@ fn main() -> Result<()> {
 }
 
 fn run_source(source: &str) {
-    let mut context = parser::ParseContext::new(source);
+    let mut chunk = Chunk::default();
+    let mut context = parser::ParseContext::new(source, &mut chunk);
+
     for token in context.tokens() {
         println!("{token:?}");
     }

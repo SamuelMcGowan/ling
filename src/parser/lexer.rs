@@ -1,6 +1,7 @@
 use super::span::Span;
 use super::token::{tkind, Token, TokenKind};
 use super::ParseContext;
+use crate::value::Value;
 
 impl<'a> ParseContext<'a> {
     pub fn tokens(&mut self) -> Tokens<'_, 'a> {
@@ -96,8 +97,16 @@ impl<'a> ParseContext<'a> {
             "loop" => tkind!(kwd Loop),
             "while" => tkind!(kwd While),
 
+            "true" => self.add_constant(Value::Bool(true)),
+            "false" => self.add_constant(Value::Bool(false)),
+
             _ => tkind!(ident lexeme),
         }
+    }
+
+    fn add_constant(&mut self, value: Value) -> TokenKind {
+        let idx = self.chunk.add_constant(value);
+        TokenKind::Const(idx)
     }
 }
 
@@ -124,6 +133,7 @@ fn is_ident(c: char) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::chunk::Chunk;
 
     #[test]
     fn punct_single() {
@@ -178,8 +188,14 @@ mod tests {
         check_tokens("else_", &[tkind!(ident "else_")])
     }
 
+    #[test]
+    fn literals() {
+        check_tokens("true false", &[tkind!(constant 0), tkind!(constant 1)]);
+    }
+
     fn check_tokens(s: &str, t: &[TokenKind]) {
-        let mut context = ParseContext::new(s);
+        let mut chunk = Chunk::default();
+        let mut context = ParseContext::new(s, &mut chunk);
         let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
     }

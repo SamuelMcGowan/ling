@@ -1,16 +1,20 @@
 use super::span::Span;
+use crate::chunk::ConstIdx;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Token {
+pub(crate) struct Token {
     pub span: Span,
     pub kind: TokenKind,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TokenKind {
+pub(crate) enum TokenKind {
     Punct(Punct),
     Keyword(Keyword),
+
     Ident(Ustr),
+    Const(ConstIdx),
+
     Error(Error),
 }
 
@@ -90,12 +94,20 @@ macro_rules! tkind {
         use crate::parser::token::*;
         TokenKind::Keyword(Keyword::$kwd)
     }};
+
     (ident $ident:expr) => {{
         use ustr::Ustr;
         use crate::parser::token::*;
 
         TokenKind::Ident(Ustr::from($ident))
     }};
+    (constant $constant:literal) => {{
+        use crate::parser::token::*;
+        use crate::chunk::ConstIdx;
+
+        TokenKind::Const(ConstIdx($constant))
+    }};
+
     (error $error:ident $($value:tt)?) => {{
         use crate::parser::token::*;
         TokenKind::Error(Error::$error $($value)?)

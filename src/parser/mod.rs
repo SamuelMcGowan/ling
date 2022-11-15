@@ -4,15 +4,19 @@ pub mod token;
 
 use std::str::Chars;
 
+use crate::chunk::Chunk;
+
 #[derive(Debug)]
 pub(crate) struct ParseContext<'a> {
     pub(crate) cursor: Cursor<'a>,
+    pub(crate) chunk: &'a mut Chunk,
 }
 
 impl<'a> ParseContext<'a> {
-    pub fn new(source: &'a str) -> Self {
+    pub fn new(source: &'a str, chunk: &'a mut Chunk) -> Self {
         Self {
             cursor: Cursor::new(source),
+            chunk,
         }
     }
 }
