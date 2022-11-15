@@ -3,6 +3,12 @@ use super::token::{tkind, Token, TokenKind};
 use super::ParseContext;
 
 impl<'a> ParseContext<'a> {
+    pub fn tokens(&mut self) -> Tokens<'_, 'a> {
+        Tokens {
+            parse_context: self,
+        }
+    }
+
     pub fn lex_token(&mut self) -> Option<Token> {
         loop {
             let start_pos = self.cursor.byte_pos();
@@ -95,6 +101,18 @@ impl<'a> ParseContext<'a> {
     }
 }
 
+pub(crate) struct Tokens<'ctx, 'a> {
+    parse_context: &'ctx mut ParseContext<'a>,
+}
+
+impl<'ctx, 'a> Iterator for Tokens<'ctx, 'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.parse_context.lex_token()
+    }
+}
+
 fn is_ident_start(c: char) -> bool {
     c.is_ascii_alphabetic() || c == '_'
 }
@@ -162,12 +180,7 @@ mod tests {
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
         let mut context = ParseContext::new(s);
-
-        let mut tokens = vec![];
-        while let Some(token) = context.lex_token() {
-            tokens.push(token.kind);
-        }
-
+        let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
     }
 }

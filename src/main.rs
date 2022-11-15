@@ -17,5 +17,8 @@ fn main() -> Result<()> {
 }
 
 fn run_source(source: &str) {
-    println!("{source}");
+    let mut context = parser::ParseContext::new(source);
+    for token in context.tokens() {
+        println!("{token:?}");
+    }
 }
