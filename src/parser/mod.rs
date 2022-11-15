@@ -1,4 +1,5 @@
-mod span;
+pub mod span;
+pub mod token;
 
 use std::str::Chars;
 
