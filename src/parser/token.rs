@@ -10,6 +10,7 @@ pub struct Token {
 pub enum TokenKind {
     Punct(Punct),
     Keyword(Keyword),
+    Ident(Ustr),
     Error(Error),
 }
 
@@ -89,6 +90,12 @@ macro_rules! tkind {
         use crate::parser::token::*;
         TokenKind::Keyword(Keyword::$kwd)
     }};
+    (ident $ident:expr) => {{
+        use ustr::Ustr;
+        use crate::parser::token::*;
+
+        TokenKind::Ident(Ustr::from($ident))
+    }};
     (error $error:ident $($value:tt)?) => {{
         use crate::parser::token::*;
         TokenKind::Error(Error::$error $($value)?)
@@ -96,3 +103,4 @@ macro_rules! tkind {
 }
 
 pub(crate) use tkind;
+use ustr::Ustr;
