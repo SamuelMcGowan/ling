@@ -20,7 +20,7 @@ pub enum Punct {
     LBrace,
     RBrace,
     LBracket,
-    EBracket,
+    RBracket,
 
     Dot,
     Comma,
@@ -76,7 +76,9 @@ pub enum Keyword {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Error {}
+pub enum Error {
+    UnexpectedChar(char),
+}
 
 macro_rules! tkind {
     (punct $punct:ident) => {{
@@ -87,9 +89,9 @@ macro_rules! tkind {
         use crate::parser::token::*;
         TokenKind::Keyword(Keyword::$kwd)
     }};
-    (error $error:ident) => {{
+    (error $error:ident $($value:tt)?) => {{
         use crate::parser::token::*;
-        TokenKind::Error(Error::$error)
+        TokenKind::Error(Error::$error $($value)?)
     }}
 }
 

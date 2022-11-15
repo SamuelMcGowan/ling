@@ -1,3 +1,4 @@
+mod lexer;
 pub mod span;
 pub mod token;
 
@@ -49,6 +50,10 @@ impl<'a> Cursor<'a> {
 
     pub fn as_str_remaining(&self) -> &'a str {
         self.chars.as_str()
+    }
+
+    pub fn byte_pos(&self) -> usize {
+        self.string.len() - self.chars.as_str().len()
     }
 }
 
