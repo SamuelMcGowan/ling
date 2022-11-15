@@ -105,7 +105,7 @@ pub(crate) struct Tokens<'ctx, 'a> {
     parse_context: &'ctx mut ParseContext<'a>,
 }
 
-impl<'ctx, 'a> Iterator for Tokens<'ctx, 'a> {
+impl Iterator for Tokens<'_, '_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
