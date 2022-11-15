@@ -83,6 +83,8 @@ pub(crate) enum Keyword {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Error {
     UnexpectedChar(char),
+    IntegerOverflow,
+    MissingDigits,
 }
 
 macro_rules! tkind {

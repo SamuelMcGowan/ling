@@ -60,6 +60,7 @@ impl<'a> ParseContext<'a> {
                 '=' => tkind!(punct Equal),
 
                 _ if is_ident_start(c) => self.lex_ident(start_pos),
+                '0'..='9' => self.lex_number(c as u8),
 
                 _ => tkind!(error UnexpectedChar(c)),
             };
@@ -104,6 +105,79 @@ impl<'a> ParseContext<'a> {
         }
     }
 
+    fn lex_number(&mut self, first: u8) -> TokenKind {
+        let int_digits = self.lex_digits(Some(first));
+
+        if self.cursor.eat('.') {
+            let fraction_digits = self.lex_digits(None);
+
+            let mut exponent_overflow = false;
+            let mut exponent_missing_digits = false;
+
+            let exponent: i32 = if self.cursor.eat('e') || self.cursor.eat('E') {
+                let sign = if self.cursor.eat('-') {
+                    -1
+                } else {
+                    self.cursor.eat('+');
+                    1
+                };
+
+                let exponent_digits = self.lex_digits(None);
+
+                let exponent = parse_int(&exponent_digits).and_then(|n| n.try_into().ok());
+                let exponent: i32 = match exponent {
+                    Some(exponent) => exponent,
+                    None => {
+                        exponent_overflow = true;
+                        0
+                    }
+                };
+
+                exponent_missing_digits = exponent_digits.is_empty();
+
+                exponent * sign
+            } else {
+                0
+            };
+
+            if exponent_overflow {
+                return tkind!(error IntegerOverflow);
+            }
+
+            // integer won't have missing digits
+            if fraction_digits.is_empty() || exponent_missing_digits {
+                return tkind!(error MissingDigits);
+            }
+
+            let int_digits = trim_leading_zeros(&int_digits).iter();
+            let fraction_digits = trim_trailing_zeros(&fraction_digits).iter();
+
+            let f: f64 = minimal_lexical::parse_float(int_digits, fraction_digits, exponent);
+            self.add_constant(Value::Float(f))
+        } else {
+            let Some(n) = parse_int(&int_digits) else {
+                return tkind!(error IntegerOverflow);
+            };
+            self.add_constant(Value::Integer(n))
+        }
+    }
+
+    fn lex_digits(&mut self, first: Option<u8>) -> Vec<u8> {
+        let mut digits = vec![];
+        digits.extend(first);
+        loop {
+            match self.cursor.peek() {
+                Some(c @ '0'..='9') => {
+                    digits.push(c as u8);
+                    self.cursor.next();
+                }
+                Some('_') => continue,
+                _ => break,
+            }
+        }
+        digits
+    }
+
     fn add_constant(&mut self, value: Value) -> TokenKind {
         let idx = self.chunk.add_constant(value);
         TokenKind::Const(idx)
@@ -130,10 +204,34 @@ fn is_ident(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '_'
 }
 
+fn parse_int(digits: &[u8]) -> Option<u64> {
+    let mut n = 0u64;
+    for &digit in digits {
+        let digit = (digit - b'0') as u64;
+        n = n.checked_mul(10)?;
+        n = n.checked_add(digit)?;
+    }
+    Some(n)
+}
+
+fn trim_leading_zeros(mut digits: &[u8]) -> &[u8] {
+    while let [b'0', rest @ ..] = digits {
+        digits = rest;
+    }
+    digits
+}
+
+fn trim_trailing_zeros(mut digits: &[u8]) -> &[u8] {
+    while let [rest @ .., b'0'] = digits {
+        digits = rest;
+    }
+    digits
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chunk::Chunk;
+    use crate::chunk::{Chunk, ConstIdx};
 
     #[test]
     fn punct_single() {
@@ -191,6 +289,26 @@ mod tests {
     #[test]
     fn literals() {
         check_tokens("true false", &[tkind!(constant 0), tkind!(constant 1)]);
+        check_constants(
+            "true false",
+            &[(0, Value::Bool(true)), (1, Value::Bool(false))],
+        );
+    }
+
+    #[test]
+    fn integer() {
+        check_constants("123", &[(0, Value::Integer(123))]);
+    }
+
+    #[test]
+    fn float() {
+        check_constants("12.34e-5", &[(0, Value::Float(12.34e-5))]);
+    }
+
+    #[test]
+    fn missing_digits() {
+        check_tokens("12.", &[tkind!(error MissingDigits)]);
+        check_tokens("12.1e", &[tkind!(error MissingDigits)]);
     }
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
@@ -198,5 +316,18 @@ mod tests {
         let mut context = ParseContext::new(s, &mut chunk);
         let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
+    }
+
+    fn check_constants(s: &str, constants: &[(usize, Value)]) {
+        let mut chunk = Chunk::default();
+        let mut context = ParseContext::new(s, &mut chunk);
+        context.tokens().count();
+
+        for (idx, expected) in constants {
+            let found = chunk
+                .get_constant(ConstIdx(*idx))
+                .expect("constant not found");
+            assert!(found.is_equal(expected));
+        }
     }
 }
