@@ -1,4 +1,4 @@
-pub(crate) mod parser;
+pub(crate) mod syntax;
 
 pub(crate) mod chunk;
 pub(crate) mod value;
@@ -22,7 +22,7 @@ fn main() -> Result<()> {
 
 fn run_source(source: &str) {
     let mut chunk = Chunk::default();
-    let mut context = parser::ParseContext::new(source, &mut chunk);
+    let mut context = syntax::ParseContext::new(source, &mut chunk);
 
     println!("TOKENS:");
     for token in context.lex_tokens() {

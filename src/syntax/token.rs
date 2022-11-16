@@ -93,29 +93,29 @@ pub(crate) enum Error {
 
 macro_rules! tkind {
     (punct $punct:ident) => {{
-        use crate::parser::token::*;
+        use crate::syntax::token::*;
         TokenKind::Punct(Punct::$punct)
     }};
     (kwd $kwd:ident) => {{
-        use crate::parser::token::*;
+        use crate::syntax::token::*;
         TokenKind::Keyword(Keyword::$kwd)
     }};
 
     (ident $ident:expr) => {{
         use ustr::Ustr;
-        use crate::parser::token::*;
+        use crate::syntax::token::*;
 
         TokenKind::Ident(Ustr::from($ident))
     }};
     (constant $constant:literal) => {{
-        use crate::parser::token::*;
+        use crate::syntax::token::*;
         use crate::chunk::ConstIdx;
 
         TokenKind::Const(ConstIdx($constant))
     }};
 
     (error $error:ident $($value:tt)?) => {{
-        use crate::parser::token::*;
+        use crate::syntax::token::*;
         TokenKind::Error(Error::$error $($value)?)
     }}
 }
