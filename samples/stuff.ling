@@ -5,3 +5,7 @@ func fact(n: uint) -> uint {
         is n => n * fact(n - 1);
     }
 }
+
+func print_string() {
+    println("hello,\nworld!");
+}

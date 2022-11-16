@@ -1,3 +1,5 @@
+use ustr::Ustr;
+
 use super::span::Span;
 use super::token::{tkind, Token, TokenKind};
 use super::ParseContext;
@@ -61,6 +63,7 @@ impl<'a> ParseContext<'a> {
 
                 _ if is_ident_start(c) => self.lex_ident(start_pos),
                 '0'..='9' => self.lex_number(c as u8),
+                '"' => self.lex_string(),
 
                 _ => tkind!(error UnexpectedChar(c)),
             };
@@ -103,6 +106,47 @@ impl<'a> ParseContext<'a> {
 
             _ => tkind!(ident lexeme),
         }
+    }
+
+    fn lex_string(&mut self) -> TokenKind {
+        let mut s = String::new();
+
+        let mut unterminated_string = true;
+        let mut invalid_escape = false;
+
+        while let Some(c) = self.cursor.next() {
+            let c = match c {
+                '"' => {
+                    unterminated_string = false;
+                    break;
+                }
+                '\\' => match self.cursor.next() {
+                    Some(c) => match c {
+                        'n' => '\n',
+                        'r' => '\n',
+                        't' => '\t',
+                        '0' => '\0',
+                        _ => {
+                            invalid_escape = true;
+                            c
+                        }
+                    },
+                    None => return tkind!(error UnterminatedString),
+                },
+                _ => c,
+            };
+            s.push(c);
+        }
+
+        if unterminated_string {
+            return tkind!(error UnterminatedString);
+        }
+        if invalid_escape {
+            return tkind!(error InvalidEscape);
+        }
+
+        let interned = Ustr::from(&s);
+        self.add_constant(Value::String(interned))
     }
 
     fn lex_number(&mut self, first: u8) -> TokenKind {
@@ -290,6 +334,18 @@ mod tests {
     fn literals() {
         check_constant("true", Value::Bool(true));
         check_constant("false", Value::Bool(false));
+    }
+
+    #[test]
+    fn string() {
+        check_constant("\"hello\"", Value::String(Ustr::from("hello")));
+        check_constant("\"\"", Value::String(Ustr::from("")));
+    }
+
+    #[test]
+    fn string_unterminated() {
+        check_tokens("\"hello", &[tkind!(error UnterminatedString)]);
+        check_tokens("\"", &[tkind!(error UnterminatedString)]);
     }
 
     #[test]
