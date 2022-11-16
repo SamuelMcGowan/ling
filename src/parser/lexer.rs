@@ -2,17 +2,25 @@ use ustr::Ustr;
 
 use super::span::Span;
 use super::token::{tkind, Token, TokenKind};
-use super::ParseContext;
+use super::{Cursor, ParseContext};
 use crate::value::Value;
 
 impl<'a> ParseContext<'a> {
-    pub fn tokens(&mut self) -> Tokens<'_, 'a> {
-        Tokens {
-            parse_context: self,
+    pub fn lex_tokens(&mut self) -> Lexer<'_, 'a> {
+        Lexer {
+            cursor: Cursor::new(self.source),
+            context: self,
         }
     }
+}
 
-    pub fn lex_token(&mut self) -> Option<Token> {
+pub(crate) struct Lexer<'ctx, 'a> {
+    cursor: Cursor<'a>,
+    context: &'ctx mut ParseContext<'a>,
+}
+
+impl Lexer<'_, '_> {
+    fn lex_token(&mut self) -> Option<Token> {
         loop {
             let start_pos = self.cursor.byte_pos();
             let c = self.cursor.next()?;
@@ -223,20 +231,16 @@ impl<'a> ParseContext<'a> {
     }
 
     fn add_constant(&mut self, value: Value) -> TokenKind {
-        let idx = self.chunk.add_constant(value);
+        let idx = self.context.chunk.add_constant(value);
         TokenKind::Const(idx)
     }
 }
 
-pub(crate) struct Tokens<'ctx, 'a> {
-    parse_context: &'ctx mut ParseContext<'a>,
-}
-
-impl Iterator for Tokens<'_, '_> {
+impl Iterator for Lexer<'_, '_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.parse_context.lex_token()
+        self.lex_token()
     }
 }
 
@@ -367,7 +371,7 @@ mod tests {
     fn check_tokens(s: &str, t: &[TokenKind]) {
         let mut chunk = Chunk::default();
         let mut context = ParseContext::new(s, &mut chunk);
-        let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
+        let tokens: Vec<_> = context.lex_tokens().map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
     }
 
@@ -375,7 +379,7 @@ mod tests {
         let mut chunk = Chunk::default();
         let mut context = ParseContext::new(s, &mut chunk);
 
-        let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
+        let tokens: Vec<_> = context.lex_tokens().map(|token| token.kind).collect();
         assert_eq!(&tokens, &[tkind!(constant 0)]);
 
         let value_found = chunk.get_constant(ConstIdx(0)).expect("constant not found");

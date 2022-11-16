@@ -25,7 +25,7 @@ fn run_source(source: &str) {
     let mut context = parser::ParseContext::new(source, &mut chunk);
 
     println!("TOKENS:");
-    for token in context.tokens() {
+    for token in context.lex_tokens() {
         println!("  {token:?}");
     }
 
