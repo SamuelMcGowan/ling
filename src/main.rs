@@ -24,7 +24,10 @@ fn run_source(source: &str) {
     let mut chunk = Chunk::default();
     let mut context = parser::ParseContext::new(source, &mut chunk);
 
+    println!("TOKENS:");
     for token in context.tokens() {
-        println!("{token:?}");
+        println!("  {token:?}");
     }
+
+    println!("\n{chunk}");
 }

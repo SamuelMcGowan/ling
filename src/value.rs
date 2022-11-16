@@ -1,4 +1,6 @@
-#[derive(Debug, Clone)]
+use ustr::Ustr;
+
+#[derive(Clone)]
 pub(crate) enum Value {
     String(Ustr),
     Integer(u64),
@@ -15,5 +17,21 @@ impl Value {
             (Self::Bool(a), Self::Bool(b)) => a == b,
             _ => false,
         }
+    }
+
+    pub fn repr(&self) -> String {
+        match self {
+            // TODO: use custom implementation of string printing
+            Self::String(s) => format!("{:?}", s.as_str()),
+            Self::Integer(n) => format!("{n}"),
+            Self::Float(n) => format!("{n}"),
+            Self::Bool(b) => format!("{b:?}")
+        }
+    }
+}
+
+impl std::fmt::Debug for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Value({})", self.repr())
     }
 }

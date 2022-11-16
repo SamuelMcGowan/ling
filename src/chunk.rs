@@ -20,3 +20,14 @@ impl Chunk {
         self.constants.get(idx.0)
     }
 }
+
+impl std::fmt::Display for Chunk {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "CHUNK:")?;
+        writeln!(f, "  CONSTANTS:")?;
+        for (i, constant) in self.constants.iter().enumerate() {
+            writeln!(f, "    {i}\t{constant:?}")?;
+        }
+        Ok(())
+    }
+}
