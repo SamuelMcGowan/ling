@@ -288,21 +288,18 @@ mod tests {
 
     #[test]
     fn literals() {
-        check_tokens("true false", &[tkind!(constant 0), tkind!(constant 1)]);
-        check_constants(
-            "true false",
-            &[(0, Value::Bool(true)), (1, Value::Bool(false))],
-        );
+        check_constant("true", Value::Bool(true));
+        check_constant("false", Value::Bool(false));
     }
 
     #[test]
     fn integer() {
-        check_constants("123", &[(0, Value::Integer(123))]);
+        check_constant("123", Value::Integer(123));
     }
 
     #[test]
     fn float() {
-        check_constants("12.34e-5", &[(0, Value::Float(12.34e-5))]);
+        check_constant("12.34e-5", Value::Float(12.34e-5));
     }
 
     #[test]
@@ -318,16 +315,14 @@ mod tests {
         assert_eq!(&tokens, t)
     }
 
-    fn check_constants(s: &str, constants: &[(usize, Value)]) {
+    fn check_constant(s: &str, value: Value) {
         let mut chunk = Chunk::default();
         let mut context = ParseContext::new(s, &mut chunk);
-        context.tokens().count();
 
-        for (idx, expected) in constants {
-            let found = chunk
-                .get_constant(ConstIdx(*idx))
-                .expect("constant not found");
-            assert!(found.is_equal(expected));
-        }
+        let tokens: Vec<_> = context.tokens().map(|token| token.kind).collect();
+        assert_eq!(&tokens, &[tkind!(constant 0)]);
+
+        let value_found = chunk.get_constant(ConstIdx(0)).expect("constant not found");
+        assert!(value_found.is_equal(&value));
     }
 }
