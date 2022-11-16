@@ -1,4 +1,4 @@
-use super::span::Span;
+use super::source::Span;
 use crate::chunk::ConstIdx;
 
 #[derive(Debug, Clone, Copy)]

@@ -1,34 +1,34 @@
 use ustr::Ustr;
 
-use super::span::Span;
+use super::source::{SourceIter, Span};
 use super::token::{tkind, Token, TokenKind};
-use super::{Cursor, ParseContext};
+use super::ParseContext;
 use crate::value::Value;
 
 impl<'a> ParseContext<'a> {
-    pub fn lex_tokens(&mut self) -> Lexer<'_, 'a> {
+    pub fn lexer(&mut self) -> Lexer<'_, 'a> {
         Lexer {
-            cursor: Cursor::new(self.source),
+            source: SourceIter::new(self.source),
             context: self,
         }
     }
 }
 
 pub(crate) struct Lexer<'ctx, 'a> {
-    cursor: Cursor<'a>,
+    source: SourceIter<'a>,
     context: &'ctx mut ParseContext<'a>,
 }
 
 impl Lexer<'_, '_> {
     fn lex_token(&mut self) -> Option<Token> {
         loop {
-            let start_pos = self.cursor.byte_pos();
-            let c = self.cursor.next()?;
+            let start_pos = self.source.byte_pos();
+            let c = self.source.next()?;
 
             let kind = match c {
                 c if c.is_ascii_whitespace() => continue,
                 '#' => {
-                    while !matches!(self.cursor.next(), Some('\n') | None) {}
+                    while !matches!(self.source.next(), Some('\n') | None) {}
                     continue;
                 }
 
@@ -44,15 +44,15 @@ impl Lexer<'_, '_> {
                 ':' => tkind!(punct Colon),
                 ';' => tkind!(punct Semicolon),
 
-                '-' if self.cursor.eat('>') => tkind!(punct Arrow),
-                '=' if self.cursor.eat('>') => tkind!(punct FatArrow),
+                '-' if self.source.eat('>') => tkind!(punct Arrow),
+                '=' if self.source.eat('>') => tkind!(punct FatArrow),
 
-                '+' if self.cursor.eat('=') => tkind!(punct AddEqual),
-                '-' if self.cursor.eat('=') => tkind!(punct SubEqual),
-                '*' if self.cursor.eat('=') => tkind!(punct MulEqual),
-                '/' if self.cursor.eat('=') => tkind!(punct DivEqual),
-                '%' if self.cursor.eat('=') => tkind!(punct ModEqual),
-                '^' if self.cursor.eat('=') => tkind!(punct PowEqual),
+                '+' if self.source.eat('=') => tkind!(punct AddEqual),
+                '-' if self.source.eat('=') => tkind!(punct SubEqual),
+                '*' if self.source.eat('=') => tkind!(punct MulEqual),
+                '/' if self.source.eat('=') => tkind!(punct DivEqual),
+                '%' if self.source.eat('=') => tkind!(punct ModEqual),
+                '^' if self.source.eat('=') => tkind!(punct PowEqual),
 
                 '+' => tkind!(punct Add),
                 '-' => tkind!(punct Sub),
@@ -61,9 +61,9 @@ impl Lexer<'_, '_> {
                 '%' => tkind!(punct Mod),
                 '^' => tkind!(punct Pow),
 
-                '>' if self.cursor.eat('=') => tkind!(punct GtEqual),
-                '<' if self.cursor.eat('=') => tkind!(punct LtEqual),
-                '=' if self.cursor.eat('=') => tkind!(punct EqualEqual),
+                '>' if self.source.eat('=') => tkind!(punct GtEqual),
+                '<' if self.source.eat('=') => tkind!(punct LtEqual),
+                '=' if self.source.eat('=') => tkind!(punct EqualEqual),
 
                 '>' => tkind!(punct Gt),
                 '<' => tkind!(punct Lt),
@@ -76,18 +76,18 @@ impl Lexer<'_, '_> {
                 _ => tkind!(error UnexpectedChar(c)),
             };
 
-            let span = Span::new(start_pos, self.cursor.byte_pos());
+            let span = Span::new(start_pos, self.source.byte_pos());
 
             return Some(Token { span, kind });
         }
     }
 
     fn lex_ident(&mut self, start_pos: usize) -> TokenKind {
-        while matches!(self.cursor.peek(), Some(c) if is_ident(c)) {
-            self.cursor.next();
+        while matches!(self.source.peek(), Some(c) if is_ident(c)) {
+            self.source.next();
         }
 
-        let lexeme = &self.cursor.as_str_all()[start_pos..self.cursor.byte_pos()];
+        let lexeme = &self.source.as_str_all()[start_pos..self.source.byte_pos()];
 
         match lexeme {
             "func" => tkind!(kwd Func),
@@ -122,13 +122,13 @@ impl Lexer<'_, '_> {
         let mut unterminated_string = true;
         let mut invalid_escape = false;
 
-        while let Some(c) = self.cursor.next() {
+        while let Some(c) = self.source.next() {
             let c = match c {
                 '"' => {
                     unterminated_string = false;
                     break;
                 }
-                '\\' => match self.cursor.next() {
+                '\\' => match self.source.next() {
                     Some(c) => match c {
                         'n' => '\n',
                         'r' => '\n',
@@ -160,17 +160,17 @@ impl Lexer<'_, '_> {
     fn lex_number(&mut self, first: u8) -> TokenKind {
         let int_digits = self.lex_digits(Some(first));
 
-        if self.cursor.eat('.') {
+        if self.source.eat('.') {
             let fraction_digits = self.lex_digits(None);
 
             let mut exponent_overflow = false;
             let mut exponent_missing_digits = false;
 
-            let exponent: i32 = if self.cursor.eat('e') || self.cursor.eat('E') {
-                let sign = if self.cursor.eat('-') {
+            let exponent: i32 = if self.source.eat('e') || self.source.eat('E') {
+                let sign = if self.source.eat('-') {
                     -1
                 } else {
-                    self.cursor.eat('+');
+                    self.source.eat('+');
                     1
                 };
 
@@ -218,10 +218,10 @@ impl Lexer<'_, '_> {
         let mut digits = vec![];
         digits.extend(first);
         loop {
-            match self.cursor.peek() {
+            match self.source.peek() {
                 Some(c @ '0'..='9') => {
                     digits.push(c as u8);
-                    self.cursor.next();
+                    self.source.next();
                 }
                 Some('_') => continue,
                 _ => break,
@@ -371,7 +371,7 @@ mod tests {
     fn check_tokens(s: &str, t: &[TokenKind]) {
         let mut chunk = Chunk::default();
         let mut context = ParseContext::new(s, &mut chunk);
-        let tokens: Vec<_> = context.lex_tokens().map(|token| token.kind).collect();
+        let tokens: Vec<_> = context.lexer().map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
     }
 
@@ -379,7 +379,7 @@ mod tests {
         let mut chunk = Chunk::default();
         let mut context = ParseContext::new(s, &mut chunk);
 
-        let tokens: Vec<_> = context.lex_tokens().map(|token| token.kind).collect();
+        let tokens: Vec<_> = context.lexer().map(|token| token.kind).collect();
         assert_eq!(&tokens, &[tkind!(constant 0)]);
 
         let value_found = chunk.get_constant(ConstIdx(0)).expect("constant not found");
