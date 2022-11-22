@@ -32,7 +32,7 @@ impl Parser<'_, '_> {
         self.tokens.peek().copied()
     }
 
-    fn eat(&mut self, kind: TokenKind) -> bool {
+    fn eat_kind(&mut self, kind: TokenKind) -> bool {
         match self.peek() {
             Some(token) if token.kind == kind => {
                 self.tokens.next();
