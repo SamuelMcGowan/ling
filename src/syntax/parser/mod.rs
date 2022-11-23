@@ -3,15 +3,8 @@ use super::ParseContext;
 
 impl<'a> ParseContext<'a> {
     pub fn parser(&mut self) -> Parser<'_, 'a> {
-        // Clippy thinks this is avoidable.
-        // It probably is, but it's a lot of work to avoid one allocation.
-        #[allow(clippy::needless_collect)]
         let tokens: Vec<_> = self.lexer().collect();
-
-        Parser {
-            tokens: TokenIter::new(tokens),
-            context: self,
-        }
+        Parser::new(tokens, self)
     }
 }
 
@@ -67,4 +60,13 @@ impl TokenIter {
 pub(crate) struct Parser<'ctx, 'a> {
     tokens: TokenIter,
     context: &'ctx ParseContext<'a>,
+}
+
+impl<'ctx, 'a> Parser<'ctx, 'a> {
+    pub fn new(tokens: Vec<Token>, context: &'ctx ParseContext<'a>) -> Self {
+        Self {
+            tokens: TokenIter::new(tokens),
+            context,
+        }
+    }
 }
