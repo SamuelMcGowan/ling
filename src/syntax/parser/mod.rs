@@ -1,3 +1,5 @@
+mod ast;
+
 use super::token::{Token, TokenKind};
 use super::ParseContext;
 
