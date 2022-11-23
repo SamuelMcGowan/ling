@@ -1,6 +1,3 @@
-use std::iter::Peekable;
-use std::vec::IntoIter;
-
 use super::token::{Token, TokenKind};
 use super::ParseContext;
 
@@ -12,39 +9,62 @@ impl<'a> ParseContext<'a> {
         let tokens: Vec<_> = self.lexer().collect();
 
         Parser {
-            tokens: tokens.into_iter().peekable(),
+            tokens: TokenIter::new(tokens),
             context: self,
         }
     }
 }
 
-pub(crate) struct Parser<'ctx, 'a> {
-    tokens: Peekable<IntoIter<Token>>,
-    context: &'ctx ParseContext<'a>,
+pub(crate) struct TokenIter {
+    tokens: Vec<Token>,
+    pos: usize,
 }
 
-impl Parser<'_, '_> {
-    fn next(&mut self) -> Option<Token> {
-        self.tokens.next()
+impl Iterator for TokenIter {
+    type Item = Token;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        let token = self.peek();
+        self.pos += 1;
+        token
+    }
+}
+
+impl TokenIter {
+    pub fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens, pos: 0 }
     }
 
-    fn peek(&mut self) -> Option<Token> {
-        self.tokens.peek().copied()
+    pub fn peek(&self) -> Option<Token> {
+        self.tokens.get(self.pos).copied()
     }
 
-    fn eat_kind(&mut self, kind: TokenKind) -> bool {
-        match self.peek() {
-            Some(token) if token.kind == kind => {
-                self.tokens.next();
-                true
-            }
-            _ => false,
+    pub fn peek_far(&self, n: usize) -> Option<Token> {
+        self.tokens.get(self.pos + n).copied()
+    }
+
+    pub fn eat(&mut self, kind: TokenKind) -> bool {
+        self.next_if(|token| token.kind == kind)
+    }
+
+    pub fn next_if(&mut self, mut predicate: impl FnMut(Token) -> bool) -> bool {
+        if matches!(self.peek(), Some(token) if predicate(token)) {
+            self.next();
+            true
+        } else {
+            false
         }
     }
 
-    fn eat_while(&mut self, mut predicate: impl FnMut(TokenKind) -> bool) {
-        while matches!(self.peek(), Some(token) if predicate(token.kind)) {
+    pub fn next_while(&mut self, mut predicate: impl FnMut(Token) -> bool) {
+        while matches!(self.peek(), Some(token) if predicate(token)) {
             self.next();
         }
     }
+}
+
+pub(crate) struct Parser<'ctx, 'a> {
+    tokens: TokenIter,
+    context: &'ctx ParseContext<'a>,
 }
