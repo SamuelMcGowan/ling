@@ -1,4 +1,4 @@
-use crate::chunk::ConstIdx;
+use crate::constants::ConstIdx;
 
 #[derive(Debug, Clone)]
 pub(crate) struct Module {

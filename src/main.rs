@@ -1,11 +1,10 @@
 pub(crate) mod syntax;
 
 pub(crate) mod chunk;
-pub(crate) mod value;
 mod constants;
+pub(crate) mod value;
 
 use anyhow::{bail, Context, Result};
-use chunk::Chunk;
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -22,13 +21,15 @@ fn main() -> Result<()> {
 }
 
 fn run_source(source: &str) {
-    let mut chunk = Chunk::default();
-    let mut context = syntax::ParseContext::new(source, &mut chunk);
+    let mut lexer = syntax::lexer::Lexer::new(source);
 
-    println!("TOKENS:");
-    for token in context.lexer() {
+    println!("TOKENS");
+    for token in lexer.by_ref() {
         println!("  {token:?}");
     }
 
-    println!("\n{chunk}");
+    println!("CONSTANTS");
+    for (i, constant) in lexer.constants().iter().enumerate() {
+        println!("  {i}\t{constant:?}");
+    }
 }

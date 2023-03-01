@@ -3,13 +3,6 @@ mod ast;
 use super::token::{Token, TokenKind};
 use super::ParseContext;
 
-impl<'a> ParseContext<'a> {
-    pub fn parser(&mut self) -> Parser<'_, 'a> {
-        let tokens: Vec<_> = self.lexer().collect();
-        Parser::new(tokens, self)
-    }
-}
-
 pub(crate) struct TokenIter {
     tokens: Vec<Token>,
     pos: usize,
