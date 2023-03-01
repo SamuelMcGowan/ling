@@ -2,6 +2,7 @@ pub(crate) mod syntax;
 
 pub(crate) mod chunk;
 pub(crate) mod value;
+mod constants;
 
 use anyhow::{bail, Context, Result};
 use chunk::Chunk;
