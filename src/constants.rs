@@ -20,4 +20,8 @@ impl ConstantPool {
     pub fn get_mut(&mut self, index: ConstIdx) -> Option<&mut Value> {
         self.0.get_mut(index.0)
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Value> {
+        self.0.iter()
+    }
 }

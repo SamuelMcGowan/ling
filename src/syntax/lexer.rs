@@ -2,24 +2,26 @@ use ustr::Ustr;
 
 use super::source::{SourceIter, Span};
 use super::token::{tkind, Token, TokenKind};
-use super::ParseContext;
+use crate::constants::ConstantPool;
 use crate::value::Value;
 
-impl<'a> ParseContext<'a> {
-    pub fn lexer(&mut self) -> Lexer<'_, 'a> {
-        Lexer {
-            source: SourceIter::new(self.source),
-            context: self,
+pub(crate) struct Lexer<'a> {
+    source: SourceIter<'a>,
+    constants: ConstantPool,
+}
+
+impl<'a> Lexer<'a> {
+    pub fn new(source: &'a str) -> Self {
+        Self {
+            source: SourceIter::new(source),
+            constants: ConstantPool::default(),
         }
     }
-}
 
-pub(crate) struct Lexer<'ctx, 'a> {
-    source: SourceIter<'a>,
-    context: &'ctx mut ParseContext<'a>,
-}
+    pub fn constants(self) -> ConstantPool {
+        self.constants
+    }
 
-impl Lexer<'_, '_> {
     fn lex_token(&mut self) -> Option<Token> {
         loop {
             let start_pos = self.source.byte_pos();
@@ -231,12 +233,12 @@ impl Lexer<'_, '_> {
     }
 
     fn add_constant(&mut self, value: Value) -> TokenKind {
-        let idx = self.context.chunk.add_constant(value);
+        let idx = self.constants.push(value);
         TokenKind::Const(idx)
     }
 }
 
-impl Iterator for Lexer<'_, '_> {
+impl Iterator for Lexer<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -279,7 +281,7 @@ fn trim_trailing_zeros(mut digits: &[u8]) -> &[u8] {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chunk::{Chunk, ConstIdx};
+    use crate::constants::ConstIdx;
 
     #[test]
     fn punct_single() {
@@ -369,20 +371,21 @@ mod tests {
     }
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
-        let mut chunk = Chunk::default();
-        let mut context = ParseContext::new(s, &mut chunk);
-        let tokens: Vec<_> = context.lexer().map(|token| token.kind).collect();
+        let tokens: Vec<_> = Lexer::new(s).map(|token| token.kind).collect();
         assert_eq!(&tokens, t)
     }
 
     fn check_constant(s: &str, value: Value) {
-        let mut chunk = Chunk::default();
-        let mut context = ParseContext::new(s, &mut chunk);
+        let mut lexer = Lexer::new(s);
 
-        let tokens: Vec<_> = context.lexer().map(|token| token.kind).collect();
+        let tokens: Vec<_> = lexer.by_ref().map(|token| token.kind).collect();
         assert_eq!(&tokens, &[tkind!(constant 0)]);
 
-        let value_found = chunk.get_constant(ConstIdx(0)).expect("constant not found");
+        let value_found = lexer
+            .constants
+            .get(ConstIdx(0))
+            .expect("constant not found");
+
         assert!(value_found.is_equal(&value));
     }
 }

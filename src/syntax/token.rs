@@ -1,5 +1,6 @@
+use crate::constants::ConstIdx;
+
 use super::source::Span;
-use crate::chunk::ConstIdx;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Token {
@@ -109,7 +110,7 @@ macro_rules! tkind {
     }};
     (constant $constant:literal) => {{
         use crate::syntax::token::*;
-        use crate::chunk::ConstIdx;
+        use crate::constants::ConstIdx;
 
         TokenKind::Const(ConstIdx($constant))
     }};

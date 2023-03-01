@@ -1,14 +1,6 @@
 mod ast;
 
 use super::token::{Token, TokenKind};
-use super::ParseContext;
-
-impl<'a> ParseContext<'a> {
-    pub fn parser(&mut self) -> Parser<'_, 'a> {
-        let tokens: Vec<_> = self.lexer().collect();
-        Parser::new(tokens, self)
-    }
-}
 
 pub(crate) struct TokenIter {
     tokens: Vec<Token>,
@@ -62,17 +54,15 @@ impl TokenIter {
 pub(crate) enum ParseError {}
 pub(crate) type ParseResult<T> = Result<T, ParseError>;
 
-pub(crate) struct Parser<'ctx, 'a> {
+pub(crate) struct Parser {
     tokens: TokenIter,
-    context: &'ctx ParseContext<'a>,
     errors: Vec<ParseError>,
 }
 
-impl<'ctx, 'a> Parser<'ctx, 'a> {
-    pub fn new(tokens: Vec<Token>, context: &'ctx ParseContext<'a>) -> Self {
+impl Parser {
+    pub fn new(tokens: Vec<Token>) -> Self {
         Self {
             tokens: TokenIter::new(tokens),
-            context,
             errors: vec![],
         }
     }
