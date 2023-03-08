@@ -35,7 +35,7 @@ fn run_source(source: &str) {
     }
 
     let mut parser = syntax::parser::Parser::new(tokens);
-    let ast = parser.parse();
+    let ast = parser.parse_module();
 
     println!("AST: {ast:#?}");
 }

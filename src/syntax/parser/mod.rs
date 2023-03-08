@@ -1,4 +1,5 @@
 mod ast;
+mod item;
 mod token_iter;
 
 use self::ast::*;
@@ -36,7 +37,10 @@ impl Parser {
             errors: vec![],
         }
     }
+}
 
+// Error handling/recovery.
+impl Parser {
     fn parse_or_recover<T>(
         &mut self,
         mut parser: impl FnMut(&mut Self) -> ParseResult<T>,
@@ -64,56 +68,8 @@ impl Parser {
     }
 }
 
+// Common parse functions.
 impl Parser {
-    pub fn parse(&mut self) -> ParseResult<Module> {
-        let mut items = vec![];
-
-        while !self.tokens.at_end() {
-            let item = self.parse_item()?;
-            items.push(item);
-        }
-
-        Ok(Module { items })
-    }
-
-    fn parse_item(&mut self) -> ParseResult<Item> {
-        match self.tokens.next() {
-            Some(token) if token.kind == tkind!(kwd Func) => Ok(Item::Func(self.parse_func()?)),
-            other => Err(ParseError::unexpected("an item", other)),
-        }
-    }
-
-    /// Expects `func` keyword to have been parsed.
-    fn parse_func(&mut self) -> ParseResult<Func> {
-        let ident = self.parse_ident()?;
-
-        self.tokens.expect(tkind!(punct LParen))?;
-
-        let params = self.parse_list(tkind!(punct RParen), |s| {
-            let ident = s.parse_ident()?;
-            s.tokens.expect(tkind!(punct Colon))?;
-            let ty = s.parse_ty()?;
-            Ok((ident, ty))
-        })?;
-
-        self.tokens.expect(tkind!(punct RParen))?;
-
-        let ret_ty = if self.tokens.eat(tkind!(punct Arrow)) {
-            self.parse_ty()?
-        } else {
-            Ty::Unit
-        };
-
-        let body = self.parse_block()?;
-
-        Ok(Func {
-            ident,
-            params,
-            ret_ty,
-            body,
-        })
-    }
-
     fn parse_ident(&mut self) -> ParseResult<Ident> {
         match self.tokens.next() {
             Some(Token {
