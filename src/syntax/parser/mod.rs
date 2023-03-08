@@ -1,12 +1,28 @@
 mod ast;
 mod token_iter;
 
+use self::ast::*;
 use self::token_iter::TokenIter;
 
-use super::token::{Token, TokenKind};
+use super::token::{tkind, Token, TokenKind};
 
-pub(crate) enum ParseError {}
+#[derive(Debug, Clone)]
+pub(crate) enum ParseError {
+    Unexpected {
+        expected: String,
+        found: Option<Token>,
+    },
+}
 pub(crate) type ParseResult<T> = Result<T, ParseError>;
+
+impl ParseError {
+    fn unexpected(expected: impl Into<String>, found: Option<Token>) -> Self {
+        Self::Unexpected {
+            expected: expected.into(),
+            found,
+        }
+    }
+}
 
 pub(crate) struct Parser {
     tokens: TokenIter,
@@ -45,5 +61,123 @@ impl Parser {
 
     fn report(&mut self, error: ParseError) {
         self.errors.push(error);
+    }
+}
+
+impl Parser {
+    pub fn parse(&mut self) -> ParseResult<Module> {
+        let mut items = vec![];
+
+        while !self.tokens.at_end() {
+            let item = self.parse_item()?;
+            items.push(item);
+        }
+
+        Ok(Module { items })
+    }
+
+    fn parse_item(&mut self) -> ParseResult<Item> {
+        match self.tokens.next() {
+            Some(token) if token.kind == tkind!(kwd Func) => Ok(Item::Func(self.parse_func()?)),
+            other => Err(ParseError::unexpected("an item", other)),
+        }
+    }
+
+    /// Expects `func` keyword to have been parsed.
+    fn parse_func(&mut self) -> ParseResult<Func> {
+        let ident = self.parse_ident()?;
+
+        self.tokens.expect(tkind!(punct LParen))?;
+
+        let params = self.parse_list(tkind!(punct RParen), |s| {
+            let ident = s.parse_ident()?;
+            s.tokens.expect(tkind!(punct Colon))?;
+            let ty = s.parse_ty()?;
+            Ok((ident, ty))
+        })?;
+
+        self.tokens.expect(tkind!(punct RParen))?;
+
+        let ret_ty = if self.tokens.eat(tkind!(punct Arrow)) {
+            self.parse_ty()?
+        } else {
+            Ty::Unit
+        };
+
+        let body = self.parse_block()?;
+
+        Ok(Func {
+            ident,
+            params,
+            ret_ty,
+            body,
+        })
+    }
+
+    fn parse_ident(&mut self) -> ParseResult<Ident> {
+        match self.tokens.next() {
+            Some(Token {
+                kind: TokenKind::Ident(s),
+                ..
+            }) => Ok(Ident::Unresolved(s)),
+
+            other => Err(ParseError::Unexpected {
+                expected: "an identifier".to_string(),
+                found: other,
+            }),
+        }
+    }
+
+    fn parse_ty(&mut self) -> ParseResult<Ty> {
+        match self.tokens.next() {
+            Some(Token {
+                kind: TokenKind::Ident(s),
+                ..
+            }) => {
+                let params = if self.tokens.eat(tkind!(punct LBracket)) {
+                    let params = self.parse_list(tkind!(punct RBracket), Self::parse_ty)?;
+                    self.tokens.expect(tkind!(punct RBracket))?;
+                    params
+                } else {
+                    vec![]
+                };
+
+                Ok(Ty::Constructed {
+                    ident: Ident::Unresolved(s),
+                    params,
+                })
+            }
+
+            Some(token) if token.kind == tkind!(punct LParen) => {
+                self.tokens.expect(tkind!(punct RParen))?;
+                Ok(Ty::Unit)
+            }
+
+            other => Err(ParseError::unexpected("a type", other)),
+        }
+    }
+
+    fn parse_block(&mut self) -> ParseResult<Expr> {
+        self.tokens.expect(tkind!(punct LBrace))?;
+        self.tokens.expect(tkind!(punct RBrace))?;
+        Ok(Expr::Unit)
+    }
+
+    fn parse_list<T>(
+        &mut self,
+        end: TokenKind,
+        mut parse: impl FnMut(&mut Self) -> ParseResult<T>,
+    ) -> ParseResult<Vec<T>> {
+        let mut items = vec![];
+
+        while !self.tokens.matches(end) {
+            items.push(parse(self)?);
+
+            if !self.tokens.eat(tkind!(punct Comma)) {
+                break;
+            }
+        }
+
+        Ok(items)
     }
 }

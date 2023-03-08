@@ -111,6 +111,8 @@ impl<'a> Lexer<'a> {
             "loop" => tkind!(kwd Loop),
             "while" => tkind!(kwd While),
 
+            "unit" => tkind!(kwd Unit),
+
             "true" => self.add_constant(Value::Bool(true)),
             "false" => self.add_constant(Value::Bool(false)),
 

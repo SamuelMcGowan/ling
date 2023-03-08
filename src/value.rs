@@ -25,7 +25,7 @@ impl Value {
             Self::String(s) => format!("{:?}", s.as_str()),
             Self::Integer(n) => format!("{n}"),
             Self::Float(n) => format!("{n}"),
-            Self::Bool(b) => format!("{b:?}")
+            Self::Bool(b) => format!("{b:?}"),
         }
     }
 }

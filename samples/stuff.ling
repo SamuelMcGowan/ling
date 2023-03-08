@@ -1,11 +1,11 @@
 func fact(n: uint) -> uint {
-    match n {
-        is 0 => 0;
-        is 1 => 1;
-        is n => n * fact(n - 1);
-    }
+    # match n {
+    #     is 0 => 0;
+    #     is 1 => 1;
+    #     is n => n * fact(n - 1);
+    # }
 }
 
 func print_string() {
-    println("hello,\nworld!");
+    # println("hello,\nworld!");
 }

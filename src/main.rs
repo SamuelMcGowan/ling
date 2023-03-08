@@ -22,9 +22,10 @@ fn main() -> Result<()> {
 
 fn run_source(source: &str) {
     let mut lexer = syntax::lexer::Lexer::new(source);
+    let tokens = lexer.by_ref().collect();
 
     println!("TOKENS");
-    for token in lexer.by_ref() {
+    for token in &tokens {
         println!("  {token:?}");
     }
 
@@ -32,4 +33,9 @@ fn run_source(source: &str) {
     for (i, constant) in lexer.constants().iter().enumerate() {
         println!("  {i}\t{constant:?}");
     }
+
+    let mut parser = syntax::parser::Parser::new(tokens);
+    let ast = parser.parse();
+
+    println!("AST: {ast:#?}");
 }

@@ -79,6 +79,8 @@ pub(crate) enum Keyword {
 
     Loop,
     While,
+
+    Unit,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
