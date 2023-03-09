@@ -1,10 +1,10 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parser(\"foo() {}\").parse_func().unwrap()"
+expression: "parser(\"foo() {}\").parse_func()"
 ---
-Func(
+Ok(Func(
   ident: Unresolved("foo"),
   params: [],
   ret_ty: Unit,
   body: Unit,
-)
+))

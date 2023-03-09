@@ -7,7 +7,7 @@ use self::token_iter::TokenIter;
 
 use super::token::{tkind, Token, TokenKind};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub(crate) enum ParseError {
     Unexpected {
         expected: String,

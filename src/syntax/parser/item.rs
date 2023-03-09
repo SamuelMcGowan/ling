@@ -66,20 +66,26 @@ mod tests {
 
     #[test]
     fn test_func() {
-        assert_ron_snapshot!("simple_func", parser("foo() {}").parse_func().unwrap());
+        assert_ron_snapshot!("simple_func", parser("foo() {}").parse_func());
 
         assert_ron_snapshot!(
             "func_with_args",
-            parser("foo(a: uint, b: uint) -> string {}")
-                .parse_func()
-                .unwrap()
+            parser("foo(a: uint, b: uint) -> string {}").parse_func()
         );
 
         assert_ron_snapshot!(
             "func_with_args_and_trailing_comma",
-            parser("foo(a: uint, b: uint,) {}")
-                .parse_func()
-                .unwrap()
+            parser("foo(a: uint, b: uint,) {}").parse_func()
+        );
+
+        assert_ron_snapshot!(
+            "func_with_missing_rparen",
+            parser("foo(a: uint, {}").parse_func()
+        );
+
+        assert_ron_snapshot!(
+            "func_with_missing_ret_type",
+            parser("foo(a: uint) -> {}").parse_func()
         );
     }
 }

@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub(crate) struct Span {
     start: usize,
     end: usize,

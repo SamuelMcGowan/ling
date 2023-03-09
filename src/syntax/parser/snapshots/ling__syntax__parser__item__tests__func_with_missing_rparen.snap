@@ -1,0 +1,14 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parser(\"foo(a: uint, {}\").parse_func()"
+---
+Err(Unexpected(
+  expected: "an identifier",
+  found: Some(Token(
+    span: Span(
+      start: 13,
+      end: 14,
+    ),
+    kind: Punct(LBrace),
+  )),
+))

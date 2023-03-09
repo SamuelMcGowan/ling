@@ -1,8 +1,8 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parser(\"foo(a: uint, b: uint) -> string {}\").parse_func().unwrap()"
+expression: "parser(\"foo(a: uint, b: uint) -> string {}\").parse_func()"
 ---
-Func(
+Ok(Func(
   ident: Unresolved("foo"),
   params: [
     (Unresolved("a"), Constructed(
@@ -19,4 +19,4 @@ Func(
     params: [],
   ),
   body: Unit,
-)
+))
