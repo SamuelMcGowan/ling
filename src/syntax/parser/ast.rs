@@ -1,18 +1,28 @@
+use macro_rules_attribute::{derive, derive_alias};
 use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 
-#[derive(Debug, Clone)]
+derive_alias! {
+    #[derive(Node!)] = #[derive(
+        Debug,
+        Clone,
+        serde::Serialize,
+        serde::Deserialize,
+    )];
+}
+
+#[derive(Node!)]
 pub(crate) struct Module {
     pub items: Vec<Item>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) enum Item {
     Func(Func),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) struct Func {
     pub ident: Ident,
     pub params: Vec<(Ident, Ty)>,
@@ -20,24 +30,24 @@ pub(crate) struct Func {
     pub body: Expr,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) enum Ty {
     Constructed { ident: Ident, params: Vec<Ty> },
     Unit,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) enum Stmt {
     Expr(Expr),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) enum Expr {
     Const(ConstIdx),
     Unit,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Node!)]
 pub(crate) enum Ident {
     Unresolved(Ustr),
 }

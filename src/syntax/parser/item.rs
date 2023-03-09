@@ -52,3 +52,27 @@ impl Parser {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_ron_snapshot;
+
+    use crate::syntax::{lexer::Lexer, parser::Parser};
+
+    fn parser(source: &str) -> Parser {
+        let tokens = Lexer::new(source).collect();
+        Parser::new(tokens)
+    }
+
+    #[test]
+    fn test_func() {
+        assert_ron_snapshot!("simple_func", parser("foo() {}").parse_func().unwrap());
+
+        assert_ron_snapshot!(
+            "func_with_args",
+            parser("foo(a: uint, b: uint) -> string {}")
+                .parse_func()
+                .unwrap()
+        );
+    }
+}
