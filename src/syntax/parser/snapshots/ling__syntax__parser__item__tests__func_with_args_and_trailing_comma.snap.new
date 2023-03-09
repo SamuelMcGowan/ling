@@ -1,0 +1,20 @@
+---
+source: src/syntax/parser/item.rs
+assertion_line: 78
+expression: "parser(\"foo(a: uint, b: uint,) {}\").parse_func().unwrap()"
+---
+Func(
+  ident: Unresolved("foo"),
+  params: [
+    (Unresolved("a"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+    (Unresolved("b"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+  ],
+  ret_ty: Unit,
+  body: Unit,
+)

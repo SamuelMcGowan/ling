@@ -1,0 +1,22 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parser(\"foo(a: uint, b: uint) -> string {}\").parse_func().unwrap()"
+---
+Func(
+  ident: Unresolved("foo"),
+  params: [
+    (Unresolved("a"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+    (Unresolved("b"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+  ],
+  ret_ty: Constructed(
+    ident: Unresolved("string"),
+    params: [],
+  ),
+  body: Unit,
+)

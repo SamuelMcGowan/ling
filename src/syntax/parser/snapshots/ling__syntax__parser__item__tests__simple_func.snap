@@ -1,0 +1,10 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parser(\"foo() {}\").parse_func().unwrap()"
+---
+Func(
+  ident: Unresolved("foo"),
+  params: [],
+  ret_ty: Unit,
+  body: Unit,
+)
