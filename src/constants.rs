@@ -1,6 +1,6 @@
 use crate::value::Value;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct ConstIdx(pub(crate) usize);
 
 #[derive(Default, Debug)]

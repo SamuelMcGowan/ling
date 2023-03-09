@@ -4,13 +4,13 @@ use crate::constants::ConstIdx;
 
 use super::source::Span;
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub(crate) struct Token {
     pub span: Span,
     pub kind: TokenKind,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum TokenKind {
     Punct(Punct),
     Keyword(Keyword),
@@ -21,7 +21,7 @@ pub(crate) enum TokenKind {
     Error(Error),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum Punct {
     LParen,
     RParen,
@@ -61,7 +61,7 @@ pub(crate) enum Punct {
     Arrow,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum Keyword {
     Func,
     Return,
@@ -85,7 +85,7 @@ pub(crate) enum Keyword {
     Unit,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum Error {
     UnexpectedChar(char),
 

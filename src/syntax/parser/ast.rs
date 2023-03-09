@@ -8,7 +8,6 @@ derive_alias! {
         Debug,
         Clone,
         serde::Serialize,
-        serde::Deserialize,
     )];
 }
 
