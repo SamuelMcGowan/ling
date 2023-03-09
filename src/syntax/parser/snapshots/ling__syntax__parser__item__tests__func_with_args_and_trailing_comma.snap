@@ -1,6 +1,5 @@
 ---
 source: src/syntax/parser/item.rs
-assertion_line: 78
 expression: "parser(\"foo(a: uint, b: uint,) {}\").parse_func().unwrap()"
 ---
 Func(
