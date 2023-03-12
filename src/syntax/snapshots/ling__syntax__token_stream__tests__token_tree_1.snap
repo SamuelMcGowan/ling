@@ -1,0 +1,20 @@
+---
+source: src/syntax/token_stream.rs
+expression: "get_tree(\"{{{}}}\")"
+---
+(TokenStream([
+  Group(
+    bracket_kind: Curly,
+    tokens: TokenStream([
+      Group(
+        bracket_kind: Curly,
+        tokens: TokenStream([
+          Group(
+            bracket_kind: Curly,
+            tokens: TokenStream([]),
+          ),
+        ]),
+      ),
+    ]),
+  ),
+]), [])
