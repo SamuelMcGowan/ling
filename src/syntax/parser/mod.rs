@@ -1,10 +1,9 @@
-mod ast;
 mod item;
 mod token_iter;
 
-use self::ast::*;
 use self::token_iter::TokenIter;
 
+use super::ast::*;
 use super::token::{tkind, Token, TokenKind};
 
 #[derive(Debug, Clone, serde::Serialize)]

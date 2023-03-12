@@ -1,4 +1,4 @@
-use crate::syntax::parser::ast::*;
+use crate::syntax::ast::*;
 use crate::syntax::parser::{ParseError, ParseResult, Parser};
 use crate::syntax::token::tkind;
 
