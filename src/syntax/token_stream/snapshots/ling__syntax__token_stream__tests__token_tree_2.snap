@@ -1,0 +1,42 @@
+---
+source: src/syntax/token_stream/mod.rs
+expression: "get_stream(\"(((\")"
+---
+(TokenStream([
+  Group(
+    bracket_kind: Round,
+    tokens: TokenStream([
+      Group(
+        bracket_kind: Round,
+        tokens: TokenStream([
+          Group(
+            bracket_kind: Round,
+            tokens: TokenStream([]),
+          ),
+        ]),
+      ),
+    ]),
+  ),
+]), [
+  Token(
+    span: Span(
+      start: 2,
+      end: 3,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+  Token(
+    span: Span(
+      start: 1,
+      end: 2,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+  Token(
+    span: Span(
+      start: 0,
+      end: 1,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+])

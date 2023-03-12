@@ -1,33 +1,15 @@
-use serde::Serialize;
+use crate::syntax::lexer::Lexer;
+use crate::syntax::token::{Bracket, BracketKind, Token, TokenKind};
 
-use super::lexer::Lexer;
-use super::token::{Bracket, BracketKind, Token, TokenKind};
+use super::{TokenStream, TokenTree};
+
+pub(super) fn build_token_stream(lexer: Lexer) -> (TokenStream, Vec<Token>) {
+    TokenStreamBuilder::new(lexer).build()
+}
 
 struct SpareBracket {
     kind: BracketKind,
     token: Token,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub(crate) enum TokenTree {
-    Token(Token),
-    Group {
-        bracket_kind: BracketKind,
-        tokens: TokenStream,
-    },
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub(crate) struct TokenStream(Vec<TokenTree>);
-
-impl TokenStream {
-    pub fn iter(&self) -> impl Iterator<Item = &TokenTree> {
-        self.0.iter()
-    }
-}
-
-pub(crate) fn build_token_stream(lexer: Lexer) -> (TokenStream, Vec<Token>) {
-    TokenStreamBuilder::new(lexer).build()
 }
 
 struct TokenStreamBuilder<'a> {
@@ -126,38 +108,5 @@ impl<'a> TokenStreamBuilder<'a> {
         };
 
         (nodes, spare_bracket)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use insta::assert_ron_snapshot;
-
-    use super::*;
-
-    fn get_tree(source: &str) -> (TokenStream, Vec<Token>) {
-        let lexer = Lexer::new(source);
-        let tt_builder = TokenStreamBuilder::new(lexer);
-        tt_builder.build()
-    }
-
-    #[test]
-    fn simple_tests() {
-        assert_ron_snapshot!("token_tree_0", get_tree("( { ) } ( hello )"));
-        assert_ron_snapshot!("token_tree_1", get_tree("{{{}}}"));
-        assert_ron_snapshot!("token_tree_2", get_tree("((("));
-        assert_ron_snapshot!("token_tree_3", get_tree(")))"));
-        assert_ron_snapshot!("token_tree_4", get_tree("]{}["));
-
-        assert_ron_snapshot!(
-            "token_tree_func",
-            get_tree(
-                "
-            func foo(a: uint, b: uint) -> uint {
-                a + b
-            }
-        "
-            )
-        );
     }
 }
