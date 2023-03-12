@@ -1,0 +1,114 @@
+---
+source: src/syntax/token_tree.rs
+expression: "get_tree(\"\n            func foo(a: uint, b: uint) -> uint {\n                a + b\n            }\n        \")"
+---
+([
+  Token(Token(
+    span: Span(
+      start: 13,
+      end: 17,
+    ),
+    kind: Keyword(Func),
+  )),
+  Token(Token(
+    span: Span(
+      start: 18,
+      end: 21,
+    ),
+    kind: Ident("foo"),
+  )),
+  Tree(
+    kind: Round,
+    nodes: [
+      Token(Token(
+        span: Span(
+          start: 22,
+          end: 23,
+        ),
+        kind: Ident("a"),
+      )),
+      Token(Token(
+        span: Span(
+          start: 23,
+          end: 24,
+        ),
+        kind: Punct(Colon),
+      )),
+      Token(Token(
+        span: Span(
+          start: 25,
+          end: 29,
+        ),
+        kind: Ident("uint"),
+      )),
+      Token(Token(
+        span: Span(
+          start: 29,
+          end: 30,
+        ),
+        kind: Punct(Comma),
+      )),
+      Token(Token(
+        span: Span(
+          start: 31,
+          end: 32,
+        ),
+        kind: Ident("b"),
+      )),
+      Token(Token(
+        span: Span(
+          start: 32,
+          end: 33,
+        ),
+        kind: Punct(Colon),
+      )),
+      Token(Token(
+        span: Span(
+          start: 34,
+          end: 38,
+        ),
+        kind: Ident("uint"),
+      )),
+    ],
+  ),
+  Token(Token(
+    span: Span(
+      start: 40,
+      end: 42,
+    ),
+    kind: Punct(Arrow),
+  )),
+  Token(Token(
+    span: Span(
+      start: 43,
+      end: 47,
+    ),
+    kind: Ident("uint"),
+  )),
+  Tree(
+    kind: Curly,
+    nodes: [
+      Token(Token(
+        span: Span(
+          start: 66,
+          end: 67,
+        ),
+        kind: Ident("a"),
+      )),
+      Token(Token(
+        span: Span(
+          start: 68,
+          end: 69,
+        ),
+        kind: Punct(Add),
+      )),
+      Token(Token(
+        span: Span(
+          start: 70,
+          end: 71,
+        ),
+        kind: Ident("b"),
+      )),
+    ],
+  ),
+], [])

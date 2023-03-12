@@ -122,5 +122,11 @@ mod tests {
         assert_ron_snapshot!("token_tree_2", get_tree("((("));
         assert_ron_snapshot!("token_tree_3", get_tree(")))"));
         assert_ron_snapshot!("token_tree_4", get_tree("]{}["));
+
+        assert_ron_snapshot!("token_tree_func", get_tree("
+            func foo(a: uint, b: uint) -> uint {
+                a + b
+            }
+        "));
     }
 }
