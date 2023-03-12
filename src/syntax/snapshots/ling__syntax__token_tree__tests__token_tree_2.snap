@@ -1,0 +1,42 @@
+---
+source: src/syntax/token_tree.rs
+expression: "get_tree(\"(((\")"
+---
+([
+  Tree(
+    kind: Round,
+    nodes: [
+      Tree(
+        kind: Round,
+        nodes: [
+          Tree(
+            kind: Round,
+            nodes: [],
+          ),
+        ],
+      ),
+    ],
+  ),
+], [
+  Token(
+    span: Span(
+      start: 2,
+      end: 3,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+  Token(
+    span: Span(
+      start: 1,
+      end: 2,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+  Token(
+    span: Span(
+      start: 0,
+      end: 1,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+])

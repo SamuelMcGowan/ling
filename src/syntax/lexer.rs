@@ -34,12 +34,12 @@ impl<'a> Lexer<'a> {
                     continue;
                 }
 
-                '(' => tkind!(punct LParen),
-                ')' => tkind!(punct RParen),
-                '{' => tkind!(punct LBrace),
-                '}' => tkind!(punct RBrace),
-                '[' => tkind!(punct LBracket),
-                ']' => tkind!(punct RBracket),
+                '(' => tkind!(bracket Opening Round),
+                ')' => tkind!(bracket Closing Round),
+                '{' => tkind!(bracket Opening Curly),
+                '}' => tkind!(bracket Closing Curly),
+                '[' => tkind!(bracket Opening Square),
+                ']' => tkind!(bracket Closing Square),
 
                 '.' => tkind!(punct Dot),
                 ',' => tkind!(punct Comma),

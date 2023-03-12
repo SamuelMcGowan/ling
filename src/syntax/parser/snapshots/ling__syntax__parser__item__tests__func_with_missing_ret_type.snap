@@ -9,6 +9,6 @@ Err(Unexpected(
       start: 16,
       end: 17,
     ),
-    kind: Punct(LBrace),
+    kind: Bracket(Opening(Curly)),
   )),
 ))

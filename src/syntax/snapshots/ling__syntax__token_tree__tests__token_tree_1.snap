@@ -1,0 +1,20 @@
+---
+source: src/syntax/token_tree.rs
+expression: "get_tree(\"{{{}}}\")"
+---
+([
+  Tree(
+    kind: Curly,
+    nodes: [
+      Tree(
+        kind: Curly,
+        nodes: [
+          Tree(
+            kind: Curly,
+            nodes: [],
+          ),
+        ],
+      ),
+    ],
+  ),
+], [])

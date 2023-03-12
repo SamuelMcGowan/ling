@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::constants::ConstIdx;
 
@@ -13,6 +13,8 @@ pub(crate) struct Token {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum TokenKind {
     Punct(Punct),
+    Bracket(Bracket),
+
     Keyword(Keyword),
 
     Ident(Ustr),
@@ -23,13 +25,6 @@ pub(crate) enum TokenKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) enum Punct {
-    LParen,
-    RParen,
-    LBrace,
-    RBrace,
-    LBracket,
-    RBracket,
-
     Dot,
     Comma,
     Colon,
@@ -59,6 +54,19 @@ pub(crate) enum Punct {
 
     FatArrow,
     Arrow,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub(crate) enum Bracket {
+    Opening(BracketKind),
+    Closing(BracketKind),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+pub(crate) enum BracketKind {
+    Round,
+    Curly,
+    Square,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -101,6 +109,11 @@ macro_rules! tkind {
         use crate::syntax::token::*;
         TokenKind::Punct(Punct::$punct)
     }};
+    (bracket $side:ident $bracket:ident) => {{
+        use crate::syntax::token::*;
+        TokenKind::Bracket(Bracket::$side(BracketKind::$bracket))
+    }};
+
     (kwd $kwd:ident) => {{
         use crate::syntax::token::*;
         TokenKind::Keyword(Keyword::$kwd)

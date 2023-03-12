@@ -25,16 +25,16 @@ impl Parser {
     fn parse_func(&mut self) -> ParseResult<Func> {
         let ident = self.parse_ident()?;
 
-        self.tokens.expect(tkind!(punct LParen))?;
+        self.tokens.expect(tkind!(bracket Opening Round))?;
 
-        let params = self.parse_list(tkind!(punct RParen), |s| {
+        let params = self.parse_list(tkind!(bracket Closing Round), |s| {
             let ident = s.parse_ident()?;
             s.tokens.expect(tkind!(punct Colon))?;
             let ty = s.parse_ty()?;
             Ok((ident, ty))
         })?;
 
-        self.tokens.expect(tkind!(punct RParen))?;
+        self.tokens.expect(tkind!(bracket Closing Round))?;
 
         let ret_ty = if self.tokens.eat(tkind!(punct Arrow)) {
             self.parse_ty()?

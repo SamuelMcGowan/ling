@@ -90,9 +90,9 @@ impl Parser {
                 kind: TokenKind::Ident(s),
                 ..
             }) => {
-                let params = if self.tokens.eat(tkind!(punct LBracket)) {
-                    let params = self.parse_list(tkind!(punct RBracket), Self::parse_ty)?;
-                    self.tokens.expect(tkind!(punct RBracket))?;
+                let params = if self.tokens.eat(tkind!(bracket Opening Square)) {
+                    let params = self.parse_list(tkind!(bracket Closing Square), Self::parse_ty)?;
+                    self.tokens.expect(tkind!(bracket Closing Square))?;
                     params
                 } else {
                     vec![]
@@ -104,8 +104,8 @@ impl Parser {
                 })
             }
 
-            Some(token) if token.kind == tkind!(punct LParen) => {
-                self.tokens.expect(tkind!(punct RParen))?;
+            Some(token) if token.kind == tkind!(bracket Opening Round) => {
+                self.tokens.expect(tkind!(bracket Closing Round))?;
                 Ok(Ty::Unit)
             }
 
@@ -114,8 +114,8 @@ impl Parser {
     }
 
     fn parse_block(&mut self) -> ParseResult<Expr> {
-        self.tokens.expect(tkind!(punct LBrace))?;
-        self.tokens.expect(tkind!(punct RBrace))?;
+        self.tokens.expect(tkind!(bracket Opening Curly))?;
+        self.tokens.expect(tkind!(bracket Closing Curly))?;
         Ok(Expr::Unit)
     }
 
