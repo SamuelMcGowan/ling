@@ -1,3 +1,5 @@
+pub mod item;
+
 use super::token::{BracketKind, Token, TokenKind};
 use super::token_stream::{TokenIter, TokenTree};
 
@@ -26,13 +28,24 @@ pub(crate) struct Parser<'a> {
 }
 
 // Utilities.
-impl Parser<'_> {
+impl<'a> Parser<'a> {
+    pub fn new(tokens: TokenIter, errors: &'a mut Vec<ParseError>) -> Self {
+        Self { tokens, errors }
+    }
+
+    fn parser_for_tokens(&mut self, tokens: TokenIter) -> Parser {
+        Parser {
+            errors: self.errors,
+            tokens,
+        }
+    }
+
     fn next_is_group(&self, kind: BracketKind) -> bool {
         matches!(self.tokens.peek(), Some(TokenTree::Group { bracket_kind, ..}) if *bracket_kind == kind)
     }
 
     fn eat_kind(&mut self, kind: TokenKind) -> bool {
-        match self.tokens.next() {
+        match self.tokens.peek() {
             Some(TokenTree::Token(token)) if token.kind == kind => {
                 self.tokens.next();
                 true
