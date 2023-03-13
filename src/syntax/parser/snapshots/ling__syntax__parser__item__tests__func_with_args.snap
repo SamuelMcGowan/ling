@@ -1,6 +1,6 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parser(\"foo(a: uint, b: uint) -> string {}\").parse_func()"
+expression: "parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func(), false)"
 ---
 Ok(Func(
   ident: Unresolved("foo"),

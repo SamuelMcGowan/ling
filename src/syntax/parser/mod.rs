@@ -1,22 +1,18 @@
-mod item;
-mod token_iter;
+pub mod item;
 
-use self::token_iter::TokenIter;
-
-use super::ast::*;
-use super::token::{tkind, Token, TokenKind};
+use super::token::{BracketKind, Token, TokenKind};
+use super::token_stream::{TokenIter, TokenTree};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) enum ParseError {
     Unexpected {
         expected: String,
-        found: Option<Token>,
+        found: Option<TokenTree>,
     },
 }
-pub(crate) type ParseResult<T> = Result<T, ParseError>;
 
 impl ParseError {
-    fn unexpected(expected: impl Into<String>, found: Option<Token>) -> Self {
+    fn unexpected(expected: impl Into<String>, found: Option<TokenTree>) -> Self {
         Self::Unexpected {
             expected: expected.into(),
             found,
@@ -24,26 +20,81 @@ impl ParseError {
     }
 }
 
-pub(crate) struct Parser {
+pub(crate) type ParseResult<T> = Result<T, ParseError>;
+
+pub(crate) struct Parser<'a> {
+    errors: &'a mut Vec<ParseError>,
     tokens: TokenIter,
-    errors: Vec<ParseError>,
 }
 
-impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Self {
-        Self {
-            tokens: TokenIter::new(tokens),
-            errors: vec![],
+// Utilities.
+impl<'a> Parser<'a> {
+    pub fn new(tokens: TokenIter, errors: &'a mut Vec<ParseError>) -> Self {
+        Self { tokens, errors }
+    }
+
+    fn parser_for_tokens(&mut self, tokens: TokenIter) -> Parser {
+        Parser {
+            errors: self.errors,
+            tokens,
+        }
+    }
+
+    fn next_is_group(&self, kind: BracketKind) -> bool {
+        matches!(self.tokens.peek(), Some(TokenTree::Group { bracket_kind, ..}) if *bracket_kind == kind)
+    }
+
+    fn eat_kind(&mut self, kind: TokenKind) -> bool {
+        match self.tokens.peek() {
+            Some(TokenTree::Token(token)) if token.kind == kind => {
+                self.tokens.next();
+                true
+            }
+            _ => false,
+        }
+    }
+
+    fn expect_kind(&mut self, kind: TokenKind) -> ParseResult<Token> {
+        match self.tokens.next() {
+            Some(TokenTree::Token(token)) if token.kind == kind => Ok(token),
+            other => Err(ParseError::unexpected(
+                format!("token of kind {kind:?}"),
+                other,
+            )),
+        }
+    }
+
+    fn expect_group(
+        &mut self,
+        kind: BracketKind,
+        expected: impl Into<String>,
+    ) -> ParseResult<TokenIter> {
+        match self.tokens.next() {
+            Some(TokenTree::Group {
+                bracket_kind,
+                tokens,
+            }) if bracket_kind == kind => Ok(tokens.into_iter()),
+            other => Err(ParseError::unexpected(expected.into(), other)),
+        }
+    }
+
+    fn expect_end(&mut self, tree_name: &str) -> ParseResult<()> {
+        match self.tokens.next() {
+            None => Ok(()),
+            Some(tree) => Err(ParseError::unexpected(
+                format!("end of {tree_name}"),
+                Some(tree),
+            )),
         }
     }
 }
 
 // Error handling/recovery.
-impl Parser {
+impl Parser<'_> {
     fn parse_or_recover<T>(
         &mut self,
-        mut parser: impl FnMut(&mut Self) -> ParseResult<T>,
-        mut recover: impl FnMut(&mut Self) -> T,
+        parser: impl Fn(&mut Self) -> ParseResult<T>,
+        recover: impl Fn(&mut Self) -> T,
     ) -> T {
         parser(self).unwrap_or_else(|error| {
             self.report(error);
@@ -51,88 +102,14 @@ impl Parser {
         })
     }
 
-    fn recover_until(&mut self, kinds: &[TokenKind]) {
-        self.tokens.next_while(|token| !kinds.contains(&token.kind));
-    }
-
-    fn recover_past(&mut self, kinds: &[TokenKind]) {
+    fn recover_past(&mut self, kind: TokenKind) {
         self.tokens
             .by_ref()
-            .take_while(|token| !kinds.contains(&token.kind))
+            .take_while(|token| !matches!(token, TokenTree::Token(token) if token.kind == kind))
             .for_each(|_| {});
     }
 
     fn report(&mut self, error: ParseError) {
         self.errors.push(error);
-    }
-}
-
-// Common parse functions.
-impl Parser {
-    fn parse_ident(&mut self) -> ParseResult<Ident> {
-        match self.tokens.next() {
-            Some(Token {
-                kind: TokenKind::Ident(s),
-                ..
-            }) => Ok(Ident::Unresolved(s)),
-
-            other => Err(ParseError::Unexpected {
-                expected: "an identifier".to_string(),
-                found: other,
-            }),
-        }
-    }
-
-    fn parse_ty(&mut self) -> ParseResult<Ty> {
-        match self.tokens.next() {
-            Some(Token {
-                kind: TokenKind::Ident(s),
-                ..
-            }) => {
-                let params = if self.tokens.eat(tkind!(bracket Opening Square)) {
-                    let params = self.parse_list(tkind!(bracket Closing Square), Self::parse_ty)?;
-                    self.tokens.expect(tkind!(bracket Closing Square))?;
-                    params
-                } else {
-                    vec![]
-                };
-
-                Ok(Ty::Constructed {
-                    ident: Ident::Unresolved(s),
-                    params,
-                })
-            }
-
-            Some(token) if token.kind == tkind!(bracket Opening Round) => {
-                self.tokens.expect(tkind!(bracket Closing Round))?;
-                Ok(Ty::Unit)
-            }
-
-            other => Err(ParseError::unexpected("a type", other)),
-        }
-    }
-
-    fn parse_block(&mut self) -> ParseResult<Expr> {
-        self.tokens.expect(tkind!(bracket Opening Curly))?;
-        self.tokens.expect(tkind!(bracket Closing Curly))?;
-        Ok(Expr::Unit)
-    }
-
-    fn parse_list<T>(
-        &mut self,
-        end: TokenKind,
-        mut parse: impl FnMut(&mut Self) -> ParseResult<T>,
-    ) -> ParseResult<Vec<T>> {
-        let mut items = vec![];
-
-        while !self.tokens.matches(end) {
-            items.push(parse(self)?);
-
-            if !self.tokens.eat(tkind!(punct Comma)) {
-                break;
-            }
-        }
-
-        Ok(items)
     }
 }

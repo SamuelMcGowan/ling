@@ -1,6 +1,6 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parser(\"foo() {}\").parse_func()"
+expression: "parse(\"foo() {}\", |p| p.parse_func(), false)"
 ---
 Ok(Func(
   ident: Unresolved("foo"),
