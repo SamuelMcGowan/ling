@@ -1,5 +1,7 @@
 mod builder;
 
+use std::vec::IntoIter;
+
 use serde::Serialize;
 
 use super::lexer::Lexer;
@@ -15,10 +17,48 @@ impl TokenStream {
         build_token_stream(lexer)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &TokenTree> {
-        self.0.iter()
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
+
+impl IntoIterator for TokenStream {
+    type IntoIter = TokenIter;
+    type Item = TokenTree;
+
+    fn into_iter(self) -> Self::IntoIter {
+        TokenIter(self.0.into_iter())
+    }
+}
+
+pub(crate) struct TokenIter(IntoIter<TokenTree>);
+
+impl TokenIter {
+    pub fn at_end(&self) -> bool {
+        self.peek().is_none()
+    }
+    pub fn peek(&self) -> Option<&TokenTree> {
+        self.0.as_slice().iter().next()
+    }
+}
+
+impl Iterator for TokenIter {
+    type Item = TokenTree;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
+    }
+}
+
+impl ExactSizeIterator for TokenIter {}
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) enum TokenTree {
