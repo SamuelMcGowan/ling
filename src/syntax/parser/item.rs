@@ -8,11 +8,18 @@ impl Parser<'_> {
         let mut items = vec![];
 
         while !self.tokens.at_end() {
-            let item = self.parse_item()?;
+            let item = self.parse_item_or_recover();
             items.push(item);
         }
 
         Ok(Module { items })
+    }
+
+    fn parse_item_or_recover(&mut self) -> Item {
+        self.parse_or_recover(Self::parse_item, |parser| {
+            parser.recover_until(&[tkind!(kwd Func)]);
+            Item::Dummy
+        })
     }
 
     fn parse_item(&mut self) -> ParseResult<Item> {
@@ -135,15 +142,19 @@ mod tests {
     use crate::syntax::token_stream::TokenStream;
     use crate::syntax::{lexer::Lexer, parser::Parser};
 
-    fn parse<T>(source: &str, f: impl Fn(&mut Parser) -> T, expect_mismatched_brackets: bool) -> T {
+    fn parse<T>(source: &str, f: impl Fn(&mut Parser) -> T, expect_errors: bool) -> T {
         let lexer = Lexer::new(source);
         let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
 
-        assert!(mismatched_brackets.is_empty() ^ expect_mismatched_brackets);
+        assert!(mismatched_brackets.is_empty() || expect_errors);
 
         let mut errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut errors);
-        f(&mut parser)
+        let res = f(&mut parser);
+
+        assert!(errors.is_empty() || expect_errors);
+
+        res
     }
 
     #[test]
@@ -172,6 +183,15 @@ mod tests {
         assert_ron_snapshot!(
             "func_with_missing_ret_type",
             parse("foo(a: uint) -> {}", |p| p.parse_func(), false)
+        );
+
+        assert_ron_snapshot!(
+            "func_recovery",
+            parse(
+                "func foo(a: uint) -> {} {} func my_func() {}",
+                |p| p.parse_module(),
+                true
+            )
         );
     }
 }

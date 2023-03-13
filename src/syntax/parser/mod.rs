@@ -102,6 +102,15 @@ impl Parser<'_> {
         })
     }
 
+    fn recover_until(&mut self, kinds: &[TokenKind]) {
+        while let Some(tt) = self.tokens.peek() {
+            if matches!(tt, TokenTree::Token(token) if kinds.contains(&token.kind)) {
+                break;
+            }
+            self.tokens.next();
+        }
+    }
+
     fn recover_past(&mut self, kind: TokenKind) {
         self.tokens
             .by_ref()

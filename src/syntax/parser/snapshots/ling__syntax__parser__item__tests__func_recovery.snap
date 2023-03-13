@@ -1,0 +1,15 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parse(\"func foo(a: uint) -> {} {} func my_func() {}\", |p| p.parse_module(),\n    false)"
+---
+Ok(Module(
+  items: [
+    Dummy,
+    Func(Func(
+      ident: Unresolved("my_func"),
+      params: [],
+      ret_ty: Unit,
+      body: Unit,
+    )),
+  ],
+))

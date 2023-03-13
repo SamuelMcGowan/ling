@@ -19,6 +19,7 @@ pub(crate) struct Module {
 #[derive(Node!)]
 pub(crate) enum Item {
     Func(Func),
+    Dummy,
 }
 
 #[derive(Node!)]
