@@ -83,6 +83,10 @@ pub(crate) enum Keyword {
     Let,
     Match,
 
+    LogicalAnd,
+    LogicalOr,
+    LogicalNot,
+
     If,
     Elif,
     Else,
