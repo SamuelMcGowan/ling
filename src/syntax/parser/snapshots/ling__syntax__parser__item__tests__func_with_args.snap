@@ -18,5 +18,8 @@ Ok(Func(
     ident: Unresolved("string"),
     params: [],
   ),
-  body: Unit,
+  body: Block(
+    stmts: [],
+    eval_as_final: false,
+  ),
 ))

@@ -100,10 +100,70 @@ impl Parser<'_> {
         }
     }
 
-    fn parse_block(&mut self) -> ParseResult<Expr> {
-        let _tokens = self.expect_group(BracketKind::Curly, "block")?;
-        // TODO: actually parse block
-        Ok(Expr::Unit)
+    fn parse_block(&mut self) -> ParseResult<Block> {
+        let tokens = self.expect_group(BracketKind::Curly, "block")?;
+        let mut parser = self.parser_for_tokens(tokens);
+
+        let mut stmts = vec![];
+
+        let mut eval_as_final = false;
+
+        while !parser.tokens.at_end() {
+            let stmt = parser.parse_stmt_or_recover();
+
+            let expect_delim = stmt.expect_delim();
+            let found_delim = parser.eat_kind(tkind!(punct Semicolon));
+
+            stmts.push(stmt);
+
+            if expect_delim && !found_delim {
+                // peek so that we can carry on parsing statements
+                if let Some(tt) = parser.tokens.peek() {
+                    parser.report(ParseError::unexpected("semicolon", Some(tt.clone())));
+                }
+                // don't break, we want to keep parsing
+            }
+
+            eval_as_final = !found_delim;
+        }
+
+        // Guards against accidentally using `self` instead of `parser`.
+        drop(parser);
+
+        Ok(Block {
+            stmts,
+            eval_as_final,
+        })
+    }
+
+    fn parse_stmt_or_recover(&mut self) -> Stmt {
+        self.parse_or_recover(Self::parse_stmt, |parser| {
+            // Recover *past* the semicolon so that we don't have to
+            // guess whether or not to expect a semicolon in `parse_block`.
+
+            // We don't recover up to any keywords in case they appear in the statement.
+            // This could change if we later support top-items inside blocks, since these can't
+            // appear inside expressions (except inside groups).
+
+            parser.recover_past(tkind!(punct Semicolon));
+
+            Stmt::Dummy
+        })
+    }
+
+    fn parse_stmt(&mut self) -> ParseResult<Stmt> {
+        let expr = self.parse_expr()?;
+        Ok(Stmt::Expr(expr))
+    }
+
+    fn parse_expr(&mut self) -> ParseResult<Expr> {
+        match self.tokens.next() {
+            Some(TokenTree::Token(Token {
+                kind: TokenKind::Const(const_idx),
+                ..
+            })) => Ok(Expr::Const(const_idx)),
+            other => Err(ParseError::unexpected("an expression", other)),
+        }
     }
 
     fn parse_list<T>(
@@ -150,7 +210,10 @@ mod tests {
         let mut parser = Parser::new(tokens.into_iter(), &mut errors);
         let res = f(&mut parser);
 
-        assert!(errors.is_empty() || expect_errors);
+        assert!(
+            errors.is_empty() || expect_errors,
+            "unexpected errors: {errors:?}"
+        );
 
         res
     }
@@ -190,6 +253,59 @@ mod tests {
                 |p| p.parse_module(),
                 true
             )
+        );
+    }
+
+    #[test]
+    fn block_empty() {
+        assert_ron_snapshot!("block_empty", parse("{}", |p| p.parse_block(), false));
+    }
+
+    #[test]
+    fn block_final_expr() {
+        assert_ron_snapshot!(
+            "block_final_expr",
+            parse("{12}", |p| p.parse_block(), false)
+        );
+    }
+
+    #[test]
+    fn block_no_final_expr() {
+        assert_ron_snapshot!(
+            "block_no_final_expr",
+            parse("{12;}", |p| p.parse_block(), false)
+        );
+    }
+
+    #[test]
+    fn block_two_exprs_final_expr() {
+        assert_ron_snapshot!(
+            "block_two_exprs_final_expr",
+            parse("{14;12}", |p| p.parse_block(), false)
+        );
+    }
+
+    #[test]
+    fn block_two_exprs_no_final_expr() {
+        assert_ron_snapshot!(
+            "block_two_exprs_no_final_expr",
+            parse("{14;12;}", |p| p.parse_block(), false)
+        );
+    }
+
+    #[test]
+    fn block_errors() {
+        assert_ron_snapshot!(
+            "block_errors",
+            parse("{10; 11 12 13;}", |p| p.parse_block(), true)
+        );
+    }
+
+    #[test]
+    fn block_errors_final_expr() {
+        assert_ron_snapshot!(
+            "block_errors_final_expr",
+            parse("{10; 11 12}", |p| p.parse_block(), true)
         );
     }
 }

@@ -6,5 +6,8 @@ Ok(Func(
   ident: Unresolved("foo"),
   params: [],
   ret_ty: Unit,
-  body: Unit,
+  body: Block(
+    stmts: [],
+    eval_as_final: false,
+  ),
 ))

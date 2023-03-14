@@ -1,0 +1,8 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parse(\"{}\", |p| p.parse_block(), false)"
+---
+Ok(Block(
+  stmts: [],
+  eval_as_final: false,
+))

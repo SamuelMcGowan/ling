@@ -15,5 +15,8 @@ Ok(Func(
     )),
   ],
   ret_ty: Unit,
-  body: Unit,
+  body: Block(
+    stmts: [],
+    eval_as_final: false,
+  ),
 ))

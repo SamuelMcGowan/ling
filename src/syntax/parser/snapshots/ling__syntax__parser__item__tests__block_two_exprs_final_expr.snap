@@ -1,0 +1,11 @@
+---
+source: src/syntax/parser/item.rs
+expression: "parse(\"{14;12}\", |p| p.parse_block(), false)"
+---
+Ok(Block(
+  stmts: [
+    Expr(Const(ConstIdx(0))),
+    Expr(Const(ConstIdx(1))),
+  ],
+  eval_as_final: true,
+))

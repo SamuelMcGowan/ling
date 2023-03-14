@@ -9,3 +9,10 @@ func fact(n: uint) -> uint {
 func print_string() {
     # println("hello,\nworld!");
 }
+
+func hello_world() -> string {
+    "hello world!";
+    "hi"
+    "there"
+    "friend";
+}

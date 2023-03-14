@@ -1,6 +1,6 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"func foo(a: uint) -> {} {} func my_func() {}\", |p| p.parse_module(),\n    false)"
+expression: "parse(\"func foo(a: uint) -> {} {} func my_func() {}\", |p| p.parse_module(),\n    true)"
 ---
 Ok(Module(
   items: [
@@ -9,7 +9,10 @@ Ok(Module(
       ident: Unresolved("my_func"),
       params: [],
       ret_ty: Unit,
-      body: Unit,
+      body: Block(
+        stmts: [],
+        eval_as_final: false,
+      ),
     )),
   ],
 ))

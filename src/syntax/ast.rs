@@ -27,7 +27,7 @@ pub(crate) struct Func {
     pub ident: Ident,
     pub params: Vec<(Ident, Ty)>,
     pub ret_ty: Ty,
-    pub body: Expr,
+    pub body: Block,
 }
 
 #[derive(Node!)]
@@ -37,14 +37,39 @@ pub(crate) enum Ty {
 }
 
 #[derive(Node!)]
+pub(crate) struct Block {
+    pub stmts: Vec<Stmt>,
+    pub eval_as_final: bool,
+}
+
+#[derive(Node!)]
 pub(crate) enum Stmt {
     Expr(Expr),
+    Dummy,
+}
+
+impl Stmt {
+    pub fn expect_delim(&self) -> bool {
+        match self {
+            Self::Expr(expr) => expr.expect_delim(),
+
+            // the recovery function should have recovered past any semicolons
+            Self::Dummy => false,
+        }
+    }
 }
 
 #[derive(Node!)]
 pub(crate) enum Expr {
     Const(ConstIdx),
     Unit,
+}
+
+impl Expr {
+    pub fn expect_delim(&self) -> bool {
+        // every expression that we have for now expects a delimiter
+        true
+    }
 }
 
 #[derive(Node!)]
