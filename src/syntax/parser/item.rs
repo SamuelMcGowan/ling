@@ -214,80 +214,68 @@ mod tests {
     }
 
     #[test]
-    fn test_func() {
-        assert_ron_snapshot!("simple_func", parse("foo() {}", |p| p.parse_func()));
+    fn simple_func() {
+        assert_ron_snapshot!(parse("foo() {}", |p| p.parse_func()));
+    }
 
-        assert_ron_snapshot!(
-            "func_with_args",
-            parse("foo(a: uint, b: uint) -> string {}", |p| p.parse_func())
-        );
+    #[test]
+    fn func_with_args() {
+        assert_ron_snapshot!(parse("foo(a: uint, b: uint) -> string {}", |p| p.parse_func()));
+    }
 
-        assert_ron_snapshot!(
-            "func_with_args_and_trailing_comma",
-            parse("foo(a: uint, b: uint,) {}", |p| p.parse_func())
-        );
+    #[test]
+    fn func_with_args_and_trailing_comma() {
+        assert_ron_snapshot!(parse("foo(a: uint, b: uint,) {}", |p| p.parse_func()));
+    }
 
-        assert_ron_snapshot!(
-            "func_with_missing_rparen",
-            parse("foo(a: uint, {}", |p| p.parse_func())
-        );
+    #[test]
+    fn func_with_missing_rparen() {
+        assert_ron_snapshot!(parse("foo(a: uint, {}", |p| p.parse_func()));
+    }
 
-        assert_ron_snapshot!(
-            "func_with_missing_ret_type",
-            parse("foo(a: uint) -> {}", |p| p.parse_func())
-        );
+    #[test]
+    fn func_with_missing_ret_type() {
+        assert_ron_snapshot!(parse("foo(a: uint) -> {}", |p| p.parse_func()));
+    }
 
-        assert_ron_snapshot!(
-            "func_recovery",
-            parse("func foo(a: uint) -> {} {} func my_func() {}", |p| p
-                .parse_module())
-        );
+    #[test]
+    fn func_recovery() {
+        assert_ron_snapshot!(parse("func foo(a: uint) -> {} {} func my_func() {}", |p| p
+            .parse_module()));
     }
 
     #[test]
     fn block_empty() {
-        assert_ron_snapshot!("block_empty", parse("{}", |p| p.parse_block()));
+        assert_ron_snapshot!(parse("{}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_final_expr() {
-        assert_ron_snapshot!("block_final_expr", parse("{12}", |p| p.parse_block()));
+        assert_ron_snapshot!(parse("{12}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_no_final_expr() {
-        assert_ron_snapshot!("block_no_final_expr", parse("{12;}", |p| p.parse_block()));
+        assert_ron_snapshot!(parse("{12;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_two_exprs_final_expr() {
-        assert_ron_snapshot!(
-            "block_two_exprs_final_expr",
-            parse("{14;12}", |p| p.parse_block())
-        );
+        assert_ron_snapshot!(parse("{14;12}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_two_exprs_no_final_expr() {
-        assert_ron_snapshot!(
-            "block_two_exprs_no_final_expr",
-            parse("{14;12;}", |p| p.parse_block())
-        );
+        assert_ron_snapshot!(parse("{14;12;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_errors() {
-        assert_ron_snapshot!(
-            "block_errors",
-            parse("{10; 11 12 13;}", |p| p.parse_block())
-        );
+        assert_ron_snapshot!(parse("{10; 11 12 13;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_errors_final_expr() {
-        assert_ron_snapshot!(
-            "block_errors_final_expr",
-            parse("{10; 11 12}", |p| p.parse_block())
-        );
+        assert_ron_snapshot!(parse("{10; 11 12}", |p| p.parse_block()));
     }
 }
