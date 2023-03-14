@@ -1,10 +1,10 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{12}\", |p| p.parse_block(), false)"
+expression: "parse(\"{12}\", |p| p.parse_block())"
 ---
-Ok(Block(
+(Ok(Block(
   stmts: [
     Expr(Const(ConstIdx(0))),
   ],
   eval_as_final: true,
-))
+)), [], [])

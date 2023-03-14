@@ -1,8 +1,8 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{10; 11 12 13;}\", |p| p.parse_block(), true)"
+expression: "parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
 ---
-Ok(Block(
+(Ok(Block(
   stmts: [
     Expr(Const(ConstIdx(0))),
     Expr(Const(ConstIdx(1))),
@@ -10,4 +10,25 @@ Ok(Block(
     Expr(Const(ConstIdx(3))),
   ],
   eval_as_final: false,
-))
+)), [], [
+  Unexpected(
+    expected: "semicolon",
+    found: Some(Token(Token(
+      span: Span(
+        start: 8,
+        end: 10,
+      ),
+      kind: Const(ConstIdx(2)),
+    ))),
+  ),
+  Unexpected(
+    expected: "semicolon",
+    found: Some(Token(Token(
+      span: Span(
+        start: 11,
+        end: 13,
+      ),
+      kind: Const(ConstIdx(3)),
+    ))),
+  ),
+])

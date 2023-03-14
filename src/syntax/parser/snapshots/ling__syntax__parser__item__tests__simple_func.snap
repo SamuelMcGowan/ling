@@ -1,8 +1,8 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"foo() {}\", |p| p.parse_func(), false)"
+expression: "parse(\"foo() {}\", |p| p.parse_func())"
 ---
-Ok(Func(
+(Ok(Func(
   ident: Unresolved("foo"),
   params: [],
   ret_ty: Unit,
@@ -10,4 +10,4 @@ Ok(Func(
     stmts: [],
     eval_as_final: false,
   ),
-))
+)), [], [])

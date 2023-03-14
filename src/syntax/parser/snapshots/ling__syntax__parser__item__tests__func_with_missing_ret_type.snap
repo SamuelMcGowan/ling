@@ -1,11 +1,11 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"foo(a: uint) -> {}\", |p| p.parse_func(), false)"
+expression: "parse(\"foo(a: uint) -> {}\", |p| p.parse_func())"
 ---
-Err(Unexpected(
+(Err(Unexpected(
   expected: "a type",
   found: Some(Group(
     bracket_kind: Curly,
     tokens: TokenStream([]),
   )),
-))
+)), [], [])

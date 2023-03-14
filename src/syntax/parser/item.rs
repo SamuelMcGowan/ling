@@ -197,91 +197,73 @@ impl Parser<'_> {
 mod tests {
     use insta::assert_ron_snapshot;
 
+    use crate::syntax::parser::ParseError;
+    use crate::syntax::token::Token;
     use crate::syntax::token_stream::TokenStream;
     use crate::syntax::{lexer::Lexer, parser::Parser};
 
-    fn parse<T>(source: &str, f: impl Fn(&mut Parser) -> T, expect_errors: bool) -> T {
+    fn parse<T>(source: &str, f: impl Fn(&mut Parser) -> T) -> (T, Vec<Token>, Vec<ParseError>) {
         let lexer = Lexer::new(source);
         let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
-
-        assert!(mismatched_brackets.is_empty() || expect_errors);
 
         let mut errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut errors);
         let res = f(&mut parser);
 
-        assert!(
-            errors.is_empty() || expect_errors,
-            "unexpected errors: {errors:?}"
-        );
-
-        res
+        (res, mismatched_brackets, errors)
     }
 
     #[test]
     fn test_func() {
-        assert_ron_snapshot!("simple_func", parse("foo() {}", |p| p.parse_func(), false));
+        assert_ron_snapshot!("simple_func", parse("foo() {}", |p| p.parse_func()));
 
         assert_ron_snapshot!(
             "func_with_args",
-            parse(
-                "foo(a: uint, b: uint) -> string {}",
-                |p| p.parse_func(),
-                false
-            )
+            parse("foo(a: uint, b: uint) -> string {}", |p| p.parse_func())
         );
 
         assert_ron_snapshot!(
             "func_with_args_and_trailing_comma",
-            parse("foo(a: uint, b: uint,) {}", |p| p.parse_func(), false)
+            parse("foo(a: uint, b: uint,) {}", |p| p.parse_func())
         );
 
         assert_ron_snapshot!(
             "func_with_missing_rparen",
-            parse("foo(a: uint, {}", |p| p.parse_func(), true)
+            parse("foo(a: uint, {}", |p| p.parse_func())
         );
 
         assert_ron_snapshot!(
             "func_with_missing_ret_type",
-            parse("foo(a: uint) -> {}", |p| p.parse_func(), false)
+            parse("foo(a: uint) -> {}", |p| p.parse_func())
         );
 
         assert_ron_snapshot!(
             "func_recovery",
-            parse(
-                "func foo(a: uint) -> {} {} func my_func() {}",
-                |p| p.parse_module(),
-                true
-            )
+            parse("func foo(a: uint) -> {} {} func my_func() {}", |p| p
+                .parse_module())
         );
     }
 
     #[test]
     fn block_empty() {
-        assert_ron_snapshot!("block_empty", parse("{}", |p| p.parse_block(), false));
+        assert_ron_snapshot!("block_empty", parse("{}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_final_expr() {
-        assert_ron_snapshot!(
-            "block_final_expr",
-            parse("{12}", |p| p.parse_block(), false)
-        );
+        assert_ron_snapshot!("block_final_expr", parse("{12}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_no_final_expr() {
-        assert_ron_snapshot!(
-            "block_no_final_expr",
-            parse("{12;}", |p| p.parse_block(), false)
-        );
+        assert_ron_snapshot!("block_no_final_expr", parse("{12;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_two_exprs_final_expr() {
         assert_ron_snapshot!(
             "block_two_exprs_final_expr",
-            parse("{14;12}", |p| p.parse_block(), false)
+            parse("{14;12}", |p| p.parse_block())
         );
     }
 
@@ -289,7 +271,7 @@ mod tests {
     fn block_two_exprs_no_final_expr() {
         assert_ron_snapshot!(
             "block_two_exprs_no_final_expr",
-            parse("{14;12;}", |p| p.parse_block(), false)
+            parse("{14;12;}", |p| p.parse_block())
         );
     }
 
@@ -297,7 +279,7 @@ mod tests {
     fn block_errors() {
         assert_ron_snapshot!(
             "block_errors",
-            parse("{10; 11 12 13;}", |p| p.parse_block(), true)
+            parse("{10; 11 12 13;}", |p| p.parse_block())
         );
     }
 
@@ -305,7 +287,7 @@ mod tests {
     fn block_errors_final_expr() {
         assert_ron_snapshot!(
             "block_errors_final_expr",
-            parse("{10; 11 12}", |p| p.parse_block(), true)
+            parse("{10; 11 12}", |p| p.parse_block())
         );
     }
 }

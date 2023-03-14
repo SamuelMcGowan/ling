@@ -1,11 +1,19 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"foo(a: uint, {}\", |p| p.parse_func(), true)"
+expression: "parse(\"foo(a: uint, {}\", |p| p.parse_func())"
 ---
-Err(Unexpected(
+(Err(Unexpected(
   expected: "an identifier",
   found: Some(Group(
     bracket_kind: Curly,
     tokens: TokenStream([]),
   )),
-))
+)), [
+  Token(
+    span: Span(
+      start: 3,
+      end: 4,
+    ),
+    kind: Bracket(Opening(Round)),
+  ),
+], [])

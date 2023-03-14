@@ -1,8 +1,8 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"func foo(a: uint) -> {} {} func my_func() {}\", |p| p.parse_module(),\n    true)"
+expression: "parse(\"func foo(a: uint) -> {} {} func my_func() {}\", |p| p.parse_module())"
 ---
-Ok(Module(
+(Ok(Module(
   items: [
     Dummy,
     Func(Func(
@@ -15,4 +15,12 @@ Ok(Module(
       ),
     )),
   ],
-))
+)), [], [
+  Unexpected(
+    expected: "a type",
+    found: Some(Group(
+      bracket_kind: Curly,
+      tokens: TokenStream([]),
+    )),
+  ),
+])

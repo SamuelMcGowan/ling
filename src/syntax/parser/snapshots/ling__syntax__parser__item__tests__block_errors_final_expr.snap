@@ -1,12 +1,23 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{10; 11 12}\", |p| p.parse_block(), true)"
+expression: "parse(\"{10; 11 12}\", |p| p.parse_block())"
 ---
-Ok(Block(
+(Ok(Block(
   stmts: [
     Expr(Const(ConstIdx(0))),
     Expr(Const(ConstIdx(1))),
     Expr(Const(ConstIdx(2))),
   ],
   eval_as_final: true,
-))
+)), [], [
+  Unexpected(
+    expected: "semicolon",
+    found: Some(Token(Token(
+      span: Span(
+        start: 8,
+        end: 10,
+      ),
+      kind: Const(ConstIdx(2)),
+    ))),
+  ),
+])

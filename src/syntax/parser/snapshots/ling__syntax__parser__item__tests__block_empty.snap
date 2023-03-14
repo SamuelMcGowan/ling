@@ -1,8 +1,8 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{}\", |p| p.parse_block(), false)"
+expression: "parse(\"{}\", |p| p.parse_block())"
 ---
-Ok(Block(
+(Ok(Block(
   stmts: [],
   eval_as_final: false,
-))
+)), [], [])
