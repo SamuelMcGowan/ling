@@ -69,6 +69,7 @@ impl<'a> Parser<'a> {
             Some(TokenTree::Group {
                 bracket_kind,
                 tokens,
+                ..
             }) if bracket_kind == kind => Ok(tokens.into_iter()),
             other => Err(ParseError::unexpected(expected.into(), other)),
         }

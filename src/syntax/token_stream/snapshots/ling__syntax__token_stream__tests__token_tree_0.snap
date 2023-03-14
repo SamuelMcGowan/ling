@@ -9,8 +9,16 @@ expression: "get_stream(\"( { ) } ( hello )\")"
       Group(
         bracket_kind: Curly,
         tokens: TokenStream([]),
+        span: Span(
+          start: 2,
+          end: 3,
+        ),
       ),
     ]),
+    span: Span(
+      start: 0,
+      end: 5,
+    ),
   ),
   Group(
     bracket_kind: Round,
@@ -23,6 +31,10 @@ expression: "get_stream(\"( { ) } ( hello )\")"
         kind: Ident("hello"),
       )),
     ]),
+    span: Span(
+      start: 8,
+      end: 17,
+    ),
   ),
 ]), [
   Token(

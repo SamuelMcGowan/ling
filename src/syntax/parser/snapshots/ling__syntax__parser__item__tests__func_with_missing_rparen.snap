@@ -7,6 +7,10 @@ expression: "parse(\"foo(a: uint, {}\", |p| p.parse_func())"
   found: Some(Group(
     bracket_kind: Curly,
     tokens: TokenStream([]),
+    span: Span(
+      start: 13,
+      end: 15,
+    ),
   )),
 )), [
   Token(

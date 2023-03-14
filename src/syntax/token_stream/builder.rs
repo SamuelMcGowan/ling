@@ -1,4 +1,5 @@
 use crate::syntax::lexer::Lexer;
+use crate::syntax::source::Span;
 use crate::syntax::token::{Bracket, BracketKind, Token, TokenKind};
 
 use super::{TokenStream, TokenTree};
@@ -49,11 +50,12 @@ impl<'a> TokenStreamBuilder<'a> {
         match token.kind {
             TokenKind::Bracket(Bracket::Opening(kind)) => {
                 // ooh look, a tree
-                let (nodes, spare_bracket) = self.parse_tree(token, kind);
+                let (nodes, span, spare_bracket) = self.parse_tree(token, kind);
                 (
                     Some(TokenTree::Group {
                         bracket_kind: kind,
                         tokens: TokenStream(nodes),
+                        span,
                     }),
                     spare_bracket,
                 )
@@ -70,20 +72,29 @@ impl<'a> TokenStreamBuilder<'a> {
         &mut self,
         token: Token,
         kind: BracketKind,
-    ) -> (Vec<TokenTree>, Option<SpareBracket>) {
+    ) -> (Vec<TokenTree>, Span, Option<SpareBracket>) {
         let mut nodes = vec![];
 
-        let spare_bracket = loop {
+        macro_rules! prev_span {
+            () => {
+                nodes
+                    .last()
+                    .map(|node: &TokenTree| node.span())
+                    .unwrap_or(token.span)
+            };
+        }
+
+        let (end_span, spare_bracket) = loop {
             // get a token
             let Some(inner_token) = self.lexer.next() else {
                 // unexpected end of input
                 self.mismatched_brackets.push(token);
-                break None;
+                break (prev_span!(), None);
             };
 
             // check for our closing bracket
             if matches!(inner_token.kind, TokenKind::Bracket(Bracket::Closing(k)) if k == kind) {
-                break None;
+                break (inner_token.span, None);
             }
 
             // parse a child node
@@ -97,16 +108,18 @@ impl<'a> TokenStreamBuilder<'a> {
             if let Some(spare_bracket) = spare_bracket {
                 if spare_bracket.kind == kind {
                     // our closing bracket was found!
-                    break None;
+                    break (spare_bracket.token.span, None);
                 } else {
                     // not our bracket
                     // our bracket was unterminated too, so we report that
                     self.mismatched_brackets.push(token);
-                    break Some(spare_bracket);
+                    break (prev_span!(), Some(spare_bracket));
                 }
             }
         };
 
-        (nodes, spare_bracket)
+        let span = token.span.union(end_span);
+
+        (nodes, span, spare_bracket)
     }
 }

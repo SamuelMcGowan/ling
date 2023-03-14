@@ -5,6 +5,7 @@ use std::vec::IntoIter;
 use serde::Serialize;
 
 use super::lexer::Lexer;
+use super::source::Span;
 use super::token::{BracketKind, Token};
 
 use self::builder::build_token_stream;
@@ -66,7 +67,17 @@ pub(crate) enum TokenTree {
     Group {
         bracket_kind: BracketKind,
         tokens: TokenStream,
+        span: Span,
     },
+}
+
+impl TokenTree {
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Token(token) => token.span,
+            Self::Group { span, .. } => *span,
+        }
+    }
 }
 
 #[cfg(test)]

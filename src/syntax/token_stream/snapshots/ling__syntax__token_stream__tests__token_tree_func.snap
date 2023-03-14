@@ -70,6 +70,10 @@ expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n  
         kind: Ident("uint"),
       )),
     ]),
+    span: Span(
+      start: 21,
+      end: 39,
+    ),
   ),
   Token(Token(
     span: Span(
@@ -110,5 +114,9 @@ expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n  
         kind: Ident("b"),
       )),
     ]),
+    span: Span(
+      start: 48,
+      end: 85,
+    ),
   ),
 ]), [])

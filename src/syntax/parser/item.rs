@@ -94,6 +94,7 @@ impl Parser<'_> {
             Some(TokenTree::Group {
                 bracket_kind: BracketKind::Round,
                 tokens,
+                ..
             }) if tokens.is_empty() => Ok(Ty::Unit),
 
             other => Err(ParseError::unexpected("a type", other)),

@@ -6,10 +6,18 @@ expression: "get_stream(\"]{}[\")"
   Group(
     bracket_kind: Curly,
     tokens: TokenStream([]),
+    span: Span(
+      start: 1,
+      end: 3,
+    ),
   ),
   Group(
     bracket_kind: Square,
     tokens: TokenStream([]),
+    span: Span(
+      start: 3,
+      end: 4,
+    ),
   ),
 ]), [
   Token(
