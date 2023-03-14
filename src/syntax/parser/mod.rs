@@ -40,10 +40,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn next_is_group(&self, kind: BracketKind) -> bool {
-        matches!(self.tokens.peek(), Some(TokenTree::Group { bracket_kind, ..}) if *bracket_kind == kind)
-    }
-
     fn eat_kind(&mut self, kind: TokenKind) -> bool {
         match self.tokens.peek() {
             Some(TokenTree::Token(token)) if token.kind == kind => {
@@ -85,6 +81,19 @@ impl<'a> Parser<'a> {
                 format!("end of {tree_name}"),
                 Some(tree),
             )),
+        }
+    }
+
+    fn eat_group(&mut self, kind: BracketKind) -> Option<TokenIter> {
+        match self.tokens.peek() {
+            Some(TokenTree::Group { bracket_kind, .. }) if *bracket_kind == kind => {
+                let Some(TokenTree::Group { tokens, ..}) = self.tokens.next() else {
+                    unreachable!();
+                };
+
+                Some(tokens.into_iter())
+            }
+            _ => None,
         }
     }
 }

@@ -35,8 +35,8 @@ impl Parser<'_> {
         let ident = self.parse_ident()?;
 
         let params = {
-            let group = self.expect_group(BracketKind::Round, "parameters list")?;
-            let mut parser = self.parser_for_tokens(group);
+            let tokens = self.expect_group(BracketKind::Round, "parameters list")?;
+            let mut parser = self.parser_for_tokens(tokens);
 
             parser.parse_list("function arguments", tkind!(punct Comma), |parser| {
                 let ident = parser.parse_ident()?;
@@ -78,10 +78,8 @@ impl Parser<'_> {
                 kind: TokenKind::Ident(ident),
                 ..
             })) => {
-                // TODO: clean this up a bit
-                let params = if self.next_is_group(BracketKind::Square) {
-                    let group = self.expect_group(BracketKind::Square, "").unwrap();
-                    let mut parser = self.parser_for_tokens(group);
+                let params = if let Some(tokens) = self.eat_group(BracketKind::Square) {
+                    let mut parser = self.parser_for_tokens(tokens);
                     parser.parse_list("type parameters", tkind!(punct Comma), Parser::parse_ty)?
                 } else {
                     vec![]
@@ -103,7 +101,7 @@ impl Parser<'_> {
     }
 
     fn parse_block(&mut self) -> ParseResult<Expr> {
-        let _group = self.expect_group(BracketKind::Curly, "block")?;
+        let _tokens = self.expect_group(BracketKind::Curly, "block")?;
         // TODO: actually parse block
         Ok(Expr::Unit)
     }
