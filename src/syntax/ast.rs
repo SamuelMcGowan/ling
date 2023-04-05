@@ -3,6 +3,8 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 
+use super::token::TokenKind;
+
 derive_alias! {
     #[derive(Node!)] = #[derive(
         Debug,
@@ -62,6 +64,20 @@ impl Stmt {
 #[derive(Node!)]
 pub(crate) enum Expr {
     Const(ConstIdx),
+
+    Infix {
+        op: TokenKind,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+    },
+
+    Call {
+        callee: Box<Expr>,
+        args: Vec<Expr>,
+    },
+
+    Var(Ident),
+
     Unit,
 }
 

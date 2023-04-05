@@ -156,42 +156,6 @@ impl Parser<'_> {
         let expr = self.parse_expr()?;
         Ok(Stmt::Expr(expr))
     }
-
-    fn parse_expr(&mut self) -> ParseResult<Expr> {
-        match self.tokens.next() {
-            Some(TokenTree::Token(Token {
-                kind: TokenKind::Const(const_idx),
-                ..
-            })) => Ok(Expr::Const(const_idx)),
-            other => Err(ParseError::unexpected("an expression", other)),
-        }
-    }
-
-    fn parse_list<T>(
-        &mut self,
-        tree_name: &str,
-        delim: TokenKind,
-        parse: impl Fn(&mut Self) -> ParseResult<T>,
-    ) -> ParseResult<Vec<T>> {
-        let mut items = vec![];
-
-        while !self.tokens.at_end() {
-            let item = parse(self)?;
-            items.push(item);
-
-            if !self.eat_kind(delim) {
-                if let Some(token) = self.tokens.next() {
-                    return Err(ParseError::unexpected(
-                        format!("token of kind {delim:?} or end of {tree_name:?}"),
-                        Some(token),
-                    ));
-                }
-                break;
-            }
-        }
-
-        Ok(items)
-    }
 }
 
 #[cfg(test)]

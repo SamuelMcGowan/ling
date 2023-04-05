@@ -1,0 +1,7 @@
+func an_expr() {
+    1 + 2 * 3 + 4
+}
+
+func a_call() {
+    an_expr(1, 2, 3)
+}
