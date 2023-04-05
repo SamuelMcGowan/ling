@@ -3,8 +3,6 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 
-use super::token::TokenKind;
-
 derive_alias! {
     #[derive(Node!)] = #[derive(
         Debug,
@@ -66,7 +64,7 @@ pub(crate) enum Expr {
     Const(ConstIdx),
 
     Infix {
-        op: TokenKind,
+        op: BinOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
     },
@@ -86,6 +84,27 @@ impl Expr {
         // every expression that we have for now expects a delimiter
         true
     }
+}
+
+#[derive(Node!, Copy)]
+pub enum BinOp {
+    LogicalAnd,
+    LogicalOr,
+
+    Equal,
+    NotEqual,
+    Gt,
+    Lt,
+    GtEqual,
+    LtEqual,
+
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+
+    Pow,
 }
 
 #[derive(Node!)]

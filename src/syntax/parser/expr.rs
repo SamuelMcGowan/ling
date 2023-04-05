@@ -1,5 +1,3 @@
-use int_enum::IntEnum;
-
 use crate::syntax::ast::*;
 use crate::syntax::token::{tkind, BracketKind, Token, TokenKind};
 use crate::syntax::token_stream::TokenTree;
@@ -7,31 +5,51 @@ use crate::syntax::token_stream::TokenTree;
 use super::{ParseError, ParseResult, Parser};
 
 #[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, IntEnum)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Prec {
     Any = 0,
 
-    LogicalOr = 1,
-    LogicalAnd = 2,
+    LogicalOr,
+    LogicalAnd,
 
-    Equality = 3,
-    Comparison = 4,
+    Equality,
+    Comparison,
 
-    Term = 5,
-    Factor = 6,
+    Term,
+    Factor,
+    Exp,
 
-    Unary = 7,
-    Call = 8,
+    Unary,
+    Call,
 }
 
-impl Prec {
-    fn next(self) -> Self {
-        Self::from_int(self as u8 + 1).expect("no higher precedence")
+impl BinOp {
+    fn should_parse_in_prec(&self, prec: Prec) -> bool {
+        let op_prec = self.prec();
+        op_prec > prec || self.r_assoc() && op_prec == prec
+    }
+
+    fn prec(&self) -> Prec {
+        match self {
+            Self::LogicalOr => Prec::LogicalOr,
+            Self::LogicalAnd => Prec::LogicalAnd,
+
+            Self::Equal | Self::NotEqual => Prec::Equality,
+            Self::Gt | Self::Lt | Self::GtEqual | Self::LtEqual => Prec::Comparison,
+
+            Self::Add | Self::Sub => Prec::Term,
+            Self::Mul | Self::Div | Self::Mod => Prec::Factor,
+            Self::Pow => Prec::Exp,
+        }
+    }
+
+    fn r_assoc(&self) -> bool {
+        matches!(self, Self::Pow)
     }
 }
 
 enum Operator {
-    Infix { kind: TokenKind, rhs_prec: Prec },
+    BinOp(BinOp),
     Call,
 }
 
@@ -48,23 +66,24 @@ impl<'a> Parser<'a> {
                 break;
             };
 
-            expr = match op {
-                Operator::Infix { kind, rhs_prec } => {
-                    if rhs_prec <= prec {
-                        break;
-                    }
-                    self.tokens.next();
+            if matches!(op, Operator::BinOp(op) if !op.should_parse_in_prec(prec)) {
+                break;
+            }
 
-                    let rhs = self.parse_prec(rhs_prec)?;
+            let tt = self.tokens.next().unwrap();
+
+            expr = match op {
+                Operator::BinOp(op) => {
+                    let rhs = self.parse_prec(op.prec())?;
                     Expr::Infix {
-                        op: kind,
+                        op,
                         lhs: Box::new(expr),
                         rhs: Box::new(rhs),
                     }
                 }
 
                 Operator::Call => {
-                    let TokenTree::Group { tokens, .. } =  self.tokens.next().unwrap() else {
+                    let TokenTree::Group { tokens, .. } =  tt else {
                         unreachable!();
                     };
 
@@ -118,37 +137,30 @@ impl<'a> Parser<'a> {
     fn get_op(&self, tt: &TokenTree) -> Option<Operator> {
         Some(match tt {
             TokenTree::Token(t) => {
-                let rhs_prec = match t.kind {
-                    t if t == tkind!(kwd LogicalOr) => Prec::LogicalOr.next(),
-                    t if t == tkind!(kwd LogicalAnd) => Prec::LogicalAnd.next(),
+                let bin_op = match t.kind {
+                    t if t == tkind!(kwd LogicalOr) => BinOp::LogicalOr,
+                    t if t == tkind!(kwd LogicalAnd) => BinOp::LogicalAnd,
 
-                    t if t == tkind!(punct EqualEqual) || t == tkind!(punct BangEqual) => {
-                        Prec::Equality.next()
-                    }
-                    t if t == tkind!(punct Gt)
-                        || t == tkind!(punct Lt)
-                        || t == tkind!(punct GtEqual)
-                        || t == tkind!(punct LtEqual) =>
-                    {
-                        Prec::Comparison.next()
-                    }
+                    t if t == tkind!(punct EqualEqual) => BinOp::Equal,
+                    t if t == tkind!(punct BangEqual) => BinOp::NotEqual,
 
-                    t if t == tkind!(punct Add) || t == tkind!(punct Sub) => Prec::Term,
-                    t if t == tkind!(punct Mul)
-                        || t == tkind!(punct Div)
-                        || t == tkind!(punct Mod) =>
-                    {
-                        Prec::Factor
-                    }
-                    t if t == tkind!(punct Pow) => Prec::Factor,
+                    t if t == tkind!(punct Gt) => BinOp::Gt,
+                    t if t == tkind!(punct Lt) => BinOp::Lt,
+                    t if t == tkind!(punct GtEqual) => BinOp::GtEqual,
+                    t if t == tkind!(punct LtEqual) => BinOp::LtEqual,
+
+                    t if t == tkind!(punct Add) => BinOp::Add,
+                    t if t == tkind!(punct Sub) => BinOp::Sub,
+
+                    t if t == tkind!(punct Mul) => BinOp::Mul,
+                    t if t == tkind!(punct Div) => BinOp::Div,
+                    t if t == tkind!(punct Mod) => BinOp::Mod,
+                    t if t == tkind!(punct Pow) => BinOp::Pow,
 
                     _ => return None,
                 };
 
-                Operator::Infix {
-                    kind: t.kind,
-                    rhs_prec,
-                }
+                Operator::BinOp(bin_op)
             }
 
             TokenTree::Group {
