@@ -71,6 +71,9 @@ impl<'a> Lexer<'a> {
                 '<' => tkind!(punct Lt),
                 '=' => tkind!(punct Equal),
 
+                '!' if self.source.eat('=') => tkind!(punct BangEqual),
+                '!' => tkind!(punct Bang),
+
                 _ if is_ident_start(c) => self.lex_ident(start_pos),
                 '0'..='9' => self.lex_number(c as u8),
                 '"' => self.lex_string(),

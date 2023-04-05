@@ -52,6 +52,9 @@ pub(crate) enum Punct {
     LtEqual,
     EqualEqual,
 
+    BangEqual,
+    Bang,
+
     FatArrow,
     Arrow,
 }
