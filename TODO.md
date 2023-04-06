@@ -2,8 +2,6 @@
 
 ## Next
 
-- finish expression parsing
-  - blocks
 - finish statement parsing
   - assignments
   - loops
