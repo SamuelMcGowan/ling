@@ -277,4 +277,9 @@ mod tests {
     fn invalid_assignment_target() {
         assert_ron_snapshot!(test_parse("a + b = 12", |p| p.parse_stmt()));
     }
+
+    #[test]
+    fn return_assignment() {
+        assert_ron_snapshot!(test_parse("{ a = b }", |p| p.parse_block()));
+    }
 }
