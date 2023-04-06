@@ -117,6 +117,8 @@ impl<'a> Parser<'a> {
                 TokenKind::Const(idx) => Ok(Expr::Const(idx)),
                 TokenKind::Ident(ident) => Ok(Expr::Var(Ident::Unresolved(ident))),
 
+                kind if kind == tkind!(kwd If) => self.parse_if_expr(),
+
                 kind if kind == tkind!(punct Sub) => {
                     let expr = self.parse_prec(Prec::Unary)?;
                     Ok(Expr::UnaryOp {
@@ -195,6 +197,27 @@ impl<'a> Parser<'a> {
             _ => return None,
         })
     }
+
+    fn parse_if_expr(&mut self) -> ParseResult<Expr> {
+        let mut branches = vec![IfBranch {
+            cond: self.parse_expr()?,
+            then: self.parse_block()?,
+        }];
+
+        while self.eat_kind(tkind!(kwd Elif)) {
+            let cond = self.parse_expr()?;
+            let then = self.parse_block()?;
+            branches.push(IfBranch { cond, then });
+        }
+
+        let else_ = if self.eat_kind(tkind!(kwd Else)) {
+            Some(self.parse_block()?)
+        } else {
+            None
+        };
+
+        Ok(Expr::If { branches, else_ })
+    }
 }
 
 #[cfg(test)]
@@ -246,5 +269,30 @@ mod tests {
     #[test]
     fn unit() {
         assert_ron_snapshot!(test_parse("()", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn if_expr() {
+        assert_ron_snapshot!(test_parse("if a == b { 12 } else { 14 }", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn elif() {
+        assert_ron_snapshot!(
+            test_parse("if a { 12 } elif b { 14 } else { 16 }", |p| p.parse_expr())
+        );
+    }
+
+    #[test]
+    fn trailing_else() {
+        assert_ron_snapshot!(test_parse(
+            "if a { 12 } elif b { 14 } else { 16 } else { 18 }",
+            |p| p.parse_expr()
+        ));
+    }
+
+    #[test]
+    fn add_if() {
+        assert_ron_snapshot!(test_parse("if a { 12 } else { 14 } + 2", |p| p.parse_expr()))
     }
 }

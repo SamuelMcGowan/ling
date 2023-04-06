@@ -79,6 +79,11 @@ pub(crate) enum Expr {
         args: Vec<Expr>,
     },
 
+    If {
+        branches: Vec<IfBranch>,
+        else_: Option<Block>,
+    },
+
     Var(Ident),
 
     Unit,
@@ -116,6 +121,12 @@ pub enum BinOp {
     Mod,
 
     Pow,
+}
+
+#[derive(Node!)]
+pub(crate) struct IfBranch {
+    pub(crate) cond: Expr,
+    pub(crate) then: Block,
 }
 
 #[derive(Node!)]

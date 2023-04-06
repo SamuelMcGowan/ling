@@ -1,0 +1,27 @@
+---
+source: src/syntax/parser/expr.rs
+expression: "test_parse(\"if a { 12 } else { 14 } + 2\", |p| p.parse_expr())"
+---
+(Ok(BinOp(
+  op: Add,
+  lhs: If(
+    branches: [
+      IfBranch(
+        cond: Var(Unresolved("a")),
+        then: Block(
+          stmts: [
+            Expr(Const(ConstIdx(0))),
+          ],
+          eval_as_final: true,
+        ),
+      ),
+    ],
+    else_: Some(Block(
+      stmts: [
+        Expr(Const(ConstIdx(1))),
+      ],
+      eval_as_final: true,
+    )),
+  ),
+  rhs: Const(ConstIdx(2)),
+)), [], [])

@@ -1,0 +1,32 @@
+---
+source: src/syntax/parser/expr.rs
+expression: "test_parse(\"if a { 12 } elif b { 14 } else { 16 } else { 18 }\",\n    |p| p.parse_expr())"
+---
+(Ok(If(
+  branches: [
+    IfBranch(
+      cond: Var(Unresolved("a")),
+      then: Block(
+        stmts: [
+          Expr(Const(ConstIdx(0))),
+        ],
+        eval_as_final: true,
+      ),
+    ),
+    IfBranch(
+      cond: Var(Unresolved("b")),
+      then: Block(
+        stmts: [
+          Expr(Const(ConstIdx(1))),
+        ],
+        eval_as_final: true,
+      ),
+    ),
+  ],
+  else_: Some(Block(
+    stmts: [
+      Expr(Const(ConstIdx(2))),
+    ],
+    eval_as_final: true,
+  )),
+)), [], [])

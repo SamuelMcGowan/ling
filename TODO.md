@@ -3,7 +3,7 @@
 ## Next
 
 - finish expression parsing
-  - if expressions
+  - blocks
 - finish statement parsing
   - assignments
   - loops

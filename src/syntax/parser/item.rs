@@ -101,7 +101,7 @@ impl Parser<'_> {
         }
     }
 
-    fn parse_block(&mut self) -> ParseResult<Block> {
+    pub(super) fn parse_block(&mut self) -> ParseResult<Block> {
         let tokens = self.expect_group(BracketKind::Curly, "block")?;
         let mut parser = self.parser_for_tokens(tokens);
 
