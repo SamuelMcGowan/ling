@@ -7,26 +7,20 @@ expression: "test_parse(\"if a { 12 } elif b { 14 } else { 16 }\", |p| p.parse_e
     IfBranch(
       cond: Var(Unresolved("a")),
       then: Block(
-        stmts: [
-          Expr(Const(ConstIdx(0))),
-        ],
-        eval_as_final: true,
+        stmts: [],
+        final_expr: Const(ConstIdx(0)),
       ),
     ),
     IfBranch(
       cond: Var(Unresolved("b")),
       then: Block(
-        stmts: [
-          Expr(Const(ConstIdx(1))),
-        ],
-        eval_as_final: true,
+        stmts: [],
+        final_expr: Const(ConstIdx(1)),
       ),
     ),
   ],
   else_: Some(Block(
-    stmts: [
-      Expr(Const(ConstIdx(2))),
-    ],
-    eval_as_final: true,
+    stmts: [],
+    final_expr: Const(ConstIdx(2)),
   )),
 )), [], [])

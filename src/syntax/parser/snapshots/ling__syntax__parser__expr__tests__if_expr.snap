@@ -11,17 +11,13 @@ expression: "test_parse(\"if a == b { 12 } else { 14 }\", |p| p.parse_expr())"
         rhs: Var(Unresolved("b")),
       ),
       then: Block(
-        stmts: [
-          Expr(Const(ConstIdx(0))),
-        ],
-        eval_as_final: true,
+        stmts: [],
+        final_expr: Const(ConstIdx(0)),
       ),
     ),
   ],
   else_: Some(Block(
-    stmts: [
-      Expr(Const(ConstIdx(1))),
-    ],
-    eval_as_final: true,
+    stmts: [],
+    final_expr: Const(ConstIdx(1)),
   )),
 )), [], [])

@@ -1,6 +1,6 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func())"
+expression: "test_parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func())"
 ---
 (Ok(Func(
   ident: Unresolved("foo"),
@@ -20,6 +20,6 @@ expression: "parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func())"
   ),
   body: Block(
     stmts: [],
-    eval_as_final: false,
+    final_expr: Unit,
   ),
 )), [], [])

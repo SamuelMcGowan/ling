@@ -14,6 +14,7 @@ pub(crate) enum ParseError {
         found: Option<TokenTree>,
     },
     InvalidAssignmentTarget(Span),
+    InvalidImplicitReturn(Span),
 }
 
 impl ParseError {
@@ -143,12 +144,9 @@ impl Parser<'_> {
         })
     }
 
-    fn parse_spanned<T>(
-        &mut self,
-        parser: impl Fn(&mut Self) -> ParseResult<T>,
-    ) -> ParseResult<Spanned<T>> {
+    fn parse_spanned<T>(&mut self, parser: impl Fn(&mut Self) -> T) -> Spanned<T> {
         let start = self.tokens.peek().map(|tt| tt.span());
-        let res = parser(self);
+        let inner = parser(self);
         let end = self.tokens.prev_span();
 
         let span = match (start, end) {
@@ -156,7 +154,7 @@ impl Parser<'_> {
             _ => None,
         };
 
-        res.map(|inner| Spanned { inner, span })
+        Spanned { inner, span }
     }
 
     fn recover_until(&mut self, kinds: &[TokenKind]) {

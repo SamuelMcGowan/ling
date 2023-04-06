@@ -46,7 +46,7 @@ pub(crate) enum Ty {
 #[derive(Node!)]
 pub(crate) struct Block {
     pub stmts: Vec<Stmt>,
-    pub eval_as_final: bool,
+    pub final_expr: Expr,
 }
 
 #[derive(Node!)]
@@ -91,7 +91,7 @@ pub(crate) enum Expr {
 
     If {
         branches: Vec<IfBranch>,
-        else_: Option<Block>,
+        else_: Option<Box<Block>>,
     },
 
     Var(Ident),

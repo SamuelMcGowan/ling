@@ -1,6 +1,6 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
+expression: "test_parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
 ---
 (Ok(Block(
   stmts: [
@@ -9,7 +9,7 @@ expression: "parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(2))),
     Expr(Const(ConstIdx(3))),
   ],
-  eval_as_final: false,
+  final_expr: Unit,
 )), [], [
   Unexpected(
     expected: "semicolon",

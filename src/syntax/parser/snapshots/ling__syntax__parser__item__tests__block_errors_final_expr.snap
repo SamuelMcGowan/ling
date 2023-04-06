@@ -1,14 +1,13 @@
 ---
 source: src/syntax/parser/item.rs
-expression: "parse(\"{10; 11 12}\", |p| p.parse_block())"
+expression: "test_parse(\"{10; 11 12}\", |p| p.parse_block())"
 ---
 (Ok(Block(
   stmts: [
     Expr(Const(ConstIdx(0))),
     Expr(Const(ConstIdx(1))),
-    Expr(Const(ConstIdx(2))),
   ],
-  eval_as_final: true,
+  final_expr: Const(ConstIdx(2)),
 )), [], [
   Unexpected(
     expected: "semicolon",

@@ -211,7 +211,7 @@ impl<'a> Parser<'a> {
         }
 
         let else_ = if self.eat_kind(tkind!(kwd Else)) {
-            Some(self.parse_block()?)
+            Some(Box::new(self.parse_block()?))
         } else {
             None
         };

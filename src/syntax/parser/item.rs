@@ -109,13 +109,16 @@ impl Parser<'_> {
 
         let mut eval_as_final = false;
 
-        while !parser.tokens.at_end() {
-            let stmt = parser.parse_stmt_or_recover();
+        let mut final_stmt_span = None;
 
-            let expect_delim = stmt.expect_delim();
+        while !parser.tokens.at_end() {
+            let stmt = parser.parse_spanned(Parser::parse_stmt_or_recover);
+            final_stmt_span = stmt.span;
+
+            let expect_delim = stmt.inner.expect_delim();
             let found_delim = parser.eat_kind(tkind!(punct Semicolon));
 
-            stmts.push(stmt);
+            stmts.push(stmt.inner);
 
             if expect_delim && !found_delim {
                 // peek so that we can carry on parsing statements
@@ -131,10 +134,26 @@ impl Parser<'_> {
         // Guards against accidentally using `self` instead of `parser`.
         drop(parser);
 
-        Ok(Block {
-            stmts,
-            eval_as_final,
-        })
+        let final_expr = if eval_as_final {
+            match stmts.pop() {
+                Some(Stmt::Expr(expr)) => expr,
+                Some(stmt) => {
+                    // this is ok to unwrap since statement will always consume
+                    // at least one token
+                    self.report(ParseError::InvalidImplicitReturn(final_stmt_span.unwrap()));
+
+                    // add the statement back to the block to improve analysis
+                    stmts.push(stmt);
+
+                    Expr::Dummy
+                }
+                None => Expr::Unit,
+            }
+        } else {
+            Expr::Unit
+        };
+
+        Ok(Block { stmts, final_expr })
     }
 
     fn parse_stmt_or_recover(&mut self) -> Stmt {
@@ -153,17 +172,19 @@ impl Parser<'_> {
     }
 
     fn parse_stmt(&mut self) -> ParseResult<Stmt> {
-        let lhs = self.parse_spanned(Self::parse_expr)?;
+        let lhs = self.parse_spanned(Self::parse_expr);
+        let lhs_stmt = lhs.inner?;
+
         if self.eat_kind(tkind!(punct Equal)) {
             let rhs = self.parse_expr()?;
-            match lhs.inner {
+            match lhs_stmt {
                 Expr::Var(ident) => Ok(Stmt::Assignment { ident, rhs }),
                 // parse_expr will always consume at least one token so
                 // it's ok to unwrap the span
                 _ => Err(ParseError::InvalidAssignmentTarget(lhs.span.unwrap())),
             }
         } else {
-            Ok(Stmt::Expr(lhs.inner))
+            Ok(Stmt::Expr(lhs_stmt))
         }
     }
 }
