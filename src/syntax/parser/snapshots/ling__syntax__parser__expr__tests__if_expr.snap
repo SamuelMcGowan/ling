@@ -7,8 +7,8 @@ expression: "test_parse(\"if a == b { 12 } else { 14 }\", |p| p.parse_expr())"
     IfBranch(
       cond: BinOp(
         op: Equal,
-        lhs: Var(Unresolved("a")),
-        rhs: Var(Unresolved("b")),
+        lhs: Var(Simple(Unresolved("a"))),
+        rhs: Var(Simple(Unresolved("b"))),
       ),
       then: Block(
         stmts: [],

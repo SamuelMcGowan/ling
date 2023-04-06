@@ -52,7 +52,7 @@ pub(crate) struct Block {
 #[derive(Node!)]
 pub(crate) enum Stmt {
     Expr(Expr),
-    Assignment { ident: Ident, rhs: Expr },
+    Assignment { lhs: Var, rhs: Expr },
     Dummy,
 }
 
@@ -94,7 +94,7 @@ pub(crate) enum Expr {
         else_: Option<Box<Block>>,
     },
 
-    Var(Ident),
+    Var(Var),
 
     Unit,
 
@@ -146,6 +146,12 @@ pub(crate) struct IfBranch {
 #[derive(Node!)]
 pub(crate) enum Ident {
     Unresolved(Ustr),
+}
+
+#[derive(Node!)]
+pub(crate) enum Var {
+    Simple(Ident),
+    Field { expr: Box<Expr>, field: Ident },
 }
 
 impl Ident {

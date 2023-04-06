@@ -178,7 +178,7 @@ impl Parser<'_> {
         if self.eat_kind(tkind!(punct Equal)) {
             let rhs = self.parse_expr()?;
             match lhs_stmt {
-                Expr::Var(ident) => Ok(Stmt::Assignment { ident, rhs }),
+                Expr::Var(var) => Ok(Stmt::Assignment { lhs: var, rhs }),
                 // parse_expr will always consume at least one token so
                 // it's ok to unwrap the span
                 _ => Err(ParseError::InvalidAssignmentTarget(lhs.span.unwrap())),

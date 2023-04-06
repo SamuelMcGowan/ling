@@ -91,6 +91,22 @@ impl<'a> Parser<'a> {
                     }
                 }
 
+                BinOp::Access => {
+                    let rhs = self.parse_spanned(|p| p.parse_prec(op.prec()));
+                    let rhs_expr = rhs.inner?;
+
+                    if let Expr::Var(Var::Simple(ident)) = rhs_expr {
+                        Expr::Var(Var::Field {
+                            expr: Box::new(expr),
+                            field: ident,
+                        })
+                    } else {
+                        // span is always valid - `parse_prec` always consumes a token
+                        self.report(ParseError::InvalidAccessor(rhs.span.unwrap()));
+                        Expr::Dummy
+                    }
+                }
+
                 _ => {
                     let rhs = self.parse_prec(op.prec())?;
                     Expr::BinOp {
@@ -109,7 +125,7 @@ impl<'a> Parser<'a> {
         match self.tokens.next() {
             Some(TokenTree::Token(token)) => match token.kind {
                 TokenKind::Const(idx) => Ok(Expr::Const(idx)),
-                TokenKind::Ident(ident) => Ok(Expr::Var(Ident::Unresolved(ident))),
+                TokenKind::Ident(ident) => Ok(Expr::Var(Var::Simple(Ident::Unresolved(ident)))),
 
                 kind if kind == tkind!(kwd If) => self.parse_if_expr(),
 
@@ -175,6 +191,8 @@ impl<'a> Parser<'a> {
                 t if t == tkind!(punct Div) => BinOp::Div,
                 t if t == tkind!(punct Mod) => BinOp::Mod,
                 t if t == tkind!(punct Pow) => BinOp::Pow,
+
+                t if t == tkind!(punct Dot) => BinOp::Access,
 
                 _ => return None,
             },
@@ -284,5 +302,15 @@ mod tests {
     #[test]
     fn add_if() {
         assert_ron_snapshot!(test_parse("if a { 12 } else { 14 } + 2", |p| p.parse_expr()))
+    }
+
+    #[test]
+    fn method_call() {
+        assert_ron_snapshot!(test_parse("a.b().c", |p| p.parse_expr()))
+    }
+
+    #[test]
+    fn invalid_accessor() {
+        assert_ron_snapshot!(test_parse("a.12", |p| p.parse_expr()))
     }
 }

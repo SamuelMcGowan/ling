@@ -1,0 +1,14 @@
+---
+source: src/syntax/parser/expr.rs
+expression: "test_parse(\"a.b().c\", |p| p.parse_expr())"
+---
+(Ok(Var(Field(
+  expr: Call(
+    callee: Var(Field(
+      expr: Var(Simple(Unresolved("a"))),
+      field: Unresolved("b"),
+    )),
+    args: [],
+  ),
+  field: Unresolved("c"),
+))), [], [])

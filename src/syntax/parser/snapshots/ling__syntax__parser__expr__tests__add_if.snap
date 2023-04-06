@@ -7,7 +7,7 @@ expression: "test_parse(\"if a { 12 } else { 14 } + 2\", |p| p.parse_expr())"
   lhs: If(
     branches: [
       IfBranch(
-        cond: Var(Unresolved("a")),
+        cond: Var(Simple(Unresolved("a"))),
         then: Block(
           stmts: [],
           final_expr: Const(ConstIdx(0)),

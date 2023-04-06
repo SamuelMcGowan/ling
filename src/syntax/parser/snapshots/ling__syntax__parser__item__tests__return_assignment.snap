@@ -5,8 +5,8 @@ expression: "test_parse(\"{ a = b }\", |p| p.parse_block())"
 (Ok(Block(
   stmts: [
     Assignment(
-      ident: Unresolved("a"),
-      rhs: Var(Unresolved("b")),
+      lhs: Simple(Unresolved("a")),
+      rhs: Var(Simple(Unresolved("b"))),
     ),
   ],
   final_expr: Dummy,

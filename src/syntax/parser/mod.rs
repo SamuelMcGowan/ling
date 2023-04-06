@@ -14,6 +14,7 @@ pub(crate) enum ParseError {
     },
     InvalidAssignmentTarget(Span),
     InvalidImplicitReturn(Span),
+    InvalidAccessor(Span),
 }
 
 impl ParseError {

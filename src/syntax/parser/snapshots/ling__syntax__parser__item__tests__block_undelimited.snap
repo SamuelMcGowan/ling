@@ -7,7 +7,7 @@ expression: "test_parse(\"{ if a { 12 } if b { 12 } }\", |p| p.parse_block())"
     Expr(If(
       branches: [
         IfBranch(
-          cond: Var(Unresolved("a")),
+          cond: Var(Simple(Unresolved("a"))),
           then: Block(
             stmts: [],
             final_expr: Const(ConstIdx(0)),
@@ -20,7 +20,7 @@ expression: "test_parse(\"{ if a { 12 } if b { 12 } }\", |p| p.parse_block())"
   final_expr: If(
     branches: [
       IfBranch(
-        cond: Var(Unresolved("b")),
+        cond: Var(Simple(Unresolved("b"))),
         then: Block(
           stmts: [],
           final_expr: Const(ConstIdx(1)),
