@@ -18,13 +18,9 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
 )), [], [
   Unexpected(
     expected: "a type",
-    found: Some(Group(
-      bracket_kind: Curly,
-      tokens: TokenStream([]),
-      span: Span(
-        start: 21,
-        end: 23,
-      ),
+    found: Some(Span(
+      start: 21,
+      end: 23,
     )),
   ),
 ])

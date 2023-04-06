@@ -13,22 +13,16 @@ expression: "test_parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
 )), [], [
   Unexpected(
     expected: "semicolon",
-    found: Some(Token(Token(
-      span: Span(
-        start: 8,
-        end: 10,
-      ),
-      kind: Const(ConstIdx(2)),
-    ))),
+    found: Some(Span(
+      start: 8,
+      end: 10,
+    )),
   ),
   Unexpected(
     expected: "semicolon",
-    found: Some(Token(Token(
-      span: Span(
-        start: 11,
-        end: 13,
-      ),
-      kind: Const(ConstIdx(3)),
-    ))),
+    found: Some(Span(
+      start: 11,
+      end: 13,
+    )),
   ),
 ])
