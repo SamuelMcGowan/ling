@@ -2,8 +2,8 @@
 
 ## Next
 
+- parse '.' operator
 - finish statement parsing
-  - assignments
   - loops
   - while loops
 
