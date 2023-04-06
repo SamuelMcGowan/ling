@@ -3,8 +3,9 @@
 ## Next
 
 - finish expression parsing
+  - if expressions
+- finish statement parsing
   - assignments
-  - if statements
   - loops
   - while loops
 
