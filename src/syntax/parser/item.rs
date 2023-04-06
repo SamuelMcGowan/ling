@@ -162,85 +162,73 @@ impl Parser<'_> {
 mod tests {
     use insta::assert_ron_snapshot;
 
-    use crate::syntax::parser::ParseError;
-    use crate::syntax::token::Token;
-    use crate::syntax::token_stream::TokenStream;
-    use crate::syntax::{lexer::Lexer, parser::Parser};
-
-    fn parse<T>(source: &str, f: impl Fn(&mut Parser) -> T) -> (T, Vec<Token>, Vec<ParseError>) {
-        let lexer = Lexer::new(source);
-        let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
-
-        let mut errors = vec![];
-        let mut parser = Parser::new(tokens.into_iter(), &mut errors);
-        let res = f(&mut parser);
-
-        (res, mismatched_brackets, errors)
-    }
+    use crate::syntax::parser::test_parse;
 
     #[test]
     fn simple_func() {
-        assert_ron_snapshot!(parse("foo() {}", |p| p.parse_func()));
+        assert_ron_snapshot!(test_parse("foo() {}", |p| p.parse_func()));
     }
 
     #[test]
     fn func_with_args() {
-        assert_ron_snapshot!(parse("foo(a: uint, b: uint) -> string {}", |p| p.parse_func()));
+        assert_ron_snapshot!(test_parse("foo(a: uint, b: uint) -> string {}", |p| p.parse_func()));
     }
 
     #[test]
     fn func_with_args_and_trailing_comma() {
-        assert_ron_snapshot!(parse("foo(a: uint, b: uint,) {}", |p| p.parse_func()));
+        assert_ron_snapshot!(test_parse("foo(a: uint, b: uint,) {}", |p| p.parse_func()));
     }
 
     #[test]
     fn func_with_missing_rparen() {
-        assert_ron_snapshot!(parse("foo(a: uint, {}", |p| p.parse_func()));
+        assert_ron_snapshot!(test_parse("foo(a: uint, {}", |p| p.parse_func()));
     }
 
     #[test]
     fn func_with_missing_ret_type() {
-        assert_ron_snapshot!(parse("foo(a: uint) -> {}", |p| p.parse_func()));
+        assert_ron_snapshot!(test_parse("foo(a: uint) -> {}", |p| p.parse_func()));
     }
 
     #[test]
     fn func_recovery() {
-        assert_ron_snapshot!(parse("func foo(a: uint) -> {} {} func my_func() {}", |p| p
-            .parse_module()));
+        assert_ron_snapshot!(test_parse(
+            "func foo(a: uint) -> {} {} func my_func() {}",
+            |p| p.parse_module()
+        ));
     }
 
     #[test]
     fn block_empty() {
-        assert_ron_snapshot!(parse("{}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_final_expr() {
-        assert_ron_snapshot!(parse("{12}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{12}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_no_final_expr() {
-        assert_ron_snapshot!(parse("{12;}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{12;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_two_exprs_final_expr() {
-        assert_ron_snapshot!(parse("{14;12}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{14;12}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_two_exprs_no_final_expr() {
-        assert_ron_snapshot!(parse("{14;12;}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{14;12;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_errors() {
-        assert_ron_snapshot!(parse("{10; 11 12 13;}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{10; 11 12 13;}", |p| p.parse_block()));
     }
 
     #[test]
     fn block_errors_final_expr() {
-        assert_ron_snapshot!(parse("{10; 11 12}", |p| p.parse_block()));
+        assert_ron_snapshot!(test_parse("{10; 11 12}", |p| p.parse_block()));
     }
 }

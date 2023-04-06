@@ -1,5 +1,5 @@
-pub mod item;
 pub mod expr;
+pub mod item;
 
 use super::token::{BracketKind, Token, TokenKind};
 use super::token_stream::{TokenIter, TokenTree};
@@ -158,4 +158,22 @@ impl Parser<'_> {
     fn report(&mut self, error: ParseError) {
         self.errors.push(error);
     }
+}
+
+#[cfg(test)]
+pub(crate) fn test_parse<T>(
+    source: &str,
+    f: impl Fn(&mut Parser) -> T,
+) -> (T, Vec<Token>, Vec<ParseError>) {
+    use crate::syntax::lexer::Lexer;
+    use crate::syntax::token_stream::TokenStream;
+
+    let lexer = Lexer::new(source);
+    let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
+
+    let mut errors = vec![];
+    let mut parser = Parser::new(tokens.into_iter(), &mut errors);
+    let res = f(&mut parser);
+
+    (res, mismatched_brackets, errors)
 }

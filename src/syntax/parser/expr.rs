@@ -196,3 +196,40 @@ impl<'a> Parser<'a> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_ron_snapshot;
+
+    use crate::syntax::parser::test_parse;
+
+    #[test]
+    fn l_assoc() {
+        assert_ron_snapshot!(test_parse("1 + 2 + 3", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn r_assoc() {
+        assert_ron_snapshot!(test_parse("1 ^ 2 ^ 3", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn mul_add() {
+        assert_ron_snapshot!(test_parse("1 * 2 + 3", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn add_mul() {
+        assert_ron_snapshot!(test_parse("1 + 2 * 3", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn mul_pow() {
+        assert_ron_snapshot!(test_parse("1 * 2 ^ 3", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn pow_mul() {
+        assert_ron_snapshot!(test_parse("1 ^ 2 * 3", |p| p.parse_expr()));
+    }
+}
