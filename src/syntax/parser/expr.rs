@@ -1,5 +1,5 @@
 use crate::syntax::ast::*;
-use crate::syntax::token::{tkind, BracketKind, Token, TokenKind};
+use crate::syntax::token::{tkind, BracketKind, TokenKind};
 use crate::syntax::token_stream::TokenTree;
 
 use super::{ParseError, ParseResult, Parser};
@@ -7,7 +7,7 @@ use super::{ParseError, ParseResult, Parser};
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum Prec {
-    Any = 0,
+    Lowest = 0,
 
     LogicalOr,
     LogicalAnd,
@@ -20,15 +20,9 @@ enum Prec {
     Exp,
 
     Unary,
-    Call,
 }
 
 impl BinOp {
-    fn should_parse_in_prec(&self, prec: Prec) -> bool {
-        let op_prec = self.prec();
-        op_prec > prec || self.r_assoc() && op_prec == prec
-    }
-
     fn prec(&self) -> Prec {
         match self {
             Self::LogicalOr => Prec::LogicalOr,
@@ -48,41 +42,55 @@ impl BinOp {
     }
 }
 
-enum Operator {
+enum RhsRule {
     BinOp(BinOp),
     Call,
 }
 
+impl RhsRule {
+    fn should_parse_in_prec(&self, prec: Prec) -> bool {
+        match self {
+            Self::BinOp(op) => {
+                let op_prec = op.prec();
+                let r_assoc = op.r_assoc();
+
+                op_prec > prec || r_assoc && op_prec == prec
+            }
+            Self::Call => true,
+        }
+    }
+}
+
 impl<'a> Parser<'a> {
     pub fn parse_expr(&mut self) -> ParseResult<Expr> {
-        self.parse_prec(Prec::Any)
+        self.parse_prec(Prec::Lowest)
     }
 
     fn parse_prec(&mut self, prec: Prec) -> ParseResult<Expr> {
         let mut expr = self.parse_lhs()?;
 
         while let Some(tt) = self.tokens.peek() {
-            let Some(op) = self.get_op(tt) else {
+            let Some(rhs_rule) = self.get_rhs_rule(tt) else {
                 break;
             };
 
-            if matches!(op, Operator::BinOp(op) if !op.should_parse_in_prec(prec)) {
+            if !rhs_rule.should_parse_in_prec(prec) {
                 break;
             }
 
             let tt = self.tokens.next().unwrap();
 
-            expr = match op {
-                Operator::BinOp(op) => {
+            expr = match rhs_rule {
+                RhsRule::BinOp(op) => {
                     let rhs = self.parse_prec(op.prec())?;
-                    Expr::Infix {
+                    Expr::BinOp {
                         op,
                         lhs: Box::new(expr),
                         rhs: Box::new(rhs),
                     }
                 }
 
-                Operator::Call => {
+                RhsRule::Call => {
                     let TokenTree::Group { tokens, .. } =  tt else {
                         unreachable!();
                     };
@@ -105,15 +113,31 @@ impl<'a> Parser<'a> {
 
     fn parse_lhs(&mut self) -> ParseResult<Expr> {
         match self.tokens.next() {
-            Some(TokenTree::Token(Token {
-                kind: TokenKind::Const(idx),
-                ..
-            })) => Ok(Expr::Const(idx)),
+            Some(TokenTree::Token(token)) => match token.kind {
+                TokenKind::Const(idx) => Ok(Expr::Const(idx)),
+                TokenKind::Ident(ident) => Ok(Expr::Var(Ident::Unresolved(ident))),
 
-            Some(TokenTree::Token(Token {
-                kind: TokenKind::Ident(ident),
-                ..
-            })) => Ok(Expr::Var(Ident::Unresolved(ident))),
+                kind if kind == tkind!(punct Sub) => {
+                    let expr = self.parse_prec(Prec::Unary)?;
+                    Ok(Expr::UnaryOp {
+                        op: UnaryOp::Neg,
+                        expr: Box::new(expr),
+                    })
+                }
+
+                kind if kind == tkind!(punct Bang) => {
+                    let expr = self.parse_prec(Prec::Unary)?;
+                    Ok(Expr::UnaryOp {
+                        op: UnaryOp::Not,
+                        expr: Box::new(expr),
+                    })
+                }
+
+                _ => Err(ParseError::unexpected(
+                    "an expression",
+                    Some(TokenTree::Token(token)),
+                )),
+            },
 
             Some(TokenTree::Group {
                 bracket_kind: BracketKind::Round,
@@ -134,7 +158,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn get_op(&self, tt: &TokenTree) -> Option<Operator> {
+    fn get_rhs_rule(&self, tt: &TokenTree) -> Option<RhsRule> {
         Some(match tt {
             TokenTree::Token(t) => {
                 let bin_op = match t.kind {
@@ -160,13 +184,13 @@ impl<'a> Parser<'a> {
                     _ => return None,
                 };
 
-                Operator::BinOp(bin_op)
+                RhsRule::BinOp(bin_op)
             }
 
             TokenTree::Group {
                 bracket_kind: BracketKind::Round,
                 ..
-            } => Operator::Call,
+            } => RhsRule::Call,
 
             _ => return None,
         })

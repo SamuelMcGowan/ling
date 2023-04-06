@@ -8,3 +8,7 @@ func foo() {
 func a_call() {
     an_expr(1, 2, 3)
 }
+
+func neg_call() {
+    -foo(a)(b)
+}

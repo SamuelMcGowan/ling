@@ -63,7 +63,12 @@ impl Stmt {
 pub(crate) enum Expr {
     Const(ConstIdx),
 
-    Infix {
+    UnaryOp {
+        op: UnaryOp,
+        expr: Box<Expr>,
+    },
+
+    BinOp {
         op: BinOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
@@ -84,6 +89,12 @@ impl Expr {
         // every expression that we have for now expects a delimiter
         true
     }
+}
+
+#[derive(Node!, Copy)]
+pub enum UnaryOp {
+    Neg,
+    Not,
 }
 
 #[derive(Node!, Copy)]
