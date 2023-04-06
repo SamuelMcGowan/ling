@@ -153,8 +153,18 @@ impl Parser<'_> {
     }
 
     fn parse_stmt(&mut self) -> ParseResult<Stmt> {
-        let expr = self.parse_expr()?;
-        Ok(Stmt::Expr(expr))
+        let lhs = self.parse_spanned(Self::parse_expr)?;
+        if self.eat_kind(tkind!(punct Equal)) {
+            let rhs = self.parse_expr()?;
+            match lhs.inner {
+                Expr::Var(ident) => Ok(Stmt::Assignment { ident, rhs }),
+                // parse_expr will always consume at least one token so
+                // it's ok to unwrap the span
+                _ => Err(ParseError::InvalidAssignmentTarget(lhs.span.unwrap())),
+            }
+        } else {
+            Ok(Stmt::Expr(lhs.inner))
+        }
     }
 }
 
@@ -230,5 +240,15 @@ mod tests {
     #[test]
     fn block_errors_final_expr() {
         assert_ron_snapshot!(test_parse("{10; 11 12}", |p| p.parse_block()));
+    }
+
+    #[test]
+    fn assignment() {
+        assert_ron_snapshot!(test_parse("a = 12", |p| p.parse_stmt()));
+    }
+
+    #[test]
+    fn invalid_assignment_target() {
+        assert_ron_snapshot!(test_parse("a + b = 12", |p| p.parse_stmt()));
     }
 }

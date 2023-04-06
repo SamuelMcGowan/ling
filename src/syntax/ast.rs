@@ -3,12 +3,19 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 
+use super::source::Span;
+
 derive_alias! {
     #[derive(Node!)] = #[derive(
         Debug,
         Clone,
         serde::Serialize,
     )];
+}
+
+pub(crate) struct Spanned<T> {
+    pub(crate) inner: T,
+    pub(crate) span: Option<Span>,
 }
 
 #[derive(Node!)]
@@ -45,6 +52,7 @@ pub(crate) struct Block {
 #[derive(Node!)]
 pub(crate) enum Stmt {
     Expr(Expr),
+    Assignment { ident: Ident, rhs: Expr },
     Dummy,
 }
 
@@ -52,6 +60,8 @@ impl Stmt {
     pub fn expect_delim(&self) -> bool {
         match self {
             Self::Expr(expr) => expr.expect_delim(),
+
+            Self::Assignment { .. } => true,
 
             // the recovery function should have recovered past any semicolons
             Self::Dummy => false,
@@ -87,6 +97,8 @@ pub(crate) enum Expr {
     Var(Ident),
 
     Unit,
+
+    Dummy,
 }
 
 impl Expr {

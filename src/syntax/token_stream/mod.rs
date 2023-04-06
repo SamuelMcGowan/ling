@@ -32,18 +32,29 @@ impl IntoIterator for TokenStream {
     type Item = TokenTree;
 
     fn into_iter(self) -> Self::IntoIter {
-        TokenIter(self.0.into_iter())
+        TokenIter {
+            iter: self.0.into_iter(),
+            prev_span: None,
+        }
     }
 }
 
-pub(crate) struct TokenIter(IntoIter<TokenTree>);
+pub(crate) struct TokenIter {
+    iter: IntoIter<TokenTree>,
+    prev_span: Option<Span>,
+}
 
 impl TokenIter {
     pub fn at_end(&self) -> bool {
         self.peek().is_none()
     }
+
     pub fn peek(&self) -> Option<&TokenTree> {
-        self.0.as_slice().iter().next()
+        self.iter.as_slice().iter().next()
+    }
+
+    pub fn prev_span(&self) -> Option<Span> {
+        self.prev_span
     }
 }
 
@@ -51,11 +62,13 @@ impl Iterator for TokenIter {
     type Item = TokenTree;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next()
+        let item = self.iter.next()?;
+        self.prev_span = Some(item.span());
+        Some(item)
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        self.0.size_hint()
+        self.iter.size_hint()
     }
 }
 

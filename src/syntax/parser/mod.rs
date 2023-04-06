@@ -1,6 +1,8 @@
 pub mod expr;
 pub mod item;
 
+use super::ast::Spanned;
+use super::source::Span;
 use super::token::{BracketKind, Token, TokenKind};
 use super::token_stream::{TokenIter, TokenTree};
 
@@ -8,8 +10,10 @@ use super::token_stream::{TokenIter, TokenTree};
 pub(crate) enum ParseError {
     Unexpected {
         expected: String,
+        // FIXME: just store span.
         found: Option<TokenTree>,
     },
+    InvalidAssignmentTarget(Span),
 }
 
 impl ParseError {
@@ -137,6 +141,22 @@ impl Parser<'_> {
             self.report(error);
             recover(self)
         })
+    }
+
+    fn parse_spanned<T>(
+        &mut self,
+        parser: impl Fn(&mut Self) -> ParseResult<T>,
+    ) -> ParseResult<Spanned<T>> {
+        let start = self.tokens.peek().map(|tt| tt.span());
+        let res = parser(self);
+        let end = self.tokens.prev_span();
+
+        let span = match (start, end) {
+            (Some(start), Some(end)) => Some(start.union(end)),
+            _ => None,
+        };
+
+        res.map(|inner| Spanned { inner, span })
     }
 
     fn recover_until(&mut self, kinds: &[TokenKind]) {
