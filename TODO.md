@@ -2,9 +2,6 @@
 
 ## Next
 
-- test expression parsing
-  - groups
-  - unit
 - finish expression parsing
   - assignments
   - if statements

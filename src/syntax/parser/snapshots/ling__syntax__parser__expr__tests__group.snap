@@ -1,0 +1,5 @@
+---
+source: src/syntax/parser/expr.rs
+expression: "test_parse(\"(1)\", |p| p.parse_expr())"
+---
+(Ok(Const(ConstIdx(0))), [], [])

@@ -1,0 +1,5 @@
+---
+source: src/syntax/parser/expr.rs
+expression: "test_parse(\"()\", |p| p.parse_expr())"
+---
+(Ok(Unit), [], [])

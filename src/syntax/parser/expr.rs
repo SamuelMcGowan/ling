@@ -232,4 +232,19 @@ mod tests {
     fn pow_mul() {
         assert_ron_snapshot!(test_parse("1 ^ 2 * 3", |p| p.parse_expr()));
     }
+
+    #[test]
+    fn group() {
+        assert_ron_snapshot!(test_parse("(1)", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn group_err() {
+        assert_ron_snapshot!(test_parse("(1 1)", |p| p.parse_expr()));
+    }
+
+    #[test]
+    fn unit() {
+        assert_ron_snapshot!(test_parse("()", |p| p.parse_expr()));
+    }
 }
