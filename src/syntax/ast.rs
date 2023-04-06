@@ -132,6 +132,9 @@ pub enum BinOp {
     Mod,
 
     Pow,
+
+    Call,
+    Access,
 }
 
 #[derive(Node!)]
