@@ -10,8 +10,7 @@ use super::token_stream::{TokenIter, TokenTree};
 pub(crate) enum ParseError {
     Unexpected {
         expected: String,
-        // FIXME: just store span.
-        found: Option<TokenTree>,
+        found: Option<Span>,
     },
     InvalidAssignmentTarget(Span),
     InvalidImplicitReturn(Span),
@@ -21,7 +20,7 @@ impl ParseError {
     fn unexpected(expected: impl Into<String>, found: Option<TokenTree>) -> Self {
         Self::Unexpected {
             expected: expected.into(),
-            found,
+            found: found.map(|tt| tt.span()),
         }
     }
 }
