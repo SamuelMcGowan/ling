@@ -3,6 +3,7 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 
+use super::parser::ParseResult;
 use super::source::Span;
 
 derive_alias! {
@@ -16,6 +17,15 @@ derive_alias! {
 pub(crate) struct Spanned<T> {
     pub(crate) inner: T,
     pub(crate) span: Option<Span>,
+}
+
+impl<T> Spanned<ParseResult<T>> {
+    pub fn transpose(self) -> ParseResult<Spanned<T>> {
+        self.inner.map(|inner| Spanned {
+            inner,
+            span: self.span,
+        })
+    }
 }
 
 #[derive(Node!)]
@@ -52,6 +62,10 @@ pub(crate) struct Block {
 #[derive(Node!)]
 pub(crate) enum Stmt {
     Expr(Expr),
+
+    Loop(Block),
+    WhileLoop { cond: Expr, block: Block },
+
     Assignment { lhs: Var, rhs: Expr },
     Dummy,
 }
@@ -60,6 +74,8 @@ impl Stmt {
     pub fn expect_delim(&self) -> bool {
         match self {
             Self::Expr(expr) => expr.expect_delim(),
+
+            Self::Loop(_) | Self::WhileLoop { .. } => false,
 
             Self::Assignment { .. } => true,
 

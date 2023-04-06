@@ -172,19 +172,34 @@ impl Parser<'_> {
     }
 
     fn parse_stmt(&mut self) -> ParseResult<Stmt> {
-        let lhs = self.parse_spanned(Self::parse_expr);
-        let lhs_stmt = lhs.inner?;
+        let stmt_spanned = self
+            .parse_spanned(|p| match p.tokens.peek() {
+                Some(TokenTree::Token(t)) if t.kind == tkind!(kwd Loop) => {
+                    p.tokens.next();
+                    p.parse_block().map(Stmt::Loop)
+                }
+                Some(TokenTree::Token(t)) if t.kind == tkind!(kwd While) => {
+                    p.tokens.next();
+                    let cond = p.parse_expr()?;
+                    let block = p.parse_block()?;
+                    Ok(Stmt::WhileLoop { cond, block })
+                }
+                _ => p.parse_expr().map(Stmt::Expr),
+            })
+            .transpose()?;
 
         if self.eat_kind(tkind!(punct Equal)) {
             let rhs = self.parse_expr()?;
-            match lhs_stmt {
-                Expr::Var(var) => Ok(Stmt::Assignment { lhs: var, rhs }),
+            match stmt_spanned.inner {
+                Stmt::Expr(Expr::Var(var)) => Ok(Stmt::Assignment { lhs: var, rhs }),
                 // parse_expr will always consume at least one token so
                 // it's ok to unwrap the span
-                _ => Err(ParseError::InvalidAssignmentTarget(lhs.span.unwrap())),
+                _ => Err(ParseError::InvalidAssignmentTarget(
+                    stmt_spanned.span.unwrap(),
+                )),
             }
         } else {
-            Ok(Stmt::Expr(lhs_stmt))
+            Ok(stmt_spanned.inner)
         }
     }
 }
@@ -274,8 +289,18 @@ mod tests {
     }
 
     #[test]
+    fn field_assignment() {
+        assert_ron_snapshot!(test_parse("my_struct.field = 12", |p| p.parse_stmt()));
+    }
+
+    #[test]
     fn invalid_assignment_target() {
         assert_ron_snapshot!(test_parse("a + b = 12", |p| p.parse_stmt()));
+    }
+
+    #[test]
+    fn loop_assignment_target() {
+        assert_ron_snapshot!(test_parse("loop {} = 12", |p| p.parse_stmt()));
     }
 
     #[test]
