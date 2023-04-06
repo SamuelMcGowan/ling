@@ -84,7 +84,9 @@ pub(crate) enum Keyword {
     Impl,
 
     Let,
+
     Match,
+    Is,
 
     LogicalAnd,
     LogicalOr,

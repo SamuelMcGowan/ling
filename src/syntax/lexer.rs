@@ -105,7 +105,9 @@ impl<'a> Lexer<'a> {
             "impl" => tkind!(kwd Impl),
 
             "let" => tkind!(kwd Let),
+
             "match" => tkind!(kwd Match),
+            "is" => tkind!(kwd Is),
 
             "and" => tkind!(kwd LogicalAnd),
             "or" => tkind!(kwd LogicalOr),
