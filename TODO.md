@@ -2,7 +2,6 @@
 
 ## Next
 
-- parse '.' operator
 - finish statement parsing
   - loops
   - while loops
