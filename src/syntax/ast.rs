@@ -103,8 +103,7 @@ pub(crate) enum Expr {
 
 impl Expr {
     pub fn expect_delim(&self) -> bool {
-        // every expression that we have for now expects a delimiter
-        true
+        !matches!(self, Self::If { .. })
     }
 }
 

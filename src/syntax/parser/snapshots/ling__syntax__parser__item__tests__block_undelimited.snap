@@ -1,0 +1,37 @@
+---
+source: src/syntax/parser/item.rs
+expression: "test_parse(\"{ if a { 12 } if b { 12 } }\", |p| p.parse_block())"
+---
+(Ok(Block(
+  stmts: [
+    Expr(If(
+      branches: [
+        IfBranch(
+          cond: Var(Unresolved("a")),
+          then: Block(
+            stmts: [
+              Expr(Const(ConstIdx(0))),
+            ],
+            eval_as_final: true,
+          ),
+        ),
+      ],
+      else_: None,
+    )),
+    Expr(If(
+      branches: [
+        IfBranch(
+          cond: Var(Unresolved("b")),
+          then: Block(
+            stmts: [
+              Expr(Const(ConstIdx(1))),
+            ],
+            eval_as_final: true,
+          ),
+        ),
+      ],
+      else_: None,
+    )),
+  ],
+  eval_as_final: true,
+)), [], [])

@@ -243,6 +243,11 @@ mod tests {
     }
 
     #[test]
+    fn block_undelimited() {
+        assert_ron_snapshot!(test_parse("{ if a { 12 } if b { 12 } }", |p| p.parse_block()));
+    }
+
+    #[test]
     fn assignment() {
         assert_ron_snapshot!(test_parse("a = 12", |p| p.parse_stmt()));
     }
