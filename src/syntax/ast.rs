@@ -66,7 +66,9 @@ pub(crate) enum Stmt {
     Loop(Block),
     WhileLoop { cond: Expr, block: Block },
 
+    Declaration { lhs: Ident, rhs: Expr },
     Assignment { lhs: Var, rhs: Expr },
+
     Dummy,
 }
 
@@ -77,6 +79,7 @@ impl Stmt {
 
             Self::Loop(_) | Self::WhileLoop { .. } => false,
 
+            Self::Declaration { .. } => true,
             Self::Assignment { .. } => true,
 
             // the recovery function should have recovered past any semicolons

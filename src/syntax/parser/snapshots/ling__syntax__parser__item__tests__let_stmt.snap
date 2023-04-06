@@ -1,0 +1,12 @@
+---
+source: src/syntax/parser/item.rs
+expression: "test_parse(\"let a = 12 + 3\", |p| p.parse_stmt())"
+---
+(Ok(Declaration(
+  lhs: Unresolved("a"),
+  rhs: BinOp(
+    op: Add,
+    lhs: Const(ConstIdx(0)),
+    rhs: Const(ConstIdx(1)),
+  ),
+)), [], [])

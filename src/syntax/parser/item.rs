@@ -184,6 +184,13 @@ impl Parser<'_> {
                     let block = p.parse_block()?;
                     Ok(Stmt::WhileLoop { cond, block })
                 }
+                Some(TokenTree::Token(t)) if t.kind == tkind!(kwd Let) => {
+                    p.tokens.next();
+                    let ident = p.parse_ident()?;
+                    p.expect_kind(tkind!(punct Equal))?;
+                    let rhs = p.parse_expr()?;
+                    Ok(Stmt::Declaration { lhs: ident, rhs })
+                }
                 _ => p.parse_expr().map(Stmt::Expr),
             })
             .transpose()?;
@@ -306,5 +313,10 @@ mod tests {
     #[test]
     fn return_assignment() {
         assert_ron_snapshot!(test_parse("{ a = b }", |p| p.parse_block()));
+    }
+
+    #[test]
+    fn let_stmt() {
+        assert_ron_snapshot!(test_parse("let a = 12 + 3", |p| p.parse_stmt()));
     }
 }
