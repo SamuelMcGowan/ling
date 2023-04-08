@@ -2,7 +2,7 @@
 source: src/syntax/parser/item.rs
 expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |p| p.parse_module())"
 ---
-(Ok(Module(
+(Module(
   items: [
     Dummy,
     Func(Func(
@@ -15,7 +15,7 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
       ),
     )),
   ],
-)), [], [
+), [], [
   Unexpected(
     expected: "a type",
     found: Some(Span(

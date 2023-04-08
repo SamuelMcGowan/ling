@@ -4,7 +4,7 @@ use crate::syntax::token::tkind;
 use super::*;
 
 impl Parser<'_> {
-    pub fn parse_module(&mut self) -> ParseResult<Module> {
+    pub fn parse_module(&mut self) -> Module {
         let mut items = vec![];
 
         while !self.tokens.at_end() {
@@ -12,7 +12,7 @@ impl Parser<'_> {
             items.push(item);
         }
 
-        Ok(Module { items })
+        Module { items }
     }
 
     fn parse_item_or_recover(&mut self) -> Item {

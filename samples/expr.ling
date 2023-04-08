@@ -6,9 +6,17 @@ func foo() {
 }
 
 func a_call() {
+    let an_expr = foo;
     an_expr(1, 2, 3)
 }
 
 func neg_call() {
+    let a = 12;
+    let b = 14;
     -foo(a)(b)
+}
+
+func blah() {
+    let a = a;
+    blah()
 }

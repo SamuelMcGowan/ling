@@ -2,6 +2,7 @@ use macro_rules_attribute::{derive, derive_alias};
 use ustr::Ustr;
 
 use crate::constants::ConstIdx;
+use crate::symbol_table::SymbolId;
 
 use super::parser::ParseResult;
 use super::source::Span;
@@ -163,20 +164,22 @@ pub(crate) struct IfBranch {
 }
 
 #[derive(Node!)]
-pub(crate) enum Ident {
-    Unresolved(Ustr),
-}
-
-#[derive(Node!)]
 pub(crate) enum Var {
     Simple(Ident),
     Field { expr: Box<Expr>, field: Ident },
+}
+
+#[derive(Node!)]
+pub(crate) enum Ident {
+    Unresolved(Ustr),
+    Resolved(SymbolId),
 }
 
 impl Ident {
     pub fn unresolved(&self) -> Option<Ustr> {
         match self {
             Self::Unresolved(s) => Some(*s),
+            Self::Resolved(_) => None,
         }
     }
 }
