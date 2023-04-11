@@ -4,6 +4,7 @@ mod ast;
 mod chunk;
 mod constants;
 mod lexer;
+mod parser;
 mod passes;
 mod symbol_table;
 mod value;
@@ -33,7 +34,7 @@ fn run_source(source: &str) {
     let (tokens, mismatched_brackets) = syntax::token_stream::TokenStream::from_lexer(lexer);
 
     let mut errors = vec![];
-    let mut parser = syntax::parser::Parser::new(tokens.into_iter(), &mut errors);
+    let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors);
 
     let mut ast = parser.parse_module();
 

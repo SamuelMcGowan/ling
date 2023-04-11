@@ -2,8 +2,8 @@ use macro_rules_attribute::{derive, derive_alias};
 use ustr::Ustr;
 
 use crate::constants::ConstIdx;
+use crate::parser::ParseResult;
 use crate::symbol_table::SymbolId;
-use crate::syntax::parser::ParseResult;
 use crate::syntax::source::Span;
 
 derive_alias! {

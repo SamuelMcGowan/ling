@@ -115,8 +115,8 @@ mod tests {
     use insta::assert_debug_snapshot;
 
     use super::{Resolver, SymbolError};
+    use crate::parser::test_parse;
     use crate::symbol_table::SymbolTable;
-    use crate::syntax::parser::test_parse;
 
     fn test_resolve(source: &str) -> (SymbolTable, Vec<SymbolError>) {
         let (mut ast, mismatched_brackets, parse_errors) = test_parse(source, |p| p.parse_module());

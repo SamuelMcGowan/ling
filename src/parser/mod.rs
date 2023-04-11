@@ -1,10 +1,10 @@
 pub mod expr;
 pub mod item;
 
-use super::source::Span;
-use super::token_stream::{TokenIter, TokenTree};
 use crate::ast::Spanned;
 use crate::lexer::token::{BracketKind, Token, TokenKind};
+use crate::syntax::source::Span;
+use crate::syntax::token_stream::{TokenIter, TokenTree};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) enum ParseError {

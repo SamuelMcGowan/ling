@@ -231,7 +231,7 @@ impl<'a> Parser<'a> {
 mod tests {
     use insta::assert_ron_snapshot;
 
-    use crate::syntax::parser::test_parse;
+    use crate::parser::test_parse;
 
     #[test]
     fn l_assoc() {
