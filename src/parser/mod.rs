@@ -4,7 +4,7 @@ pub mod item;
 use crate::ast::Spanned;
 use crate::lexer::token::{BracketKind, Token, TokenKind};
 use crate::syntax::source::Span;
-use crate::syntax::token_stream::{TokenIter, TokenTree};
+use crate::token_stream::{TokenIter, TokenTree};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) enum ParseError {
@@ -184,7 +184,7 @@ pub(crate) fn test_parse<T>(
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, Vec<Token>, Vec<ParseError>) {
     use crate::lexer::Lexer;
-    use crate::syntax::token_stream::TokenStream;
+    use crate::token_stream::TokenStream;
 
     let lexer = Lexer::new(source);
     let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);

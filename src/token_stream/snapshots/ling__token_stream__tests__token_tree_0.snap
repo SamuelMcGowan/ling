@@ -1,0 +1,54 @@
+---
+source: src/token_stream/mod.rs
+expression: "get_stream(\"( { ) } ( hello )\")"
+---
+(TokenStream([
+  Group(
+    bracket_kind: Round,
+    tokens: TokenStream([
+      Group(
+        bracket_kind: Curly,
+        tokens: TokenStream([]),
+        span: Span(
+          start: 2,
+          end: 3,
+        ),
+      ),
+    ]),
+    span: Span(
+      start: 0,
+      end: 5,
+    ),
+  ),
+  Group(
+    bracket_kind: Round,
+    tokens: TokenStream([
+      Token(Token(
+        span: Span(
+          start: 10,
+          end: 15,
+        ),
+        kind: Ident("hello"),
+      )),
+    ]),
+    span: Span(
+      start: 8,
+      end: 17,
+    ),
+  ),
+]), [
+  Token(
+    span: Span(
+      start: 2,
+      end: 3,
+    ),
+    kind: Bracket(Opening(Curly)),
+  ),
+  Token(
+    span: Span(
+      start: 6,
+      end: 7,
+    ),
+    kind: Bracket(Closing(Curly)),
+  ),
+])

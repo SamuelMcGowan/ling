@@ -7,6 +7,7 @@ mod lexer;
 mod parser;
 mod passes;
 mod symbol_table;
+mod token_stream;
 mod value;
 
 use anyhow::{bail, Context, Result};
@@ -31,7 +32,7 @@ fn run_source(source: &str) {
     use ron::ser::{to_string_pretty, PrettyConfig};
 
     let lexer = lexer::Lexer::new(source);
-    let (tokens, mismatched_brackets) = syntax::token_stream::TokenStream::from_lexer(lexer);
+    let (tokens, mismatched_brackets) = token_stream::TokenStream::from_lexer(lexer);
 
     let mut errors = vec![];
     let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors);

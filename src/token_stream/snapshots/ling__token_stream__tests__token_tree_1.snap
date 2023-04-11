@@ -1,0 +1,32 @@
+---
+source: src/token_stream/mod.rs
+expression: "get_stream(\"{{{}}}\")"
+---
+(TokenStream([
+  Group(
+    bracket_kind: Curly,
+    tokens: TokenStream([
+      Group(
+        bracket_kind: Curly,
+        tokens: TokenStream([
+          Group(
+            bracket_kind: Curly,
+            tokens: TokenStream([]),
+            span: Span(
+              start: 2,
+              end: 4,
+            ),
+          ),
+        ]),
+        span: Span(
+          start: 1,
+          end: 5,
+        ),
+      ),
+    ]),
+    span: Span(
+      start: 0,
+      end: 6,
+    ),
+  ),
+]), [])
