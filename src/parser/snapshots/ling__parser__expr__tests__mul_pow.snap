@@ -1,0 +1,13 @@
+---
+source: src/parser/expr.rs
+expression: "test_parse(\"1 * 2 ^ 3\", |p| p.parse_expr())"
+---
+(Ok(BinOp(
+  op: Mul,
+  lhs: Const(ConstIdx(0)),
+  rhs: BinOp(
+    op: Pow,
+    lhs: Const(ConstIdx(1)),
+    rhs: Const(ConstIdx(2)),
+  ),
+)), [], [])

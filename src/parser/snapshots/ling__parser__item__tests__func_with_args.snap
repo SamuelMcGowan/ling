@@ -1,0 +1,25 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func())"
+---
+(Ok(Func(
+  ident: Unresolved("foo"),
+  params: [
+    (Unresolved("a"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+    (Unresolved("b"), Constructed(
+      ident: Unresolved("uint"),
+      params: [],
+    )),
+  ],
+  ret_ty: Constructed(
+    ident: Unresolved("string"),
+    params: [],
+  ),
+  body: Block(
+    stmts: [],
+    final_expr: Unit,
+  ),
+)), [], [])

@@ -1,0 +1,11 @@
+---
+source: src/parser/expr.rs
+expression: "test_parse(\"(1 1)\", |p| p.parse_expr())"
+---
+(Err(Unexpected(
+  expected: "end of parenthesised expression",
+  found: Some(Span(
+    start: 3,
+    end: 4,
+  )),
+)), [], [])

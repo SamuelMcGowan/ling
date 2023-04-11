@@ -1,0 +1,13 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"foo() {}\", |p| p.parse_func())"
+---
+(Ok(Func(
+  ident: Unresolved("foo"),
+  params: [],
+  ret_ty: Unit,
+  body: Block(
+    stmts: [],
+    final_expr: Unit,
+  ),
+)), [], [])

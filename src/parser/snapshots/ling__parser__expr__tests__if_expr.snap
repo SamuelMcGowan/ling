@@ -1,0 +1,23 @@
+---
+source: src/parser/expr.rs
+expression: "test_parse(\"if a == b { 12 } else { 14 }\", |p| p.parse_expr())"
+---
+(Ok(If(
+  branches: [
+    IfBranch(
+      cond: BinOp(
+        op: Equal,
+        lhs: Var(Simple(Unresolved("a"))),
+        rhs: Var(Simple(Unresolved("b"))),
+      ),
+      then: Block(
+        stmts: [],
+        final_expr: Const(ConstIdx(0)),
+      ),
+    ),
+  ],
+  else_: Some(Block(
+    stmts: [],
+    final_expr: Const(ConstIdx(1)),
+  )),
+)), [], [])

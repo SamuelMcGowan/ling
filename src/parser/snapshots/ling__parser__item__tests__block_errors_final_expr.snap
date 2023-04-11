@@ -1,0 +1,19 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"{10; 11 12}\", |p| p.parse_block())"
+---
+(Ok(Block(
+  stmts: [
+    Expr(Const(ConstIdx(0))),
+    Expr(Const(ConstIdx(1))),
+  ],
+  final_expr: Const(ConstIdx(2)),
+)), [], [
+  Unexpected(
+    expected: "semicolon",
+    found: Some(Span(
+      start: 8,
+      end: 10,
+    )),
+  ),
+])

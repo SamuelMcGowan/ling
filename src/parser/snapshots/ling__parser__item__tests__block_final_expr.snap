@@ -1,0 +1,8 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"{12}\", |p| p.parse_block())"
+---
+(Ok(Block(
+  stmts: [],
+  final_expr: Const(ConstIdx(0)),
+)), [], [])
