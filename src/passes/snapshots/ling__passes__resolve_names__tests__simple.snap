@@ -1,0 +1,14 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"func foo() {}\")"
+---
+(
+    SymbolTable {
+        symbol_lookup: [
+            Function {
+                ident: u!("foo"),
+            },
+        ],
+    },
+    [],
+)

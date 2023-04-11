@@ -1,0 +1,20 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"func foo(a: uint) { let a = a; }\")"
+---
+(
+    SymbolTable {
+        symbol_lookup: [
+            Function {
+                ident: u!("foo"),
+            },
+            Var {
+                ident: u!("a"),
+            },
+            Var {
+                ident: u!("a"),
+            },
+        ],
+    },
+    [],
+)

@@ -1,0 +1,18 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"func foo() { bloop() }\")"
+---
+(
+    SymbolTable {
+        symbol_lookup: [
+            Function {
+                ident: u!("foo"),
+            },
+        ],
+    },
+    [
+        SymbolNotFound(
+            u!("bloop"),
+        ),
+    ],
+)

@@ -31,6 +31,7 @@ impl Resolver {
     fn declare_symbol(&mut self, symbol: Symbol) -> Ident {
         let ident = symbol.ident();
 
+        // Globals can only be declared once.
         if self.scopes.is_empty() && self.stack.iter().any(|sym| sym.ident == ident) {
             self.errors.push(SymbolError::SymbolInUse(ident));
             return Ident::Unresolved(ident);
@@ -108,4 +109,69 @@ impl Visitor for Resolver {
 struct SymbolEntry {
     ident: Ustr,
     symbol_id: SymbolId,
+}
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_debug_snapshot;
+
+    use super::{Resolver, SymbolError};
+    use crate::symbol_table::SymbolTable;
+    use crate::syntax::parser::test_parse;
+
+    fn test_resolve(source: &str) -> (SymbolTable, Vec<SymbolError>) {
+        let (mut ast, mismatched_brackets, parse_errors) = test_parse(source, |p| p.parse_module());
+
+        if !mismatched_brackets.is_empty() {
+            panic!("mismatched brackets: {mismatched_brackets:?}");
+        }
+
+        if !parse_errors.is_empty() {
+            panic!("parse errors: {parse_errors:?}");
+        }
+
+        Resolver::visit(&mut ast)
+    }
+
+    #[test]
+    fn simple() {
+        assert_debug_snapshot!(test_resolve("func foo() {}"));
+    }
+
+    #[test]
+    fn duplicate_global() {
+        assert_debug_snapshot!(test_resolve("func foo() { foo() } func foo() {}"));
+    }
+
+    #[test]
+    fn shadowed_local() {
+        assert_debug_snapshot!(test_resolve("func foo() { let a = 12; let a = 12; }"));
+    }
+
+    #[test]
+    fn duplicate_global_shadowed_local() {
+        assert_debug_snapshot!(test_resolve(
+            "func foo() { let a = 12; let a = 12; } func foo() {}"
+        ));
+    }
+
+    #[test]
+    fn argument() {
+        assert_debug_snapshot!(test_resolve("func foo(a: uint) { a } func a() {}"));
+    }
+
+    #[test]
+    fn shadow_argument() {
+        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let a = 12; }"))
+    }
+
+    #[test]
+    fn resolution() {
+        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let b = a; let c = b; }"))
+    }
+
+    #[test]
+    fn unknown_var() {
+        assert_debug_snapshot!(test_resolve("func foo() { bloop() }"))
+    }
 }
