@@ -1,6 +1,6 @@
-use crate::syntax::lexer::Lexer;
+use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
+use crate::lexer::Lexer;
 use crate::syntax::source::Span;
-use crate::syntax::token::{Bracket, BracketKind, Token, TokenKind};
 
 use super::{TokenStream, TokenTree};
 

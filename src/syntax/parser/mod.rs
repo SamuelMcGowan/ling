@@ -1,10 +1,10 @@
 pub mod expr;
 pub mod item;
 
-use super::ast::Spanned;
 use super::source::Span;
-use super::token::{BracketKind, Token, TokenKind};
 use super::token_stream::{TokenIter, TokenTree};
+use crate::ast::Spanned;
+use crate::lexer::token::{BracketKind, Token, TokenKind};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) enum ParseError {
@@ -183,7 +183,7 @@ pub(crate) fn test_parse<T>(
     source: &str,
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, Vec<Token>, Vec<ParseError>) {
-    use crate::syntax::lexer::Lexer;
+    use crate::lexer::Lexer;
     use crate::syntax::token_stream::TokenStream;
 
     let lexer = Lexer::new(source);

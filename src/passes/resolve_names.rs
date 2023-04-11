@@ -1,7 +1,7 @@
 use ustr::Ustr;
 
+use crate::ast::*;
 use crate::symbol_table::{Symbol, SymbolId, SymbolTable};
-use crate::syntax::ast::*;
 
 use super::visitor::Visitor;
 

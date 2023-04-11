@@ -1,4 +1,4 @@
-use crate::syntax::ast::*;
+use crate::ast::*;
 
 pub(crate) trait Visitor {
     fn visit_module(&mut self, module: &mut Module) {

@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::constants::ConstIdx;
 
-use super::source::Span;
+use crate::syntax::source::Span;
 
 #[derive(Debug, Clone, Copy, Serialize)]
 pub(crate) struct Token {
@@ -115,34 +115,34 @@ pub(crate) enum Error {
 
 macro_rules! tkind {
     (punct $punct:ident) => {{
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
         TokenKind::Punct(Punct::$punct)
     }};
     (bracket $side:ident $bracket:ident) => {{
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
         TokenKind::Bracket(Bracket::$side(BracketKind::$bracket))
     }};
 
     (kwd $kwd:ident) => {{
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
         TokenKind::Keyword(Keyword::$kwd)
     }};
 
     (ident $ident:expr) => {{
         use ustr::Ustr;
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
 
         TokenKind::Ident(Ustr::from($ident))
     }};
     (constant $constant:literal) => {{
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
         use crate::constants::ConstIdx;
 
         TokenKind::Const(ConstIdx($constant))
     }};
 
     (error $error:ident $($value:tt)?) => {{
-        use crate::syntax::token::*;
+        use crate::lexer::token::*;
         TokenKind::Error(Error::$error $($value)?)
     }}
 }

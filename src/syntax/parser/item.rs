@@ -1,5 +1,5 @@
-use crate::syntax::ast::*;
-use crate::syntax::token::tkind;
+use crate::ast::*;
+use crate::lexer::token::tkind;
 
 use super::*;
 

@@ -4,9 +4,9 @@ use std::vec::IntoIter;
 
 use serde::Serialize;
 
-use super::lexer::Lexer;
 use super::source::Span;
-use super::token::{BracketKind, Token};
+use crate::lexer::token::{BracketKind, Token};
+use crate::lexer::Lexer;
 
 use self::builder::build_token_stream;
 

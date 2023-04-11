@@ -1,5 +1,5 @@
-use crate::syntax::ast::*;
-use crate::syntax::token::{tkind, BracketKind, TokenKind};
+use crate::ast::*;
+use crate::lexer::token::{tkind, BracketKind, TokenKind};
 use crate::syntax::token_stream::TokenTree;
 
 use super::{ParseError, ParseResult, Parser};

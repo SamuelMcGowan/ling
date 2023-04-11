@@ -1,10 +1,12 @@
-pub(crate) mod syntax;
+mod syntax;
 
-pub(crate) mod chunk;
+mod ast;
+mod chunk;
 mod constants;
-pub mod passes;
-pub(crate) mod symbol_table;
-pub(crate) mod value;
+mod lexer;
+mod passes;
+mod symbol_table;
+mod value;
 
 use anyhow::{bail, Context, Result};
 
@@ -27,7 +29,7 @@ fn main() -> Result<()> {
 fn run_source(source: &str) {
     use ron::ser::{to_string_pretty, PrettyConfig};
 
-    let lexer = syntax::lexer::Lexer::new(source);
+    let lexer = lexer::Lexer::new(source);
     let (tokens, mismatched_brackets) = syntax::token_stream::TokenStream::from_lexer(lexer);
 
     let mut errors = vec![];
