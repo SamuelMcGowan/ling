@@ -4,11 +4,10 @@ use std::vec::IntoIter;
 
 use serde::Serialize;
 
+use self::builder::build_token_stream;
 use super::source::Span;
 use crate::lexer::token::{BracketKind, Token};
 use crate::lexer::Lexer;
-
-use self::builder::build_token_stream;
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct TokenStream(Vec<TokenTree>);

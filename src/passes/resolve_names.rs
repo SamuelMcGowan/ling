@@ -1,9 +1,8 @@
 use ustr::Ustr;
 
+use super::visitor::Visitor;
 use crate::ast::*;
 use crate::symbol_table::{Symbol, SymbolId, SymbolTable};
-
-use super::visitor::Visitor;
 
 #[derive(Debug)]
 pub(crate) enum SymbolError {

@@ -1,8 +1,7 @@
+use super::{ParseError, ParseResult, Parser};
 use crate::ast::*;
 use crate::lexer::token::{tkind, BracketKind, TokenKind};
 use crate::syntax::token_stream::TokenTree;
-
-use super::{ParseError, ParseResult, Parser};
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

@@ -1,7 +1,6 @@
 use serde::Serialize;
 
 use crate::constants::ConstIdx;
-
 use crate::syntax::source::Span;
 
 #[derive(Debug, Clone, Copy, Serialize)]

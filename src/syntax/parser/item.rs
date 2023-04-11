@@ -1,7 +1,6 @@
+use super::*;
 use crate::ast::*;
 use crate::lexer::token::tkind;
-
-use super::*;
 
 impl Parser<'_> {
     pub fn parse_module(&mut self) -> Module {
@@ -138,8 +137,7 @@ impl Parser<'_> {
             match stmts.pop() {
                 Some(Stmt::Expr(expr)) => expr,
                 Some(stmt) => {
-                    // this is ok to unwrap since statement will always consume
-                    // at least one token
+                    // this is ok to unwrap since statement will always consume at least one token
                     self.report(ParseError::InvalidImplicitReturn(final_stmt_span.unwrap()));
 
                     // add the statement back to the block to improve analysis
@@ -158,12 +156,12 @@ impl Parser<'_> {
 
     fn parse_stmt_or_recover(&mut self) -> Stmt {
         self.parse_or_recover(Self::parse_stmt, |parser| {
-            // Recover *past* the semicolon so that we don't have to
-            // guess whether or not to expect a semicolon in `parse_block`.
+            // Recover *past* the semicolon so that we don't have to guess whether or not to
+            // expect a semicolon in `parse_block`.
 
             // We don't recover up to any keywords in case they appear in the statement.
-            // This could change if we later support top-items inside blocks, since these can't
-            // appear inside expressions (except inside groups).
+            // This could change if we later support top-items inside blocks, since these
+            // can't appear inside expressions (except inside groups).
 
             parser.recover_past(tkind!(punct Semicolon));
 
@@ -199,8 +197,7 @@ impl Parser<'_> {
             let rhs = self.parse_expr()?;
             match stmt_spanned.inner {
                 Stmt::Expr(Expr::Var(var)) => Ok(Stmt::Assignment { lhs: var, rhs }),
-                // parse_expr will always consume at least one token so
-                // it's ok to unwrap the span
+                // parse_expr will always consume at least one token so it's ok to unwrap the span
                 _ => Err(ParseError::InvalidAssignmentTarget(
                     stmt_spanned.span.unwrap(),
                 )),

@@ -1,8 +1,7 @@
+use super::{TokenStream, TokenTree};
 use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
 use crate::lexer::Lexer;
 use crate::syntax::source::Span;
-
-use super::{TokenStream, TokenTree};
 
 pub(super) fn build_token_stream(lexer: Lexer) -> (TokenStream, Vec<Token>) {
     TokenStreamBuilder::new(lexer).build()
