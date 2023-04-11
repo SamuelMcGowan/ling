@@ -8,7 +8,7 @@ pub(crate) mod value;
 
 use anyhow::{bail, Context, Result};
 
-use crate::passes::name_res::Resolver;
+use crate::passes::resolve_names::Resolver;
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();

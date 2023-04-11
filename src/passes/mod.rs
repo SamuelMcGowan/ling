@@ -1,2 +1,2 @@
-pub mod name_res;
+pub mod resolve_names;
 mod visitor;
