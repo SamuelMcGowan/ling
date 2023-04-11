@@ -3,8 +3,8 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 use crate::parser::ParseResult;
+use crate::source::Span;
 use crate::symbol_table::SymbolId;
-use crate::syntax::source::Span;
 
 derive_alias! {
     #[derive(Node!)] = #[derive(

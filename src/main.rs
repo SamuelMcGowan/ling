@@ -1,11 +1,10 @@
-mod syntax;
-
 mod ast;
 mod chunk;
 mod constants;
 mod lexer;
 mod parser;
 mod passes;
+mod source;
 mod symbol_table;
 mod token_stream;
 mod value;

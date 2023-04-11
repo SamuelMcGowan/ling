@@ -4,7 +4,7 @@ use ustr::Ustr;
 
 use self::token::{tkind, Token, TokenKind};
 use crate::constants::ConstantPool;
-use crate::syntax::source::{SourceIter, Span};
+use crate::source::{SourceIter, Span};
 use crate::value::Value;
 
 pub(crate) struct Lexer<'a> {

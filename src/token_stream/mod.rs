@@ -7,7 +7,7 @@ use serde::Serialize;
 use self::builder::build_token_stream;
 use crate::lexer::token::{BracketKind, Token};
 use crate::lexer::Lexer;
-use crate::syntax::source::Span;
+use crate::source::Span;
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct TokenStream(Vec<TokenTree>);

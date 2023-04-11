@@ -3,7 +3,7 @@ pub mod item;
 
 use crate::ast::Spanned;
 use crate::lexer::token::{BracketKind, Token, TokenKind};
-use crate::syntax::source::Span;
+use crate::source::Span;
 use crate::token_stream::{TokenIter, TokenTree};
 
 #[derive(Debug, Clone, serde::Serialize)]

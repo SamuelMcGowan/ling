@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::constants::ConstIdx;
-use crate::syntax::source::Span;
+use crate::source::Span;
 
 #[derive(Debug, Clone, Copy, Serialize)]
 pub(crate) struct Token {
