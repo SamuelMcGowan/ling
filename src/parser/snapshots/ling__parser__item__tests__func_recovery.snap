@@ -7,6 +7,7 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
     Dummy,
     Func(Func(
       ident: Unresolved("my_func"),
+      ty_params: [],
       params: [],
       ret_ty: Unit,
       body: Block(

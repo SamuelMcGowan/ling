@@ -42,6 +42,7 @@ pub(crate) enum Item {
 #[derive(Node!)]
 pub(crate) struct Func {
     pub ident: Ident,
+    pub ty_params: Vec<Ident>,
     pub params: Vec<(Ident, Ty)>,
     pub ret_ty: Ty,
     pub body: Block,

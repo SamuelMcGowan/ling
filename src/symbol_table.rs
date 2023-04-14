@@ -28,6 +28,8 @@ impl SymbolTable {
 pub(crate) enum Symbol {
     Function { ident: Ustr },
     Var { ident: Ustr },
+
+    TyParam { ident: Ustr },
 }
 
 impl Symbol {
@@ -35,6 +37,7 @@ impl Symbol {
         match self {
             Self::Function { ident, .. } => *ident,
             Self::Var { ident, .. } => *ident,
+            Self::TyParam { ident } => *ident,
         }
     }
 }

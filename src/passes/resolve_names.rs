@@ -8,6 +8,7 @@ use crate::symbol_table::{Symbol, SymbolId, SymbolTable};
 pub(crate) enum SymbolError {
     SymbolNotFound(Ustr),
     SymbolInUse(Ustr),
+    WrongKind(Ustr),
 }
 
 #[derive(Default)]
@@ -36,20 +37,34 @@ impl Resolver {
             return Ident::Unresolved(ident);
         }
 
+        let is_value = symbol.is_value();
         let symbol_id = self.table.add(symbol);
-        self.stack.push(SymbolEntry { ident, symbol_id });
+
+        self.stack.push(SymbolEntry {
+            ident,
+            symbol_id,
+            is_value,
+        });
 
         Ident::Resolved(symbol_id)
     }
 
-    fn resolve_ident(&mut self, ident: Ustr) -> Ident {
-        for entry in self.stack.iter().rev() {
-            if entry.ident == ident {
-                return Ident::Resolved(entry.symbol_id);
-            }
+    fn resolve(&mut self, ident: Ustr, value: bool) -> Ident {
+        let Some(entry) = self.resolve_entry(ident) else {
+            self.errors.push(SymbolError::SymbolNotFound(ident));
+            return Ident::Unresolved(ident);
+        };
+
+        if entry.is_value != value {
+            self.errors.push(SymbolError::WrongKind(ident));
+            return Ident::Unresolved(ident);
         }
-        self.errors.push(SymbolError::SymbolNotFound(ident));
-        Ident::Unresolved(ident)
+
+        Ident::Resolved(entry.symbol_id)
+    }
+
+    fn resolve_entry(&self, ident: Ustr) -> Option<&SymbolEntry> {
+        self.stack.iter().rev().find(|&entry| entry.ident == ident)
     }
 
     fn push_scope(&mut self) {
@@ -70,6 +85,12 @@ impl Visitor for Resolver {
 
         self.push_scope();
 
+        for ident in &mut func.ty_params {
+            *ident = self.declare_symbol(Symbol::TyParam {
+                ident: ident.unresolved().unwrap(),
+            });
+        }
+
         for (ident, _ty) in &mut func.params {
             *ident = self.declare_symbol(Symbol::Var {
                 ident: ident.unresolved().unwrap(),
@@ -88,7 +109,7 @@ impl Visitor for Resolver {
 
     fn visit_var(&mut self, var: &mut Var) {
         match var {
-            Var::Simple(ident) => *ident = self.resolve_ident(ident.unresolved().unwrap()),
+            Var::Simple(ident) => *ident = self.resolve(ident.unresolved().unwrap(), true),
             Var::Field { expr: _, field: _ } => {
                 // TODO
             }
@@ -104,10 +125,17 @@ impl Visitor for Resolver {
     }
 }
 
+impl Symbol {
+    fn is_value(&self) -> bool {
+        matches!(self, Symbol::Var { .. } | Symbol::Function { .. })
+    }
+}
+
 #[derive(Debug)]
 struct SymbolEntry {
     ident: Ustr,
     symbol_id: SymbolId,
+    is_value: bool,
 }
 
 #[cfg(test)]
@@ -165,8 +193,18 @@ mod tests {
     }
 
     #[test]
+    fn func_generic() {
+        assert_debug_snapshot!(test_resolve("func foo[A, B]() {}"));
+    }
+
+    #[test]
+    fn assign_to_generic() {
+        assert_debug_snapshot!(test_resolve("func foo[A]() { A = 12; }"));
+    }
+
+    #[test]
     fn resolution() {
-        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let b = a; let c = b; }"))
+        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let b = a; let c = b; }"));
     }
 
     #[test]

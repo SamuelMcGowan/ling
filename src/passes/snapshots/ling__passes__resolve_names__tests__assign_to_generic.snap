@@ -1,0 +1,21 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"func foo[A]() { A = 12; }\")"
+---
+(
+    SymbolTable {
+        symbol_lookup: [
+            Function {
+                ident: u!("foo"),
+            },
+            TyParam {
+                ident: u!("A"),
+            },
+        ],
+    },
+    [
+        WrongKind(
+            u!("A"),
+        ),
+    ],
+)

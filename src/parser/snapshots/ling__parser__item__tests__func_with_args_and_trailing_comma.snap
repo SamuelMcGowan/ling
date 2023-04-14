@@ -4,6 +4,7 @@ expression: "test_parse(\"foo(a: uint, b: uint,) {}\", |p| p.parse_func())"
 ---
 (Ok(Func(
   ident: Unresolved("foo"),
+  ty_params: [],
   params: [
     (Unresolved("a"), Constructed(
       ident: Unresolved("uint"),

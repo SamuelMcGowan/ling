@@ -33,11 +33,18 @@ impl Parser<'_> {
     fn parse_func(&mut self) -> ParseResult<Func> {
         let ident = self.parse_ident()?;
 
+        let ty_params = if let Some(tokens) = self.eat_group(BracketKind::Square) {
+            let mut parser = self.parser_for_tokens(tokens);
+            parser.parse_list("type parameters", tkind!(punct Comma), Parser::parse_ident)?
+        } else {
+            vec![]
+        };
+
         let params = {
             let tokens = self.expect_group(BracketKind::Round, "parameters list")?;
             let mut parser = self.parser_for_tokens(tokens);
 
-            parser.parse_list("function arguments", tkind!(punct Comma), |parser| {
+            parser.parse_list("function parameters", tkind!(punct Comma), |parser| {
                 let ident = parser.parse_ident()?;
                 parser.expect_kind(tkind!(punct Colon))?;
                 let ty = parser.parse_ty()?;
@@ -55,6 +62,7 @@ impl Parser<'_> {
 
         Ok(Func {
             ident,
+            ty_params,
             params,
             ret_ty,
             body,
@@ -237,6 +245,11 @@ mod tests {
     #[test]
     fn func_with_missing_ret_type() {
         assert_ron_snapshot!(test_parse("foo(a: uint) -> {}", |p| p.parse_func()));
+    }
+
+    #[test]
+    fn func_generic() {
+        assert_ron_snapshot!(test_parse("foo[A, B]() {}", |p| p.parse_func()));
     }
 
     #[test]

@@ -1,10 +1,13 @@
 ---
 source: src/parser/item.rs
-expression: "test_parse(\"foo() {}\", |p| p.parse_func())"
+expression: "test_parse(\"foo[A, B]() {}\", |p| p.parse_func())"
 ---
 (Ok(Func(
   ident: Unresolved("foo"),
-  ty_params: [],
+  ty_params: [
+    Unresolved("A"),
+    Unresolved("B"),
+  ],
   params: [],
   ret_ty: Unit,
   body: Block(
