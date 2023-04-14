@@ -5,6 +5,7 @@
 ## Later
 
 - match, type, enum, data, typeclass, impl
+- polymorphic functions
 
 ## Minor
 
