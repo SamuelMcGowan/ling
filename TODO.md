@@ -5,7 +5,8 @@
 ## Later
 
 - match, type, enum, data, typeclass, impl
-- polymorphic functions
+- resolve types
+- print compile errors (codespan)
 
 ## Minor
 
