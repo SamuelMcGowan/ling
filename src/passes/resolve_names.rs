@@ -7,7 +7,7 @@ use crate::symbol_table::{Symbol, SymbolId, SymbolKind, SymbolTable};
 #[derive(Debug)]
 pub(crate) enum SymbolError {
     SymbolNotFound(Ustr),
-    SymbolInUse(Ustr),
+    GlobalShadowed(Ustr),
     WrongKind(Ustr),
 }
 
@@ -70,7 +70,7 @@ impl Resolver {
     fn declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
         // check a global isn't already declared with this name.
         if self.globals.iter().any(|entry| entry.ident == ident) {
-            self.errors.push(SymbolError::SymbolInUse(ident));
+            self.errors.push(SymbolError::GlobalShadowed(ident));
             return Ident::Unresolved(ident);
         }
 
