@@ -295,6 +295,11 @@ mod tests {
     }
 
     #[test]
+    fn scopes() {
+        assert_debug_snapshot!(test_resolve("func foo() { loop { let a = 12; } a;}"));
+    }
+
+    #[test]
     fn unknown_var() {
         assert_debug_snapshot!(test_resolve("func foo() { bloop() }"))
     }
