@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn duplicate_global() {
+    fn shadowed_global() {
         assert_debug_snapshot!(test_resolve("func foo() { foo() } func foo() {}"));
     }
 
@@ -248,7 +248,7 @@ mod tests {
     }
 
     #[test]
-    fn duplicate_global_shadowed_local() {
+    fn shadowed_global_shadowed_local() {
         assert_debug_snapshot!(test_resolve(
             "func foo() { let a = 12; let a = 12; } func foo() {}"
         ));
@@ -275,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn shadow_argument() {
+    fn argument_shadowed() {
         assert_debug_snapshot!(test_resolve("func foo(a: uint) { let a = 12; }"))
     }
 
