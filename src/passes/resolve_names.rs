@@ -123,9 +123,31 @@ impl Resolver {
     }
 }
 
+impl Resolver {
+    fn forward_declare_item(&mut self, item: &mut Item) {
+        match item {
+            Item::Func(func) => {
+                func.ident =
+                    self.declare_global(func.ident.unresolved().unwrap(), SymbolKind::Function);
+            }
+            Item::Dummy => {}
+        }
+    }
+}
+
 impl Visitor for Resolver {
+    fn walk_module(&mut self, module: &mut Module) {
+        for item in &mut module.items {
+            self.forward_declare_item(item);
+        }
+
+        for item in &mut module.items {
+            self.visit_item(item);
+        }
+    }
+
     fn visit_func(&mut self, func: &mut Func) {
-        func.ident = self.declare_global(func.ident.unresolved().unwrap(), SymbolKind::Function);
+        // function should already be declared
 
         self.push_scope();
 
@@ -232,6 +254,11 @@ mod tests {
     #[test]
     fn global_shadowing_builtin() {
         assert_debug_snapshot!(test_resolve("func uint() { uint() }"))
+    }
+
+    #[test]
+    fn forward_declaration() {
+        assert_debug_snapshot!(test_resolve("func a() { a(); b(); } func b() {}"))
     }
 
     #[test]

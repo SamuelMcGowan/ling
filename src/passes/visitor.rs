@@ -6,10 +6,17 @@ pub(crate) trait Visitor {
     }
     fn walk_module(&mut self, module: &mut Module) {
         for item in &mut module.items {
-            match item {
-                Item::Func(func) => self.visit_func(func),
-                Item::Dummy => {}
-            }
+            self.visit_item(item);
+        }
+    }
+
+    fn visit_item(&mut self, item: &mut Item) {
+        self.walk_item(item);
+    }
+    fn walk_item(&mut self, item: &mut Item) {
+        match item {
+            Item::Func(func) => self.visit_func(func),
+            Item::Dummy => {}
         }
     }
 

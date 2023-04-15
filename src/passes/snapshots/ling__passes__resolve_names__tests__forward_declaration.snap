@@ -1,6 +1,6 @@
 ---
 source: src/passes/resolve_names.rs
-expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
+expression: "test_resolve(\"func a() { a(); b(); } func b() {}\")"
 ---
 (
     SymbolTable {
@@ -14,16 +14,12 @@ expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
                 kind: TyStruct,
             },
             Symbol {
-                ident: u!("foo"),
-                kind: Function,
-            },
-            Symbol {
                 ident: u!("a"),
                 kind: Function,
             },
             Symbol {
-                ident: u!("a"),
-                kind: Var,
+                ident: u!("b"),
+                kind: Function,
             },
         ],
     },
