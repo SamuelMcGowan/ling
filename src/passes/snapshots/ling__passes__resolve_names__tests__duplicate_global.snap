@@ -20,7 +20,7 @@ expression: "test_resolve(\"func foo() { foo() } func foo() {}\")"
         ],
     },
     [
-        SymbolInUse(
+        GlobalShadowed(
             u!("foo"),
         ),
     ],

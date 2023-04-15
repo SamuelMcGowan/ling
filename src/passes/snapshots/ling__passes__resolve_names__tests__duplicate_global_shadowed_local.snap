@@ -28,7 +28,7 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; } func foo() {}
         ],
     },
     [
-        SymbolInUse(
+        GlobalShadowed(
             u!("foo"),
         ),
     ],
