@@ -7,6 +7,7 @@
 - match, type, enum, data, typeclass, impl
 - resolve types
 - print compile errors (codespan)
+- allow "forward referencing" functions and types
 
 ## Minor
 
