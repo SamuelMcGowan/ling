@@ -25,24 +25,24 @@ impl SymbolTable {
 }
 
 #[derive(Debug)]
-pub(crate) enum Symbol {
-    Function { ident: Ustr },
-    Var { ident: Ustr },
-
-    TyParam { ident: Ustr },
-
-    // TODO: fields, etc.
-    TyStruct { ident: Ustr },
+pub(crate) struct Symbol {
+    pub ident: Ustr,
+    pub kind: SymbolKind,
 }
 
-impl Symbol {
-    pub fn ident(&self) -> Ustr {
-        // TODO: store ident as field
-        match self {
-            Self::Function { ident, .. } => *ident,
-            Self::Var { ident, .. } => *ident,
-            Self::TyParam { ident } => *ident,
-            Self::TyStruct { ident } => *ident,
-        }
+#[derive(Debug)]
+pub(crate) enum SymbolKind {
+    Function,
+    Var,
+
+    TyParam,
+
+    // TODO: fields, etc.
+    TyStruct,
+}
+
+impl SymbolKind {
+    pub fn is_value(&self) -> bool {
+        matches!(self, Self::Var | Self::Function)
     }
 }

@@ -5,14 +5,17 @@ expression: "test_resolve(\"func uint() { uint() }\")"
 (
     SymbolTable {
         symbol_lookup: [
-            TyStruct {
+            Symbol {
                 ident: u!("int"),
+                kind: TyStruct,
             },
-            TyStruct {
+            Symbol {
                 ident: u!("uint"),
+                kind: TyStruct,
             },
-            Function {
+            Symbol {
                 ident: u!("uint"),
+                kind: Function,
             },
         ],
     },

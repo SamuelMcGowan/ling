@@ -5,17 +5,21 @@ expression: "test_resolve(\"func foo[A]() { A = 12; }\")"
 (
     SymbolTable {
         symbol_lookup: [
-            TyStruct {
+            Symbol {
                 ident: u!("int"),
+                kind: TyStruct,
             },
-            TyStruct {
+            Symbol {
                 ident: u!("uint"),
+                kind: TyStruct,
             },
-            Function {
+            Symbol {
                 ident: u!("foo"),
+                kind: Function,
             },
-            TyParam {
+            Symbol {
                 ident: u!("A"),
+                kind: TyParam,
             },
         ],
     },

@@ -2,7 +2,7 @@ use ustr::Ustr;
 
 use super::visitor::Visitor;
 use crate::ast::*;
-use crate::symbol_table::{Symbol, SymbolId, SymbolTable};
+use crate::symbol_table::{Symbol, SymbolId, SymbolKind, SymbolTable};
 
 #[derive(Debug)]
 pub(crate) enum SymbolError {
@@ -37,12 +37,8 @@ impl Resolver {
             errors: vec![],
         };
 
-        r.declare_builtin(Symbol::TyStruct {
-            ident: "int".into(),
-        });
-        r.declare_builtin(Symbol::TyStruct {
-            ident: "uint".into(),
-        });
+        r.declare_builtin("int", SymbolKind::TyStruct);
+        r.declare_builtin("uint", SymbolKind::TyStruct);
 
         r
     }
@@ -53,11 +49,10 @@ impl Resolver {
         (resolver.table, resolver.errors)
     }
 
-    fn declare(&mut self, symbol: Symbol) -> SymbolEntry {
-        let ident = symbol.ident();
+    fn declare(&mut self, ident: Ustr, kind: SymbolKind) -> SymbolEntry {
+        let is_value = kind.is_value();
 
-        let is_value = symbol.is_value();
-        let symbol_id = self.table.add(symbol);
+        let symbol_id = self.table.add(Symbol { ident, kind });
 
         SymbolEntry {
             ident,
@@ -66,29 +61,28 @@ impl Resolver {
         }
     }
 
-    fn declare_builtin(&mut self, symbol: Symbol) {
-        let entry = self.declare(symbol);
+    fn declare_builtin(&mut self, ident: impl Into<Ustr>, kind: SymbolKind) {
+        let entry = self.declare(ident.into(), kind);
         self.builtins.push(entry);
     }
 
     #[must_use]
-    fn declare_global(&mut self, symbol: Symbol) -> Ident {
+    fn declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
         // check a global isn't already declared with this name.
-        let ident = symbol.ident();
         if self.globals.iter().any(|entry| entry.ident == ident) {
             self.errors.push(SymbolError::SymbolInUse(ident));
             return Ident::Unresolved(ident);
         }
 
-        let entry = self.declare(symbol);
+        let entry = self.declare(ident, kind);
         self.globals.push(entry);
 
         Ident::Resolved(entry.symbol_id)
     }
 
     #[must_use]
-    fn declare_local(&mut self, symbol: Symbol) -> Ident {
-        let entry = self.declare(symbol);
+    fn declare_local(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
+        let entry = self.declare(ident, kind);
         self.locals.push(entry);
 
         Ident::Resolved(entry.symbol_id)
@@ -131,22 +125,16 @@ impl Resolver {
 
 impl Visitor for Resolver {
     fn visit_func(&mut self, func: &mut Func) {
-        func.ident = self.declare_global(Symbol::Function {
-            ident: func.ident.unresolved().unwrap(),
-        });
+        func.ident = self.declare_global(func.ident.unresolved().unwrap(), SymbolKind::Function);
 
         self.push_scope();
 
         for ident in &mut func.ty_params {
-            *ident = self.declare_local(Symbol::TyParam {
-                ident: ident.unresolved().unwrap(),
-            });
+            *ident = self.declare_local(ident.unresolved().unwrap(), SymbolKind::TyParam);
         }
 
         for (ident, ty) in &mut func.params {
-            *ident = self.declare_local(Symbol::Var {
-                ident: ident.unresolved().unwrap(),
-            });
+            *ident = self.declare_local(ident.unresolved().unwrap(), SymbolKind::Var);
             self.visit_ty(ty);
         }
         self.visit_ty(&mut func.ret_ty);
@@ -174,9 +162,7 @@ impl Visitor for Resolver {
     fn visit_declaration(&mut self, lhs: &mut Ident, rhs: &mut Expr) {
         // visit expression first so that identifier can't appear in expression.
         self.visit_expr(rhs);
-        *lhs = self.declare_local(Symbol::Var {
-            ident: lhs.unresolved().unwrap(),
-        });
+        *lhs = self.declare_local(lhs.unresolved().unwrap(), SymbolKind::Var);
     }
 
     fn visit_ty(&mut self, ty: &mut Ty) {
@@ -189,12 +175,6 @@ impl Visitor for Resolver {
                 }
             }
         }
-    }
-}
-
-impl Symbol {
-    fn is_value(&self) -> bool {
-        matches!(self, Symbol::Var { .. } | Symbol::Function { .. })
     }
 }
 
