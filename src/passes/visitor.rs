@@ -85,6 +85,8 @@ pub(crate) trait Visitor {
 
     fn visit_var(&mut self, var: &mut Var);
 
+    fn visit_ty(&mut self, ty: &mut Ty);
+
     fn visit_loop(&mut self, block: &mut Block) {
         self.visit_block(block)
     }

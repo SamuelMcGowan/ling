@@ -11,44 +11,90 @@ pub(crate) enum SymbolError {
     WrongKind(Ustr),
 }
 
-#[derive(Default)]
 pub(crate) struct Resolver {
     table: SymbolTable,
 
-    stack: Vec<SymbolEntry>,
+    builtins: Vec<SymbolEntry>,
+    globals: Vec<SymbolEntry>,
+    locals: Vec<SymbolEntry>,
+
     scopes: Vec<usize>,
 
     errors: Vec<SymbolError>,
 }
 
 impl Resolver {
+    pub fn new() -> Self {
+        let mut r = Self {
+            table: SymbolTable::default(),
+
+            builtins: vec![],
+            globals: vec![],
+            locals: vec![],
+
+            scopes: vec![],
+
+            errors: vec![],
+        };
+
+        r.declare_builtin(Symbol::TyStruct {
+            ident: "int".into(),
+        });
+        r.declare_builtin(Symbol::TyStruct {
+            ident: "uint".into(),
+        });
+
+        r
+    }
+
     pub fn visit(ast: &mut Module) -> (SymbolTable, Vec<SymbolError>) {
-        let mut resolver = Self::default();
+        let mut resolver = Self::new();
         resolver.visit_module(ast);
         (resolver.table, resolver.errors)
     }
 
-    fn declare_symbol(&mut self, symbol: Symbol) -> Ident {
+    fn declare(&mut self, symbol: Symbol) -> SymbolEntry {
         let ident = symbol.ident();
-
-        // Globals can only be declared once.
-        if self.scopes.is_empty() && self.stack.iter().any(|sym| sym.ident == ident) {
-            self.errors.push(SymbolError::SymbolInUse(ident));
-            return Ident::Unresolved(ident);
-        }
 
         let is_value = symbol.is_value();
         let symbol_id = self.table.add(symbol);
 
-        self.stack.push(SymbolEntry {
+        SymbolEntry {
             ident,
             symbol_id,
             is_value,
-        });
-
-        Ident::Resolved(symbol_id)
+        }
     }
 
+    fn declare_builtin(&mut self, symbol: Symbol) {
+        let entry = self.declare(symbol);
+        self.builtins.push(entry);
+    }
+
+    #[must_use]
+    fn declare_global(&mut self, symbol: Symbol) -> Ident {
+        // check a global isn't already declared with this name.
+        let ident = symbol.ident();
+        if self.globals.iter().any(|entry| entry.ident == ident) {
+            self.errors.push(SymbolError::SymbolInUse(ident));
+            return Ident::Unresolved(ident);
+        }
+
+        let entry = self.declare(symbol);
+        self.globals.push(entry);
+
+        Ident::Resolved(entry.symbol_id)
+    }
+
+    #[must_use]
+    fn declare_local(&mut self, symbol: Symbol) -> Ident {
+        let entry = self.declare(symbol);
+        self.locals.push(entry);
+
+        Ident::Resolved(entry.symbol_id)
+    }
+
+    #[must_use]
     fn resolve(&mut self, ident: Ustr, value: bool) -> Ident {
         let Some(entry) = self.resolve_entry(ident) else {
             self.errors.push(SymbolError::SymbolNotFound(ident));
@@ -64,38 +110,47 @@ impl Resolver {
     }
 
     fn resolve_entry(&self, ident: Ustr) -> Option<&SymbolEntry> {
-        self.stack.iter().rev().find(|&entry| entry.ident == ident)
+        fn find_entry(ident: Ustr, entries: &[SymbolEntry]) -> Option<&SymbolEntry> {
+            entries.iter().rev().find(|entry| entry.ident == ident)
+        }
+
+        find_entry(ident, &self.locals)
+            .or_else(|| find_entry(ident, &self.globals))
+            .or_else(|| find_entry(ident, &self.builtins))
     }
 
     fn push_scope(&mut self) {
-        self.scopes.push(self.stack.len());
+        self.scopes.push(self.locals.len());
     }
 
     fn pop_scope(&mut self) {
-        let old_len = self.scopes.pop().unwrap();
-        self.stack.truncate(old_len);
+        let start_len = self.scopes.pop().unwrap();
+        self.locals.truncate(start_len);
     }
 }
 
 impl Visitor for Resolver {
     fn visit_func(&mut self, func: &mut Func) {
-        func.ident = self.declare_symbol(Symbol::Function {
+        func.ident = self.declare_global(Symbol::Function {
             ident: func.ident.unresolved().unwrap(),
         });
 
         self.push_scope();
 
         for ident in &mut func.ty_params {
-            *ident = self.declare_symbol(Symbol::TyParam {
+            *ident = self.declare_local(Symbol::TyParam {
                 ident: ident.unresolved().unwrap(),
             });
         }
 
-        for (ident, _ty) in &mut func.params {
-            *ident = self.declare_symbol(Symbol::Var {
+        for (ident, ty) in &mut func.params {
+            *ident = self.declare_local(Symbol::Var {
                 ident: ident.unresolved().unwrap(),
             });
+            self.visit_ty(ty);
         }
+        self.visit_ty(&mut func.ret_ty);
+
         self.visit_block(&mut func.body);
 
         self.pop_scope();
@@ -119,9 +174,21 @@ impl Visitor for Resolver {
     fn visit_declaration(&mut self, lhs: &mut Ident, rhs: &mut Expr) {
         // visit expression first so that identifier can't appear in expression.
         self.visit_expr(rhs);
-        *lhs = self.declare_symbol(Symbol::Var {
+        *lhs = self.declare_local(Symbol::Var {
             ident: lhs.unresolved().unwrap(),
         });
+    }
+
+    fn visit_ty(&mut self, ty: &mut Ty) {
+        match ty {
+            Ty::Unit => {}
+            Ty::Constructed { ident, params } => {
+                *ident = self.resolve(ident.unresolved().unwrap(), false);
+                for param in params {
+                    self.visit_ty(param);
+                }
+            }
+        }
     }
 }
 
@@ -131,7 +198,7 @@ impl Symbol {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct SymbolEntry {
     ident: Ustr,
     symbol_id: SymbolId,
@@ -180,6 +247,11 @@ mod tests {
         assert_debug_snapshot!(test_resolve(
             "func foo() { let a = 12; let a = 12; } func foo() {}"
         ));
+    }
+
+    #[test]
+    fn global_shadowing_builtin() {
+        assert_debug_snapshot!(test_resolve("func uint() { uint() }"))
     }
 
     #[test]

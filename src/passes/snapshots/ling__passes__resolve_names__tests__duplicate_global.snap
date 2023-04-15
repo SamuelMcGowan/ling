@@ -5,6 +5,12 @@ expression: "test_resolve(\"func foo() { foo() } func foo() {}\")"
 (
     SymbolTable {
         symbol_lookup: [
+            TyStruct {
+                ident: u!("int"),
+            },
+            TyStruct {
+                ident: u!("uint"),
+            },
             Function {
                 ident: u!("foo"),
             },

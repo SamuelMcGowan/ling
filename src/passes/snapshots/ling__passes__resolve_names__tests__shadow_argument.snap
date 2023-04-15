@@ -1,10 +1,16 @@
 ---
 source: src/passes/resolve_names.rs
-expression: "test_resolve(\"func foo(a: uint) { let a = a; }\")"
+expression: "test_resolve(\"func foo(a: uint) { let a = 12; }\")"
 ---
 (
     SymbolTable {
         symbol_lookup: [
+            TyStruct {
+                ident: u!("int"),
+            },
+            TyStruct {
+                ident: u!("uint"),
+            },
             Function {
                 ident: u!("foo"),
             },

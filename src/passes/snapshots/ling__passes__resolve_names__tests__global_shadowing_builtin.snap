@@ -1,6 +1,6 @@
 ---
 source: src/passes/resolve_names.rs
-expression: "test_resolve(\"func foo() {}\")"
+expression: "test_resolve(\"func uint() { uint() }\")"
 ---
 (
     SymbolTable {
@@ -12,7 +12,7 @@ expression: "test_resolve(\"func foo() {}\")"
                 ident: u!("uint"),
             },
             Function {
-                ident: u!("foo"),
+                ident: u!("uint"),
             },
         ],
     },
