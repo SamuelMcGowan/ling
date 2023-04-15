@@ -3,6 +3,51 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { foo() } func foo() {}\")"
 ---
 (
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [],
+                        final_expr: Call {
+                            callee: Var(
+                                Simple(
+                                    Resolved(
+                                        SymbolId(
+                                            2,
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            args: [],
+                        },
+                    },
+                },
+            ),
+            Func(
+                Func {
+                    ident: Unresolved(
+                        u!("foo"),
+                    ),
+                    ty_params: [],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [],
+                        final_expr: Unit,
+                    },
+                },
+            ),
+        ],
+    },
     SymbolTable {
         symbol_lookup: [
             Symbol {

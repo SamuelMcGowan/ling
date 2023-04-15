@@ -3,6 +3,66 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
 ---
 (
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [
+                        (
+                            Resolved(
+                                SymbolId(
+                                    4,
+                                ),
+                            ),
+                            Constructed {
+                                ident: Resolved(
+                                    SymbolId(
+                                        1,
+                                    ),
+                                ),
+                                params: [],
+                            },
+                        ),
+                    ],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [],
+                        final_expr: Var(
+                            Simple(
+                                Resolved(
+                                    SymbolId(
+                                        4,
+                                    ),
+                                ),
+                            ),
+                        ),
+                    },
+                },
+            ),
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            3,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [],
+                        final_expr: Unit,
+                    },
+                },
+            ),
+        ],
+    },
     SymbolTable {
         symbol_lookup: [
             Symbol {

@@ -212,10 +212,11 @@ mod tests {
     use insta::assert_debug_snapshot;
 
     use super::{Resolver, SymbolError};
+    use crate::ast::Module;
     use crate::parser::test_parse;
     use crate::symbol_table::SymbolTable;
 
-    fn test_resolve(source: &str) -> (SymbolTable, Vec<SymbolError>) {
+    fn test_resolve(source: &str) -> (Module, SymbolTable, Vec<SymbolError>) {
         let (mut ast, mismatched_brackets, parse_errors) = test_parse(source, |p| p.parse_module());
 
         if !mismatched_brackets.is_empty() {
@@ -226,7 +227,9 @@ mod tests {
             panic!("parse errors: {parse_errors:?}");
         }
 
-        Resolver::visit(&mut ast)
+        let (table, errors) = Resolver::visit(&mut ast);
+
+        (ast, table, errors)
     }
 
     #[test]

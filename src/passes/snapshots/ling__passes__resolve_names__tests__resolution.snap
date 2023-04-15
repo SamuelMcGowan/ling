@@ -3,6 +3,75 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo(a: uint) { let b = a; let c = b; }\")"
 ---
 (
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [
+                        (
+                            Resolved(
+                                SymbolId(
+                                    3,
+                                ),
+                            ),
+                            Constructed {
+                                ident: Resolved(
+                                    SymbolId(
+                                        1,
+                                    ),
+                                ),
+                                params: [],
+                            },
+                        ),
+                    ],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [
+                            Declaration {
+                                lhs: Resolved(
+                                    SymbolId(
+                                        4,
+                                    ),
+                                ),
+                                rhs: Var(
+                                    Simple(
+                                        Resolved(
+                                            SymbolId(
+                                                3,
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            },
+                            Declaration {
+                                lhs: Resolved(
+                                    SymbolId(
+                                        5,
+                                    ),
+                                ),
+                                rhs: Var(
+                                    Simple(
+                                        Resolved(
+                                            SymbolId(
+                                                4,
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            },
+                        ],
+                        final_expr: Unit,
+                    },
+                },
+            ),
+        ],
+    },
     SymbolTable {
         symbol_lookup: [
             Symbol {

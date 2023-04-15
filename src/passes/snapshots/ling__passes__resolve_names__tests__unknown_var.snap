@@ -3,6 +3,35 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { bloop() }\")"
 ---
 (
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [],
+                        final_expr: Call {
+                            callee: Var(
+                                Simple(
+                                    Unresolved(
+                                        u!("bloop"),
+                                    ),
+                                ),
+                            ),
+                            args: [],
+                        },
+                    },
+                },
+            ),
+        ],
+    },
     SymbolTable {
         symbol_lookup: [
             Symbol {

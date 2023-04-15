@@ -3,6 +3,45 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo[A]() { A = 12; }\")"
 ---
 (
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [
+                        Resolved(
+                            SymbolId(
+                                3,
+                            ),
+                        ),
+                    ],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [
+                            Assignment {
+                                lhs: Simple(
+                                    Unresolved(
+                                        u!("A"),
+                                    ),
+                                ),
+                                rhs: Const(
+                                    ConstIdx(
+                                        0,
+                                    ),
+                                ),
+                            },
+                        ],
+                        final_expr: Unit,
+                    },
+                },
+            ),
+        ],
+    },
     SymbolTable {
         symbol_lookup: [
             Symbol {
