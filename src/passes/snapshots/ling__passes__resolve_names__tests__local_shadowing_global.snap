@@ -1,0 +1,80 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"func foo() { let foo = 12; let a = foo; }\")"
+---
+(
+    Module {
+        items: [
+            Func(
+                Func {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    params: [],
+                    ret_ty: Unit,
+                    body: Block {
+                        stmts: [
+                            Declaration {
+                                lhs: Resolved(
+                                    SymbolId(
+                                        3,
+                                    ),
+                                ),
+                                rhs: Const(
+                                    ConstIdx(
+                                        0,
+                                    ),
+                                ),
+                            },
+                            Declaration {
+                                lhs: Resolved(
+                                    SymbolId(
+                                        4,
+                                    ),
+                                ),
+                                rhs: Var(
+                                    Simple(
+                                        Resolved(
+                                            SymbolId(
+                                                3,
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            },
+                        ],
+                        final_expr: Unit,
+                    },
+                },
+            ),
+        ],
+    },
+    SymbolTable {
+        symbol_lookup: [
+            Symbol {
+                ident: u!("int"),
+                kind: TyStruct,
+            },
+            Symbol {
+                ident: u!("uint"),
+                kind: TyStruct,
+            },
+            Symbol {
+                ident: u!("foo"),
+                kind: Function,
+            },
+            Symbol {
+                ident: u!("foo"),
+                kind: Var,
+            },
+            Symbol {
+                ident: u!("a"),
+                kind: Var,
+            },
+        ],
+    },
+    [],
+)

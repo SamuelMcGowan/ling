@@ -255,6 +255,11 @@ mod tests {
     }
 
     #[test]
+    fn local_shadowing_global() {
+        assert_debug_snapshot!(test_resolve("func foo() { let foo = 12; let a = foo; }"))
+    }
+
+    #[test]
     fn global_shadowing_builtin() {
         assert_debug_snapshot!(test_resolve("func uint() { uint() }"))
     }
