@@ -1,13 +1,12 @@
 # Todo
 
-## Next
-
-## Later
-
-- match, type, enum, data, typeclass, impl
-- resolve types
+- type
+- match
+- impl
+- typeclass
 - print compile errors (codespan)
-- allow "forward referencing" functions and types
+- *type checking*
+- resolve field accesses (after type checking)
 
 ## Minor
 
