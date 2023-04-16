@@ -1,3 +1,6 @@
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+
 use ustr::Ustr;
 
 use super::visitor::Visitor;
@@ -14,10 +17,10 @@ pub(crate) enum SymbolError {
 pub(crate) struct Resolver {
     table: SymbolTable,
 
-    builtins: Vec<SymbolEntry>,
-    globals: Vec<SymbolEntry>,
-    locals: Vec<SymbolEntry>,
+    builtins: HashMap<Ustr, SymbolEntry>,
+    globals: HashMap<Ustr, SymbolEntry>,
 
+    locals: Vec<SymbolEntry>,
     scopes: Vec<usize>,
 
     errors: Vec<SymbolError>,
@@ -28,8 +31,8 @@ impl Resolver {
         let mut r = Self {
             table: SymbolTable::default(),
 
-            builtins: vec![],
-            globals: vec![],
+            builtins: HashMap::new(),
+            globals: HashMap::new(),
             locals: vec![],
 
             scopes: vec![],
@@ -49,40 +52,37 @@ impl Resolver {
         (resolver.table, resolver.errors)
     }
 
-    fn declare(&mut self, ident: Ustr, kind: SymbolKind) -> SymbolEntry {
-        let is_value = kind.is_value();
-
-        let symbol_id = self.table.add(Symbol { ident, kind });
-
-        SymbolEntry {
-            ident,
-            symbol_id,
-            is_value,
-        }
-    }
-
     fn declare_builtin(&mut self, ident: impl Into<Ustr>, kind: SymbolKind) {
-        let entry = self.declare(ident.into(), kind);
-        self.builtins.push(entry);
+        let ident = ident.into();
+        let entry = self.table.add_and_get_entry(ident, kind);
+        self.builtins.insert(ident, entry);
     }
 
     #[must_use]
     fn declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
         // check a global isn't already declared with this name.
-        if self.globals.iter().any(|entry| entry.ident == ident) {
+        if self.globals.contains_key(&ident) {
             self.errors.push(SymbolError::GlobalShadowed(ident));
             return Ident::Unresolved(ident);
         }
 
-        let entry = self.declare(ident, kind);
-        self.globals.push(entry);
-
-        Ident::Resolved(entry.symbol_id)
+        match self.globals.entry(ident) {
+            Entry::Occupied(_) => {
+                self.errors.push(SymbolError::GlobalShadowed(ident));
+                Ident::Unresolved(ident)
+            }
+            Entry::Vacant(vacant) => {
+                let symbol_entry = self.table.add_and_get_entry(ident, kind);
+                vacant.insert(symbol_entry);
+                
+                Ident::Resolved(symbol_entry.symbol_id)
+            }
+        }
     }
 
     #[must_use]
     fn declare_local(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
-        let entry = self.declare(ident, kind);
+        let entry = self.table.add_and_get_entry(ident, kind);
         self.locals.push(entry);
 
         Ident::Resolved(entry.symbol_id)
@@ -104,13 +104,10 @@ impl Resolver {
     }
 
     fn resolve_entry(&self, ident: Ustr) -> Option<&SymbolEntry> {
-        fn find_entry(ident: Ustr, entries: &[SymbolEntry]) -> Option<&SymbolEntry> {
-            entries.iter().rev().find(|entry| entry.ident == ident)
-        }
-
-        find_entry(ident, &self.locals)
-            .or_else(|| find_entry(ident, &self.globals))
-            .or_else(|| find_entry(ident, &self.builtins))
+        let find_local_entry = || self.locals.iter().rev().find(|entry| entry.ident == ident);
+        find_local_entry()
+            .or_else(|| self.globals.get(&ident))
+            .or_else(|| self.builtins.get(&ident))
     }
 
     fn push_scope(&mut self) {
@@ -120,6 +117,20 @@ impl Resolver {
     fn pop_scope(&mut self) {
         let start_len = self.scopes.pop().unwrap();
         self.locals.truncate(start_len);
+    }
+}
+
+impl SymbolTable {
+    fn add_and_get_entry(&mut self, ident: Ustr, kind: SymbolKind) -> SymbolEntry {
+        let is_value = kind.is_value();
+
+        let symbol_id = self.add(Symbol { ident, kind });
+
+        SymbolEntry {
+            ident,
+            symbol_id,
+            is_value,
+        }
     }
 }
 
