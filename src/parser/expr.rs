@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
                     if let Expr::Var(Var::Simple(ident)) = rhs_expr {
                         Expr::Var(Var::Field {
                             expr: Box::new(expr),
-                            field: ident,
+                            field: ident.unresolved().unwrap(),
                         })
                     } else {
                         // span is always valid - `parse_prec` always consumes a token

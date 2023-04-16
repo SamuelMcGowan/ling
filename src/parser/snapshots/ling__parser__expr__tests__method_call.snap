@@ -6,9 +6,9 @@ expression: "test_parse(\"a.b().c\", |p| p.parse_expr())"
   expr: Call(
     callee: Var(Field(
       expr: Var(Simple(Unresolved("a"))),
-      field: Unresolved("b"),
+      field: "b",
     )),
     args: [],
   ),
-  field: Unresolved("c"),
+  field: "c",
 ))), [], [])

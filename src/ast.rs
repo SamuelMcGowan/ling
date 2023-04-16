@@ -174,7 +174,7 @@ pub(crate) struct IfBranch {
 #[derive(Node!)]
 pub(crate) enum Var {
     Simple(Ident),
-    Field { expr: Box<Expr>, field: Ident },
+    Field { expr: Box<Expr>, field: Ustr },
 }
 
 #[derive(Node!)]
