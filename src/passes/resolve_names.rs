@@ -130,7 +130,17 @@ impl Resolver {
                 func.ident =
                     self.declare_global(func.ident.unresolved().unwrap(), SymbolKind::Function);
             }
+            Item::Struct(strukt) => {
+                strukt.ident =
+                    self.declare_global(strukt.ident.unresolved().unwrap(), SymbolKind::TyStruct);
+            }
             Item::Dummy => {}
+        }
+    }
+
+    fn declare_ty_params(&mut self, ty_params: &mut [Ident]) {
+        for ident in ty_params {
+            *ident = self.declare_local(ident.unresolved().unwrap(), SymbolKind::TyParam);
         }
     }
 }
@@ -147,13 +157,11 @@ impl Visitor for Resolver {
     }
 
     fn visit_func(&mut self, func: &mut Func) {
-        // function should already be declared
+        // already declared
 
         self.push_scope();
 
-        for ident in &mut func.ty_params {
-            *ident = self.declare_local(ident.unresolved().unwrap(), SymbolKind::TyParam);
-        }
+        self.declare_ty_params(&mut func.ty_params);
 
         for (ident, ty) in &mut func.params {
             *ident = self.declare_local(ident.unresolved().unwrap(), SymbolKind::Var);
@@ -162,6 +170,20 @@ impl Visitor for Resolver {
         self.visit_ty(&mut func.ret_ty);
 
         self.visit_block(&mut func.body);
+
+        self.pop_scope();
+    }
+
+    fn visit_struct(&mut self, strukt: &mut Struct) {
+        // already declared
+
+        self.push_scope();
+
+        self.declare_ty_params(&mut strukt.ty_params);
+
+        for (_, ty) in &mut strukt.fields {
+            self.visit_ty(ty);
+        }
 
         self.pop_scope();
     }
@@ -282,6 +304,10 @@ mod tests {
     #[test]
     fn func_generic() {
         assert_debug_snapshot!(test_resolve("func foo[A, B]() {}"));
+    }
+    #[test]
+    fn strukt() {
+        assert_debug_snapshot!(test_resolve("data Person { name: string, age: uint }"));
     }
 
     #[test]

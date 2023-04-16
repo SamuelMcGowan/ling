@@ -24,7 +24,10 @@ impl Parser<'_> {
     fn parse_item(&mut self) -> ParseResult<Item> {
         match self.tokens.next() {
             Some(TokenTree::Token(token)) if token.kind == tkind!(kwd Func) => {
-                Ok(Item::Func(self.parse_func()?))
+                self.parse_func().map(Item::Func)
+            }
+            Some(TokenTree::Token(token)) if token.kind == tkind!(kwd Data) => {
+                self.parse_struct().map(Item::Struct)
             }
             other => Err(ParseError::unexpected("an item", other)),
         }
@@ -33,12 +36,7 @@ impl Parser<'_> {
     fn parse_func(&mut self) -> ParseResult<Func> {
         let ident = self.parse_ident()?;
 
-        let ty_params = if let Some(tokens) = self.eat_group(BracketKind::Square) {
-            let mut parser = self.parser_for_tokens(tokens);
-            parser.parse_list("type parameters", tkind!(punct Comma), Parser::parse_ident)?
-        } else {
-            vec![]
-        };
+        let ty_params = self.parse_ty_params()?;
 
         let params = {
             let tokens = self.expect_group(BracketKind::Round, "parameters list")?;
@@ -66,6 +64,39 @@ impl Parser<'_> {
             params,
             ret_ty,
             body,
+        })
+    }
+
+    fn parse_struct(&mut self) -> ParseResult<Struct> {
+        let ident = self.parse_ident()?;
+
+        let ty_params = self.parse_ty_params()?;
+
+        let tokens = self.expect_group(BracketKind::Curly, "struct body")?;
+        let mut parser = self.parser_for_tokens(tokens);
+
+        let fields = parser.parse_list("struct body", tkind!(punct Comma), |parser| {
+            let name = parser.parse_ident()?.unresolved().unwrap();
+            parser.expect_kind(tkind!(punct Colon))?;
+            let ty = parser.parse_ty()?;
+            Ok((name, ty))
+        })?;
+
+        drop(parser);
+
+        Ok(Struct {
+            ident,
+            ty_params,
+            fields,
+        })
+    }
+
+    fn parse_ty_params(&mut self) -> ParseResult<Vec<Ident>> {
+        Ok(if let Some(tokens) = self.eat_group(BracketKind::Square) {
+            let mut parser = self.parser_for_tokens(tokens);
+            parser.parse_list("type parameters", tkind!(punct Comma), Parser::parse_ident)?
+        } else {
+            vec![]
         })
     }
 
@@ -258,6 +289,12 @@ mod tests {
             "func foo(a: uint) -> {} {} func my_func() {}",
             |p| p.parse_module()
         ));
+    }
+
+    #[test]
+    fn strukt() {
+        assert_ron_snapshot!(test_parse("data Person { name: string, age: uint }", |p| p
+            .parse_module()));
     }
 
     #[test]

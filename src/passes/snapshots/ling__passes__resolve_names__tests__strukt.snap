@@ -1,0 +1,63 @@
+---
+source: src/passes/resolve_names.rs
+expression: "test_resolve(\"data Person { name: string, age: uint }\")"
+---
+(
+    Module {
+        items: [
+            Struct(
+                Struct {
+                    ident: Resolved(
+                        SymbolId(
+                            2,
+                        ),
+                    ),
+                    ty_params: [],
+                    fields: [
+                        (
+                            u!("name"),
+                            Constructed {
+                                ident: Unresolved(
+                                    u!("string"),
+                                ),
+                                params: [],
+                            },
+                        ),
+                        (
+                            u!("age"),
+                            Constructed {
+                                ident: Resolved(
+                                    SymbolId(
+                                        1,
+                                    ),
+                                ),
+                                params: [],
+                            },
+                        ),
+                    ],
+                },
+            ),
+        ],
+    },
+    SymbolTable {
+        symbol_lookup: [
+            Symbol {
+                ident: u!("int"),
+                kind: TyStruct,
+            },
+            Symbol {
+                ident: u!("uint"),
+                kind: TyStruct,
+            },
+            Symbol {
+                ident: u!("Person"),
+                kind: TyStruct,
+            },
+        ],
+    },
+    [
+        SymbolNotFound(
+            u!("string"),
+        ),
+    ],
+)

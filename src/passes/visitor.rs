@@ -16,11 +16,14 @@ pub(crate) trait Visitor {
     fn walk_item(&mut self, item: &mut Item) {
         match item {
             Item::Func(func) => self.visit_func(func),
+            Item::Struct(strukt) => self.visit_struct(strukt),
             Item::Dummy => {}
         }
     }
 
     fn visit_func(&mut self, func: &mut Func);
+
+    fn visit_struct(&mut self, strukt: &mut Struct);
 
     fn visit_block(&mut self, block: &mut Block) {
         self.walk_block(block);

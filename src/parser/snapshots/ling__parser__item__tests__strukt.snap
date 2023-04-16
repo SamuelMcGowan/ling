@@ -1,0 +1,22 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"data Person { name: string, age: uint }\", |p| p.parse_module())"
+---
+(Module(
+  items: [
+    Struct(Struct(
+      ident: Unresolved("Person"),
+      ty_params: [],
+      fields: [
+        ("name", Constructed(
+          ident: Unresolved("string"),
+          params: [],
+        )),
+        ("age", Constructed(
+          ident: Unresolved("uint"),
+          params: [],
+        )),
+      ],
+    )),
+  ],
+), [], [])

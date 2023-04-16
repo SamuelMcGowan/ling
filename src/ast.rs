@@ -36,6 +36,7 @@ pub(crate) struct Module {
 #[derive(Node!)]
 pub(crate) enum Item {
     Func(Func),
+    Struct(Struct),
     Dummy,
 }
 
@@ -46,6 +47,13 @@ pub(crate) struct Func {
     pub params: Vec<(Ident, Ty)>,
     pub ret_ty: Ty,
     pub body: Block,
+}
+
+#[derive(Node!)]
+pub(crate) struct Struct {
+    pub ident: Ident,
+    pub ty_params: Vec<Ident>,
+    pub fields: Vec<(Ustr, Ty)>,
 }
 
 #[derive(Node!)]
