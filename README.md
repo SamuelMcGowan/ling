@@ -4,7 +4,7 @@ A relatively high-level ergonomic compiled language inspired by Rust.
 
 ## Expected Features
 
-- AOT compiled using [cranelift](https://github.com/bytecodealliance/cranelift).
+- AOT compiled using [cranelift](https://github.com/bytecodealliance/wasmtime/tree/main/cranelift).
 - Hindley-Milner type system with typeclasses.
 - Reference counting.
 - Support for pattern matching.
