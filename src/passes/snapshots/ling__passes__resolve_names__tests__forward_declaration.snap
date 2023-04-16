@@ -14,7 +14,9 @@ expression: "test_resolve(\"func a() { a(); b(); } func b() {}\")"
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [
                             Expr(
@@ -59,7 +61,9 @@ expression: "test_resolve(\"func a() { a(); b(); } func b() {}\")"
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Unit,

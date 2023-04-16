@@ -30,7 +30,9 @@ expression: "test_resolve(\"func foo(a: uint) { let b = a; let c = b; }\")"
                             },
                         ),
                     ],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [
                             Declaration {

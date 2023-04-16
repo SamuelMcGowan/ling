@@ -1,0 +1,14 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"(uint, uint)\", |p| p.parse_ty())"
+---
+(Ok(Tuple([
+  Constructed(
+    ident: Unresolved("uint"),
+    params: [],
+  ),
+  Constructed(
+    ident: Unresolved("uint"),
+    params: [],
+  ),
+])), [], [])

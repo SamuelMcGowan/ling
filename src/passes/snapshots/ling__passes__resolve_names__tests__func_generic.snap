@@ -25,7 +25,9 @@ expression: "test_resolve(\"func foo[A, B]() {}\")"
                         ),
                     ],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Unit,

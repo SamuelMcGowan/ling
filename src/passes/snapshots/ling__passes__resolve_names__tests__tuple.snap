@@ -1,6 +1,6 @@
 ---
 source: src/passes/resolve_names.rs
-expression: "test_resolve(\"func foo() { let a = 12; let a = 12; }\")"
+expression: "test_resolve(\"func a() -> (uint, uint) {}\")"
 ---
 (
     Module {
@@ -15,35 +15,27 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; }\")"
                     ty_params: [],
                     params: [],
                     ret_ty: Tuple(
-                        [],
-                    ),
-                    body: Block {
-                        stmts: [
-                            Declaration {
-                                lhs: Resolved(
+                        [
+                            Constructed {
+                                ident: Resolved(
                                     SymbolId(
-                                        3,
-                                    ),
-                                ),
-                                rhs: Const(
-                                    ConstIdx(
-                                        0,
-                                    ),
-                                ),
-                            },
-                            Declaration {
-                                lhs: Resolved(
-                                    SymbolId(
-                                        4,
-                                    ),
-                                ),
-                                rhs: Const(
-                                    ConstIdx(
                                         1,
                                     ),
                                 ),
+                                params: [],
+                            },
+                            Constructed {
+                                ident: Resolved(
+                                    SymbolId(
+                                        1,
+                                    ),
+                                ),
+                                params: [],
                             },
                         ],
+                    ),
+                    body: Block {
+                        stmts: [],
                         final_expr: Unit,
                     },
                 },
@@ -61,16 +53,8 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; }\")"
                 kind: TyStruct,
             },
             Symbol {
-                ident: u!("foo"),
+                ident: u!("a"),
                 kind: Function,
-            },
-            Symbol {
-                ident: u!("a"),
-                kind: Var,
-            },
-            Symbol {
-                ident: u!("a"),
-                kind: Var,
             },
         ],
     },

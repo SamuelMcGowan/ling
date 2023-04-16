@@ -15,7 +15,7 @@ expression: "test_parse(\"foo(a: uint, b: uint,) {}\", |p| p.parse_func())"
       params: [],
     )),
   ],
-  ret_ty: Unit,
+  ret_ty: Tuple([]),
   body: Block(
     stmts: [],
     final_expr: Unit,

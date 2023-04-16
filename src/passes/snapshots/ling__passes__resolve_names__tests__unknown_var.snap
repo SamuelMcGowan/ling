@@ -14,7 +14,9 @@ expression: "test_resolve(\"func foo() { bloop() }\")"
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Call {

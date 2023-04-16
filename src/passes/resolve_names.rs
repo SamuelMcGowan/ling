@@ -214,10 +214,6 @@ impl Visitor for Resolver {
         self.visit_enum_variant_kind(&mut variant.kind);
     }
 
-    fn visit_tuple_field(&mut self, field: &mut TupleField) {
-        self.visit_ty(&mut field.ty);
-    }
-
     fn visit_block(&mut self, block: &mut Block) {
         self.push_scope();
         self.walk_block(block);
@@ -241,7 +237,11 @@ impl Visitor for Resolver {
 
     fn visit_ty(&mut self, ty: &mut Ty) {
         match ty {
-            Ty::Unit => {}
+            Ty::Tuple(fields) => {
+                for field in fields {
+                    self.visit_ty(field)
+                }
+            }
             Ty::Constructed { ident, params } => {
                 *ident = self.resolve(ident.unresolved().unwrap(), false);
                 for param in params {
@@ -343,6 +343,11 @@ mod tests {
     #[test]
     fn eenum() {
         assert_debug_snapshot!(test_resolve("enum Result[T, E] { Ok(T), Err(E), }"));
+    }
+
+    #[test]
+    fn tuple() {
+        assert_debug_snapshot!(test_resolve("func a() -> (uint, uint) {}"));
     }
 
     #[test]

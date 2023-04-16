@@ -9,7 +9,7 @@ expression: "test_parse(\"foo[A, B]() {}\", |p| p.parse_func())"
     Unresolved("B"),
   ],
   params: [],
-  ret_ty: Unit,
+  ret_ty: Tuple([]),
   body: Block(
     stmts: [],
     final_expr: Unit,

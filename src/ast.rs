@@ -78,20 +78,21 @@ pub(crate) struct EnumVariant {
 
 #[derive(Node!)]
 pub(crate) enum EnumVariantKind {
-    Tuple(Vec<TupleField>),
+    Tuple(Vec<Ty>),
     Struct(Vec<StructField>),
     Unit,
 }
 
 #[derive(Node!)]
-pub(crate) struct TupleField {
-    pub ty: Ty,
-}
-
-#[derive(Node!)]
 pub(crate) enum Ty {
     Constructed { ident: Ident, params: Vec<Ty> },
-    Unit,
+    Tuple(Vec<Ty>),
+}
+
+impl Ty {
+    pub fn unit() -> Self {
+        Self::Tuple(vec![])
+    }
 }
 
 #[derive(Node!)]

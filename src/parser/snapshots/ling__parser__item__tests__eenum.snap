@@ -14,22 +14,18 @@ expression: "test_parse(\"enum Result[T, E] { Ok(T), Err(E), }\", |p| p.parse_mo
         EnumVariant(
           name: "Ok",
           kind: Tuple([
-            TupleField(
-              ty: Constructed(
-                ident: Unresolved("T"),
-                params: [],
-              ),
+            Constructed(
+              ident: Unresolved("T"),
+              params: [],
             ),
           ]),
         ),
         EnumVariant(
           name: "Err",
           kind: Tuple([
-            TupleField(
-              ty: Constructed(
-                ident: Unresolved("E"),
-                params: [],
-              ),
+            Constructed(
+              ident: Unresolved("E"),
+              params: [],
             ),
           ]),
         ),

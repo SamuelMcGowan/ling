@@ -6,7 +6,7 @@ expression: "test_parse(\"foo() {}\", |p| p.parse_func())"
   ident: Unresolved("foo"),
   ty_params: [],
   params: [],
-  ret_ty: Unit,
+  ret_ty: Tuple([]),
   body: Block(
     stmts: [],
     final_expr: Unit,

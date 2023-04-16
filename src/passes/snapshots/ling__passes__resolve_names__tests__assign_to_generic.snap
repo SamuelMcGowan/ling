@@ -20,7 +20,9 @@ expression: "test_resolve(\"func foo[A]() { A = 12; }\")"
                         ),
                     ],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [
                             Assignment {

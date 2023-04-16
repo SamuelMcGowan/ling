@@ -14,7 +14,9 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; } func foo() {}
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [
                             Declaration {
@@ -53,7 +55,9 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; } func foo() {}
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Unit,

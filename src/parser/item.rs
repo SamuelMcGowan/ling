@@ -56,7 +56,7 @@ impl Parser<'_> {
         let ret_ty = if self.eat_kind(tkind!(punct Arrow)) {
             self.parse_ty()?
         } else {
-            Ty::Unit
+            Ty::unit()
         };
 
         let body = self.parse_block()?;
@@ -131,10 +131,10 @@ impl Parser<'_> {
         })
     }
 
-    fn parse_tuple_fields(&mut self, tokens: TokenIter) -> ParseResult<Vec<TupleField>> {
+    fn parse_tuple_fields(&mut self, tokens: TokenIter) -> ParseResult<Vec<Ty>> {
         let mut parser = self.parser_for_tokens(tokens);
         parser.parse_list("tuple fields", tkind!(punct Comma), |parser| {
-            parser.parse_ty().map(|ty| TupleField { ty })
+            parser.parse_ty()
         })
     }
 
@@ -171,7 +171,10 @@ impl Parser<'_> {
                 bracket_kind: BracketKind::Round,
                 tokens,
                 ..
-            }) if tokens.is_empty() => Ok(Ty::Unit),
+            }) => {
+                let fields = self.parse_tuple_fields(tokens.into_iter())?;
+                Ok(Ty::Tuple(fields))
+            }
 
             other => Err(ParseError::unexpected("a type", other)),
         }
@@ -340,6 +343,11 @@ mod tests {
         assert_ron_snapshot!(
             test_parse("enum Result[T, E] { Ok(T), Err(E), }", |p| p.parse_module())
         );
+    }
+
+    #[test]
+    fn tuple() {
+        assert_ron_snapshot!(test_parse("(uint, uint)", |p| p.parse_ty()))
     }
 
     #[test]

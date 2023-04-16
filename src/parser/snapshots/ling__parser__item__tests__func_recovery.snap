@@ -9,7 +9,7 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
       ident: Unresolved("my_func"),
       ty_params: [],
       params: [],
-      ret_ty: Unit,
+      ret_ty: Tuple([]),
       body: Block(
         stmts: [],
         final_expr: Unit,

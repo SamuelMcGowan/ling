@@ -28,8 +28,6 @@ pub(crate) trait Visitor {
     fn visit_enum(&mut self, eenum: &mut Enum);
 
     fn visit_struct_field(&mut self, field: &mut StructField);
-    fn visit_tuple_field(&mut self, field: &mut TupleField);
-
     fn visit_enum_variant(&mut self, variant: &mut EnumVariant);
 
     fn visit_enum_variant_kind(&mut self, kind: &mut EnumVariantKind) {
@@ -44,7 +42,7 @@ pub(crate) trait Visitor {
             }
             EnumVariantKind::Tuple(fields) => {
                 for field in fields {
-                    self.visit_tuple_field(field);
+                    self.visit_ty(field);
                 }
             }
             EnumVariantKind::Unit => {}

@@ -29,15 +29,13 @@ expression: "test_resolve(\"enum Result[T, E] { Ok(T), Err(E), }\")"
                             name: u!("Ok"),
                             kind: Tuple(
                                 [
-                                    TupleField {
-                                        ty: Constructed {
-                                            ident: Resolved(
-                                                SymbolId(
-                                                    3,
-                                                ),
+                                    Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                3,
                                             ),
-                                            params: [],
-                                        },
+                                        ),
+                                        params: [],
                                     },
                                 ],
                             ),
@@ -46,15 +44,13 @@ expression: "test_resolve(\"enum Result[T, E] { Ok(T), Err(E), }\")"
                             name: u!("Err"),
                             kind: Tuple(
                                 [
-                                    TupleField {
-                                        ty: Constructed {
-                                            ident: Resolved(
-                                                SymbolId(
-                                                    4,
-                                                ),
+                                    Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                4,
                                             ),
-                                            params: [],
-                                        },
+                                        ),
+                                        params: [],
                                     },
                                 ],
                             ),

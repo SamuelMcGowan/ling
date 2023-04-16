@@ -30,7 +30,9 @@ expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
                             },
                         ),
                     ],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Var(
@@ -54,7 +56,9 @@ expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
                     ),
                     ty_params: [],
                     params: [],
-                    ret_ty: Unit,
+                    ret_ty: Tuple(
+                        [],
+                    ),
                     body: Block {
                         stmts: [],
                         final_expr: Unit,
