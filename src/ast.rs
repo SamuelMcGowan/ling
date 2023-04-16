@@ -37,6 +37,7 @@ pub(crate) struct Module {
 pub(crate) enum Item {
     Func(Func),
     Struct(Struct),
+    Enum(Enum),
     Dummy,
 }
 
@@ -53,7 +54,38 @@ pub(crate) struct Func {
 pub(crate) struct Struct {
     pub ident: Ident,
     pub ty_params: Vec<Ident>,
-    pub fields: Vec<(Ustr, Ty)>,
+    pub fields: Vec<StructField>,
+}
+
+#[derive(Node!)]
+pub(crate) struct StructField {
+    pub name: Ustr,
+    pub ty: Ty,
+}
+
+#[derive(Node!)]
+pub(crate) struct Enum {
+    pub ident: Ident,
+    pub ty_params: Vec<Ident>,
+    pub variants: Vec<EnumVariant>,
+}
+
+#[derive(Node!)]
+pub(crate) struct EnumVariant {
+    pub name: Ustr,
+    pub kind: EnumVariantKind,
+}
+
+#[derive(Node!)]
+pub(crate) enum EnumVariantKind {
+    Tuple(Vec<TupleField>),
+    Struct(Vec<StructField>),
+    Unit,
+}
+
+#[derive(Node!)]
+pub(crate) struct TupleField {
+    pub ty: Ty,
 }
 
 #[derive(Node!)]

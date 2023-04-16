@@ -1,0 +1,39 @@
+---
+source: src/parser/item.rs
+expression: "test_parse(\"enum Result[T, E] { Ok(T), Err(E), }\", |p| p.parse_module())"
+---
+(Module(
+  items: [
+    Enum(Enum(
+      ident: Unresolved("Result"),
+      ty_params: [
+        Unresolved("T"),
+        Unresolved("E"),
+      ],
+      variants: [
+        EnumVariant(
+          name: "Ok",
+          kind: Tuple([
+            TupleField(
+              ty: Constructed(
+                ident: Unresolved("T"),
+                params: [],
+              ),
+            ),
+          ]),
+        ),
+        EnumVariant(
+          name: "Err",
+          kind: Tuple([
+            TupleField(
+              ty: Constructed(
+                ident: Unresolved("E"),
+                params: [],
+              ),
+            ),
+          ]),
+        ),
+      ],
+    )),
+  ],
+), [], [])

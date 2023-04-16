@@ -8,14 +8,20 @@ expression: "test_parse(\"data Person { name: string, age: uint }\", |p| p.parse
       ident: Unresolved("Person"),
       ty_params: [],
       fields: [
-        ("name", Constructed(
-          ident: Unresolved("string"),
-          params: [],
-        )),
-        ("age", Constructed(
-          ident: Unresolved("uint"),
-          params: [],
-        )),
+        StructField(
+          name: "name",
+          ty: Constructed(
+            ident: Unresolved("string"),
+            params: [],
+          ),
+        ),
+        StructField(
+          name: "age",
+          ty: Constructed(
+            ident: Unresolved("uint"),
+            params: [],
+          ),
+        ),
       ],
     )),
   ],

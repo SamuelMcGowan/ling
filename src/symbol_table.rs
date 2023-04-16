@@ -39,6 +39,7 @@ pub(crate) enum SymbolKind {
 
     // TODO: fields, etc.
     TyStruct,
+    TyEnum,
 }
 
 impl SymbolKind {

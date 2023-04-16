@@ -29,6 +29,9 @@ impl Parser<'_> {
             Some(TokenTree::Token(token)) if token.kind == tkind!(kwd Data) => {
                 self.parse_struct().map(Item::Struct)
             }
+            Some(TokenTree::Token(token)) if token.kind == tkind!(kwd Enum) => {
+                self.parse_enum().map(Item::Enum)
+            }
             other => Err(ParseError::unexpected("an item", other)),
         }
     }
@@ -69,25 +72,43 @@ impl Parser<'_> {
 
     fn parse_struct(&mut self) -> ParseResult<Struct> {
         let ident = self.parse_ident()?;
-
         let ty_params = self.parse_ty_params()?;
 
         let tokens = self.expect_group(BracketKind::Curly, "struct body")?;
-        let mut parser = self.parser_for_tokens(tokens);
-
-        let fields = parser.parse_list("struct body", tkind!(punct Comma), |parser| {
-            let name = parser.parse_ident()?.unresolved().unwrap();
-            parser.expect_kind(tkind!(punct Colon))?;
-            let ty = parser.parse_ty()?;
-            Ok((name, ty))
-        })?;
-
-        drop(parser);
+        let fields = self.parse_struct_fields(tokens)?;
 
         Ok(Struct {
             ident,
             ty_params,
             fields,
+        })
+    }
+
+    fn parse_enum(&mut self) -> ParseResult<Enum> {
+        let ident = self.parse_ident()?;
+        let ty_params = self.parse_ty_params()?;
+
+        let tokens = self.expect_group(BracketKind::Curly, "enum variants")?;
+        let mut parser = self.parser_for_tokens(tokens);
+
+        let variants = parser.parse_list("enum variants", tkind!(punct Comma), |parser| {
+            let name = parser.parse_ident()?.unresolved().unwrap();
+            let kind = if let Some(tokens) = parser.eat_group(BracketKind::Curly) {
+                EnumVariantKind::Struct(parser.parse_struct_fields(tokens)?)
+            } else if let Some(tokens) = parser.eat_group(BracketKind::Round) {
+                EnumVariantKind::Tuple(parser.parse_tuple_fields(tokens)?)
+            } else {
+                EnumVariantKind::Unit
+            };
+            Ok(EnumVariant { name, kind })
+        })?;
+
+        drop(parser);
+
+        Ok(Enum {
+            ident,
+            ty_params,
+            variants,
         })
     }
 
@@ -97,6 +118,23 @@ impl Parser<'_> {
             parser.parse_list("type parameters", tkind!(punct Comma), Parser::parse_ident)?
         } else {
             vec![]
+        })
+    }
+
+    fn parse_struct_fields(&mut self, tokens: TokenIter) -> ParseResult<Vec<StructField>> {
+        let mut parser = self.parser_for_tokens(tokens);
+        parser.parse_list("struct fields", tkind!(punct Comma), |parser| {
+            let name = parser.parse_ident()?.unresolved().unwrap();
+            parser.expect_kind(tkind!(punct Colon))?;
+            let ty = parser.parse_ty()?;
+            Ok(StructField { name, ty })
+        })
+    }
+
+    fn parse_tuple_fields(&mut self, tokens: TokenIter) -> ParseResult<Vec<TupleField>> {
+        let mut parser = self.parser_for_tokens(tokens);
+        parser.parse_list("tuple fields", tkind!(punct Comma), |parser| {
+            parser.parse_ty().map(|ty| TupleField { ty })
         })
     }
 
@@ -295,6 +333,13 @@ mod tests {
     fn strukt() {
         assert_ron_snapshot!(test_parse("data Person { name: string, age: uint }", |p| p
             .parse_module()));
+    }
+
+    #[test]
+    fn eenum() {
+        assert_ron_snapshot!(
+            test_parse("enum Result[T, E] { Ok(T), Err(E), }", |p| p.parse_module())
+        );
     }
 
     #[test]

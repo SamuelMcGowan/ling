@@ -14,18 +14,18 @@ expression: "test_resolve(\"data Person { name: string, age: uint }\")"
                     ),
                     ty_params: [],
                     fields: [
-                        (
-                            u!("name"),
-                            Constructed {
+                        StructField {
+                            name: u!("name"),
+                            ty: Constructed {
                                 ident: Unresolved(
                                     u!("string"),
                                 ),
                                 params: [],
                             },
-                        ),
-                        (
-                            u!("age"),
-                            Constructed {
+                        },
+                        StructField {
+                            name: u!("age"),
+                            ty: Constructed {
                                 ident: Resolved(
                                     SymbolId(
                                         1,
@@ -33,7 +33,7 @@ expression: "test_resolve(\"data Person { name: string, age: uint }\")"
                                 ),
                                 params: [],
                             },
-                        ),
+                        },
                     ],
                 },
             ),

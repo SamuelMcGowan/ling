@@ -17,6 +17,7 @@ pub(crate) trait Visitor {
         match item {
             Item::Func(func) => self.visit_func(func),
             Item::Struct(strukt) => self.visit_struct(strukt),
+            Item::Enum(eenum) => self.visit_enum(eenum),
             Item::Dummy => {}
         }
     }
@@ -24,6 +25,31 @@ pub(crate) trait Visitor {
     fn visit_func(&mut self, func: &mut Func);
 
     fn visit_struct(&mut self, strukt: &mut Struct);
+    fn visit_enum(&mut self, eenum: &mut Enum);
+
+    fn visit_struct_field(&mut self, field: &mut StructField);
+    fn visit_tuple_field(&mut self, field: &mut TupleField);
+
+    fn visit_enum_variant(&mut self, variant: &mut EnumVariant);
+
+    fn visit_enum_variant_kind(&mut self, kind: &mut EnumVariantKind) {
+        self.walk_enum_variant_kind(kind);
+    }
+    fn walk_enum_variant_kind(&mut self, kind: &mut EnumVariantKind) {
+        match kind {
+            EnumVariantKind::Struct(fields) => {
+                for field in fields {
+                    self.visit_struct_field(field);
+                }
+            }
+            EnumVariantKind::Tuple(fields) => {
+                for field in fields {
+                    self.visit_tuple_field(field);
+                }
+            }
+            EnumVariantKind::Unit => {}
+        }
+    }
 
     fn visit_block(&mut self, block: &mut Block) {
         self.walk_block(block);

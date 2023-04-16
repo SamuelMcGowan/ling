@@ -134,6 +134,10 @@ impl Resolver {
                 strukt.ident =
                     self.declare_global(strukt.ident.unresolved().unwrap(), SymbolKind::TyStruct);
             }
+            Item::Enum(eenum) => {
+                eenum.ident =
+                    self.declare_global(eenum.ident.unresolved().unwrap(), SymbolKind::TyEnum)
+            }
             Item::Dummy => {}
         }
     }
@@ -181,11 +185,37 @@ impl Visitor for Resolver {
 
         self.declare_ty_params(&mut strukt.ty_params);
 
-        for (_, ty) in &mut strukt.fields {
-            self.visit_ty(ty);
+        for field in &mut strukt.fields {
+            self.visit_struct_field(field);
         }
 
         self.pop_scope();
+    }
+
+    fn visit_struct_field(&mut self, field: &mut StructField) {
+        self.visit_ty(&mut field.ty);
+    }
+
+    fn visit_enum(&mut self, eenum: &mut Enum) {
+        // already declared
+
+        self.push_scope();
+
+        self.declare_ty_params(&mut eenum.ty_params);
+
+        for variant in &mut eenum.variants {
+            self.visit_enum_variant(variant);
+        }
+
+        self.pop_scope();
+    }
+
+    fn visit_enum_variant(&mut self, variant: &mut EnumVariant) {
+        self.visit_enum_variant_kind(&mut variant.kind);
+    }
+
+    fn visit_tuple_field(&mut self, field: &mut TupleField) {
+        self.visit_ty(&mut field.ty);
     }
 
     fn visit_block(&mut self, block: &mut Block) {
@@ -308,6 +338,11 @@ mod tests {
     #[test]
     fn strukt() {
         assert_debug_snapshot!(test_resolve("data Person { name: string, age: uint }"));
+    }
+
+    #[test]
+    fn eenum() {
+        assert_debug_snapshot!(test_resolve("enum Result[T, E] { Ok(T), Err(E), }"));
     }
 
     #[test]
