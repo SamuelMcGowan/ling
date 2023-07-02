@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::path::PathBuf;
 
 use ustr::Ustr;
 
@@ -8,6 +10,9 @@ use crate::parser::{ParseError, Parser};
 use crate::passes::resolve_names::{Resolver, SymbolError};
 use crate::symbol_table::SymbolTable;
 use crate::token_stream::TokenStream;
+
+const FILE_EXT: &str = "ling";
+const MODULE_SEP: &str = "::";
 
 pub struct ModuleCompiler {
     modules: HashMap<ModulePath, ResolvedModule>,
@@ -30,7 +35,8 @@ impl ModuleCompiler {
     }
 
     fn compile_module(&mut self, path: ModulePath) -> Option<ResolvedModule> {
-        let source = std::fs::read_to_string(path.0.as_str()).ok()?;
+        let path = path.into_path_buf();
+        let source = std::fs::read_to_string(path).ok()?;
 
         let lexer = Lexer::new(&source);
         let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
@@ -53,15 +59,41 @@ impl ModuleCompiler {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ModulePath(Ustr);
+pub struct ModulePath {
+    name: Ustr,
+    parents: Ustr,
+}
 
 impl ModulePath {
-    pub fn new<'a>(parts: impl Iterator<Item = &'a str>) -> Self {
-        let mut s = String::new();
-        for part in parts {
-            s.push_str(part);
+    pub fn new<'a>(name: &'a str, parents: impl Iterator<Item = &'a str>) -> Self {
+        let mut parents_str = String::new();
+        for part in parents {
+            parents_str.push_str("::");
+            parents_str.push_str(part);
         }
-        Self(Ustr::from(&s))
+
+        Self {
+            name: name.into(),
+            parents: Ustr::from(&parents_str),
+        }
+    }
+
+    pub fn into_path_buf(&self) -> PathBuf {
+        let mut path = PathBuf::new();
+
+        for segment in self.parents.split(MODULE_SEP) {
+            path.push(segment);
+        }
+
+        path.push(format!("{}.{FILE_EXT}", self.name));
+
+        path
+    }
+}
+
+impl fmt::Display for ModulePath {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}{MODULE_SEP}{}", self.parents, self.name)
     }
 }
 

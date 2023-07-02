@@ -1,6 +1,7 @@
 mod ast;
 mod chunk;
 mod constants;
+mod diagnostic;
 mod lexer;
 mod module_compiler;
 mod parser;
@@ -9,7 +10,6 @@ mod source;
 mod symbol_table;
 mod token_stream;
 mod value;
-mod diagnostic;
 
 use anyhow::{bail, Context, Result};
 
