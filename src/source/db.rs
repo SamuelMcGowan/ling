@@ -2,8 +2,7 @@ use std::ops::Range;
 
 use codespan_reporting::files::{Error as FileError, Files, SimpleFile};
 
-use super::SourceIter;
-use crate::module_compiler::ModulePath;
+use super::{ModulePath, SourceIter};
 
 #[derive(Default, Debug, Clone)]
 pub(crate) struct SourceDb {
