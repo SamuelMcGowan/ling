@@ -5,68 +5,74 @@ expression: "test_resolve(\"func foo() { loop { let a = 12; } a;}\")"
 (
     Module {
         items: [
-            Func(
-                Func {
-                    ident: Resolved(
-                        SymbolId(
-                            2,
-                        ),
-                    ),
-                    ty_params: [],
-                    params: [],
-                    ret_ty: Tuple(
-                        [],
-                    ),
-                    body: Block {
-                        stmts: [
-                            Loop(
-                                Block {
-                                    stmts: [
-                                        Declaration {
-                                            lhs: Resolved(
-                                                SymbolId(
-                                                    3,
-                                                ),
-                                            ),
-                                            rhs: Const(
-                                                ConstIdx(
-                                                    0,
-                                                ),
-                                            ),
-                                        },
-                                    ],
-                                    final_expr: Unit,
-                                },
-                            ),
-                            Expr(
-                                Var(
-                                    Simple(
-                                        Unresolved(
-                                            u!("a"),
-                                        ),
-                                    ),
-                                ),
-                            ),
-                        ],
-                        final_expr: Unit,
-                    },
-                },
-            ),
+            Dummy,
         ],
     },
     SymbolTable {
         symbol_lookup: [
             Symbol {
                 ident: u!("int"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("foo"),
-                kind: Function,
+                kind: Function(
+                    Ast(
+                        Func {
+                            ident: Resolved(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
+                            ty_params: [],
+                            params: [],
+                            ret_ty: Tuple(
+                                [],
+                            ),
+                            body: Block {
+                                stmts: [
+                                    Loop(
+                                        Block {
+                                            stmts: [
+                                                Declaration {
+                                                    lhs: Resolved(
+                                                        SymbolId(
+                                                            3,
+                                                        ),
+                                                    ),
+                                                    rhs: Const(
+                                                        ConstIdx(
+                                                            0,
+                                                        ),
+                                                    ),
+                                                },
+                                            ],
+                                            final_expr: Unit,
+                                        },
+                                    ),
+                                    Expr(
+                                        Var(
+                                            Simple(
+                                                Unresolved(
+                                                    u!("a"),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                ],
+                                final_expr: Unit,
+                            },
+                        },
+                    ),
+                ),
             },
             Symbol {
                 ident: u!("a"),

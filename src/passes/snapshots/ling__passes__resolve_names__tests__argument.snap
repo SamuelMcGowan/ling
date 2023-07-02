@@ -5,85 +5,93 @@ expression: "test_resolve(\"func foo(a: uint) { a } func a() {}\")"
 (
     Module {
         items: [
-            Func(
-                Func {
-                    ident: Resolved(
-                        SymbolId(
-                            2,
-                        ),
-                    ),
-                    ty_params: [],
-                    params: [
-                        (
-                            Resolved(
-                                SymbolId(
-                                    4,
-                                ),
-                            ),
-                            Constructed {
-                                ident: Resolved(
-                                    SymbolId(
-                                        1,
-                                    ),
-                                ),
-                                params: [],
-                            },
-                        ),
-                    ],
-                    ret_ty: Tuple(
-                        [],
-                    ),
-                    body: Block {
-                        stmts: [],
-                        final_expr: Var(
-                            Simple(
-                                Resolved(
-                                    SymbolId(
-                                        4,
-                                    ),
-                                ),
-                            ),
-                        ),
-                    },
-                },
-            ),
-            Func(
-                Func {
-                    ident: Resolved(
-                        SymbolId(
-                            3,
-                        ),
-                    ),
-                    ty_params: [],
-                    params: [],
-                    ret_ty: Tuple(
-                        [],
-                    ),
-                    body: Block {
-                        stmts: [],
-                        final_expr: Unit,
-                    },
-                },
-            ),
+            Dummy,
+            Dummy,
         ],
     },
     SymbolTable {
         symbol_lookup: [
             Symbol {
                 ident: u!("int"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("foo"),
-                kind: Function,
+                kind: Function(
+                    Ast(
+                        Func {
+                            ident: Resolved(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
+                            ty_params: [],
+                            params: [
+                                (
+                                    Resolved(
+                                        SymbolId(
+                                            4,
+                                        ),
+                                    ),
+                                    Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                1,
+                                            ),
+                                        ),
+                                        params: [],
+                                    },
+                                ),
+                            ],
+                            ret_ty: Tuple(
+                                [],
+                            ),
+                            body: Block {
+                                stmts: [],
+                                final_expr: Var(
+                                    Simple(
+                                        Resolved(
+                                            SymbolId(
+                                                4,
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            },
+                        },
+                    ),
+                ),
             },
             Symbol {
                 ident: u!("a"),
-                kind: Function,
+                kind: Function(
+                    Ast(
+                        Func {
+                            ident: Resolved(
+                                SymbolId(
+                                    3,
+                                ),
+                            ),
+                            ty_params: [],
+                            params: [],
+                            ret_ty: Tuple(
+                                [],
+                            ),
+                            body: Block {
+                                stmts: [],
+                                final_expr: Unit,
+                            },
+                        },
+                    ),
+                ),
             },
             Symbol {
                 ident: u!("a"),

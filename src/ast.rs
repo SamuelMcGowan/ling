@@ -33,11 +33,13 @@ pub(crate) struct Module {
     pub items: Vec<Item>,
 }
 
-#[derive(Node!)]
+#[derive(Node!, Default)]
 pub(crate) enum Item {
     Func(Func),
     Struct(Struct),
     Enum(Enum),
+
+    #[default]
     Dummy,
 }
 
@@ -210,7 +212,7 @@ pub(crate) enum Var {
     Field { expr: Box<Expr>, field: Ustr },
 }
 
-#[derive(Node!)]
+#[derive(Node!, Copy)]
 pub(crate) enum Ident {
     Unresolved(Ustr),
     Resolved(SymbolId),
@@ -221,6 +223,13 @@ impl Ident {
         match self {
             Self::Unresolved(s) => Some(*s),
             Self::Resolved(_) => None,
+        }
+    }
+
+    pub fn resolved(&self) -> Option<SymbolId> {
+        match self {
+            Self::Resolved(s) => Some(*s),
+            Self::Unresolved(_) => None,
         }
     }
 }

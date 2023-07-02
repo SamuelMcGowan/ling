@@ -5,56 +5,62 @@ expression: "test_resolve(\"func a() -> (uint, uint) {}\")"
 (
     Module {
         items: [
-            Func(
-                Func {
-                    ident: Resolved(
-                        SymbolId(
-                            2,
-                        ),
-                    ),
-                    ty_params: [],
-                    params: [],
-                    ret_ty: Tuple(
-                        [
-                            Constructed {
-                                ident: Resolved(
-                                    SymbolId(
-                                        1,
-                                    ),
-                                ),
-                                params: [],
-                            },
-                            Constructed {
-                                ident: Resolved(
-                                    SymbolId(
-                                        1,
-                                    ),
-                                ),
-                                params: [],
-                            },
-                        ],
-                    ),
-                    body: Block {
-                        stmts: [],
-                        final_expr: Unit,
-                    },
-                },
-            ),
+            Dummy,
         ],
     },
     SymbolTable {
         symbol_lookup: [
             Symbol {
                 ident: u!("int"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("a"),
-                kind: Function,
+                kind: Function(
+                    Ast(
+                        Func {
+                            ident: Resolved(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
+                            ty_params: [],
+                            params: [],
+                            ret_ty: Tuple(
+                                [
+                                    Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                1,
+                                            ),
+                                        ),
+                                        params: [],
+                                    },
+                                    Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                1,
+                                            ),
+                                        ),
+                                        params: [],
+                                    },
+                                ],
+                            ),
+                            body: Block {
+                                stmts: [],
+                                final_expr: Unit,
+                            },
+                        },
+                    ),
+                ),
             },
         ],
     },

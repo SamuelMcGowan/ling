@@ -1,5 +1,7 @@
 use ustr::Ustr;
 
+use crate::ast;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct SymbolId(usize);
 
@@ -32,18 +34,24 @@ pub(crate) struct Symbol {
 
 #[derive(Debug)]
 pub(crate) enum SymbolKind {
-    Function,
+    Function(Def<ast::Func>),
+    TyStruct(Def<ast::Struct>),
+    TyEnum(Def<ast::Enum>),
+
     Var,
 
     TyParam,
-
-    // TODO: fields, etc.
-    TyStruct,
-    TyEnum,
 }
 
 impl SymbolKind {
     pub fn is_value(&self) -> bool {
-        matches!(self, Self::Var | Self::Function)
+        matches!(self, Self::Var | Self::Function(_))
     }
+}
+
+#[derive(Debug)]
+pub enum Def<T> {
+    Ast(T),
+    Builtin,
+    Undefined,
 }

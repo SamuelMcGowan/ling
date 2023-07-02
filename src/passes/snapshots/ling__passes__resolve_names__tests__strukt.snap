@@ -5,53 +5,59 @@ expression: "test_resolve(\"data Person { name: string, age: uint }\")"
 (
     Module {
         items: [
-            Struct(
-                Struct {
-                    ident: Resolved(
-                        SymbolId(
-                            2,
-                        ),
-                    ),
-                    ty_params: [],
-                    fields: [
-                        StructField {
-                            name: u!("name"),
-                            ty: Constructed {
-                                ident: Unresolved(
-                                    u!("string"),
-                                ),
-                                params: [],
-                            },
-                        },
-                        StructField {
-                            name: u!("age"),
-                            ty: Constructed {
-                                ident: Resolved(
-                                    SymbolId(
-                                        1,
-                                    ),
-                                ),
-                                params: [],
-                            },
-                        },
-                    ],
-                },
-            ),
+            Dummy,
         ],
     },
     SymbolTable {
         symbol_lookup: [
             Symbol {
                 ident: u!("int"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("Person"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Ast(
+                        Struct {
+                            ident: Resolved(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
+                            ty_params: [],
+                            fields: [
+                                StructField {
+                                    name: u!("name"),
+                                    ty: Constructed {
+                                        ident: Unresolved(
+                                            u!("string"),
+                                        ),
+                                        params: [],
+                                    },
+                                },
+                                StructField {
+                                    name: u!("age"),
+                                    ty: Constructed {
+                                        ident: Resolved(
+                                            SymbolId(
+                                                1,
+                                            ),
+                                        ),
+                                        params: [],
+                                    },
+                                },
+                            ],
+                        },
+                    ),
+                ),
             },
         ],
     },

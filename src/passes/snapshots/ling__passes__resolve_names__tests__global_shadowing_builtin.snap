@@ -5,50 +5,56 @@ expression: "test_resolve(\"func uint() { uint() }\")"
 (
     Module {
         items: [
-            Func(
-                Func {
-                    ident: Resolved(
-                        SymbolId(
-                            2,
-                        ),
-                    ),
-                    ty_params: [],
-                    params: [],
-                    ret_ty: Tuple(
-                        [],
-                    ),
-                    body: Block {
-                        stmts: [],
-                        final_expr: Call {
-                            callee: Var(
-                                Simple(
-                                    Resolved(
-                                        SymbolId(
-                                            2,
-                                        ),
-                                    ),
-                                ),
-                            ),
-                            args: [],
-                        },
-                    },
-                },
-            ),
+            Dummy,
         ],
     },
     SymbolTable {
         symbol_lookup: [
             Symbol {
                 ident: u!("int"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: TyStruct,
+                kind: TyStruct(
+                    Builtin,
+                ),
             },
             Symbol {
                 ident: u!("uint"),
-                kind: Function,
+                kind: Function(
+                    Ast(
+                        Func {
+                            ident: Resolved(
+                                SymbolId(
+                                    2,
+                                ),
+                            ),
+                            ty_params: [],
+                            params: [],
+                            ret_ty: Tuple(
+                                [],
+                            ),
+                            body: Block {
+                                stmts: [],
+                                final_expr: Call {
+                                    callee: Var(
+                                        Simple(
+                                            Resolved(
+                                                SymbolId(
+                                                    2,
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                    args: [],
+                                },
+                            },
+                        },
+                    ),
+                ),
             },
         ],
     },

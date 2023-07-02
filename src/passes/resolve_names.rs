@@ -5,7 +5,7 @@ use ustr::Ustr;
 
 use super::visitor::Visitor;
 use crate::ast::*;
-use crate::symbol_table::{Symbol, SymbolId, SymbolKind, SymbolTable};
+use crate::symbol_table::{Def, Symbol, SymbolId, SymbolKind, SymbolTable};
 
 #[derive(Debug)]
 pub(crate) enum SymbolError {
@@ -40,8 +40,8 @@ impl Resolver {
             errors: vec![],
         };
 
-        r.declare_builtin("int", SymbolKind::TyStruct);
-        r.declare_builtin("uint", SymbolKind::TyStruct);
+        r.declare_builtin("int", SymbolKind::TyStruct(Def::Builtin));
+        r.declare_builtin("uint", SymbolKind::TyStruct(Def::Builtin));
 
         r
     }
@@ -59,25 +59,19 @@ impl Resolver {
     }
 
     #[must_use]
-    fn declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
-        // check a global isn't already declared with this name.
-        if self.globals.contains_key(&ident) {
-            self.errors.push(SymbolError::GlobalShadowed(ident));
-            return Ident::Unresolved(ident);
-        }
+    fn forward_declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
+        let symbol_entry = self.table.add_and_get_entry(ident, kind);
 
         match self.globals.entry(ident) {
             Entry::Occupied(_) => {
                 self.errors.push(SymbolError::GlobalShadowed(ident));
-                Ident::Unresolved(ident)
             }
             Entry::Vacant(vacant) => {
-                let symbol_entry = self.table.add_and_get_entry(ident, kind);
                 vacant.insert(symbol_entry);
-                
-                Ident::Resolved(symbol_entry.symbol_id)
             }
         }
+
+        Ident::Resolved(symbol_entry.symbol_id)
     }
 
     #[must_use]
@@ -135,22 +129,9 @@ impl SymbolTable {
 }
 
 impl Resolver {
-    fn forward_declare_item(&mut self, item: &mut Item) {
-        match item {
-            Item::Func(func) => {
-                func.ident =
-                    self.declare_global(func.ident.unresolved().unwrap(), SymbolKind::Function);
-            }
-            Item::Struct(strukt) => {
-                strukt.ident =
-                    self.declare_global(strukt.ident.unresolved().unwrap(), SymbolKind::TyStruct);
-            }
-            Item::Enum(eenum) => {
-                eenum.ident =
-                    self.declare_global(eenum.ident.unresolved().unwrap(), SymbolKind::TyEnum)
-            }
-            Item::Dummy => {}
-        }
+    fn define_item(&mut self, id: SymbolId, kind: SymbolKind) {
+        let symbol = self.table.get_mut(id).unwrap();
+        symbol.kind = kind;
     }
 
     fn declare_ty_params(&mut self, ty_params: &mut [Ident]) {
@@ -163,11 +144,27 @@ impl Resolver {
 impl Visitor for Resolver {
     fn walk_module(&mut self, module: &mut Module) {
         for item in &mut module.items {
-            self.forward_declare_item(item);
+            let (ident, kind) = match item {
+                Item::Func(func) => (&mut func.ident, SymbolKind::Function(Def::Undefined)),
+                Item::Struct(strukt) => (&mut strukt.ident, SymbolKind::TyStruct(Def::Undefined)),
+                Item::Enum(eenum) => (&mut eenum.ident, SymbolKind::TyEnum(Def::Undefined)),
+                Item::Dummy => unreachable!(),
+            };
+            *ident = self.forward_declare_global(ident.unresolved().unwrap(), kind);
         }
 
         for item in &mut module.items {
             self.visit_item(item);
+
+            let item_owned = std::mem::take(item);
+            let (ident, kind) = match item_owned {
+                Item::Func(func) => (func.ident, SymbolKind::Function(Def::Ast(func))),
+                Item::Struct(strukt) => (strukt.ident, SymbolKind::TyStruct(Def::Ast(strukt))),
+                Item::Enum(eenum) => (eenum.ident, SymbolKind::TyEnum(Def::Ast(eenum))),
+                Item::Dummy => unreachable!(),
+            };
+
+            self.define_item(ident.resolved().unwrap(), kind);
         }
     }
 
@@ -302,7 +299,7 @@ mod tests {
 
     #[test]
     fn shadowed_global() {
-        assert_debug_snapshot!(test_resolve("func foo() { foo() } func foo() {}"));
+        assert_debug_snapshot!(test_resolve("func foo() { foo() } func foo() { foo() }"));
     }
 
     #[test]
