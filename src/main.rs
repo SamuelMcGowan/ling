@@ -9,6 +9,7 @@ mod source;
 mod symbol_table;
 mod token_stream;
 mod value;
+mod diagnostic;
 
 use anyhow::{bail, Context, Result};
 
