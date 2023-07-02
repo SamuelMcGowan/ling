@@ -2,6 +2,7 @@ mod ast;
 mod chunk;
 mod constants;
 mod lexer;
+mod module_compiler;
 mod parser;
 mod passes;
 mod source;
