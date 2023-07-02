@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use codespan_reporting::diagnostic::Label;
+
 #[derive(Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub(crate) struct Span {
     start: usize,
@@ -30,7 +32,7 @@ impl Span {
         self.start == self.end
     }
 
-    pub fn range(&self) -> Range<usize> {
+    pub fn as_range(&self) -> Range<usize> {
         self.start..self.end
     }
 
@@ -51,10 +53,39 @@ impl Span {
             None
         }
     }
+
+    pub fn with_file(self, file_id: usize) -> FileSpan {
+        FileSpan {
+            span: self,
+            file_id,
+        }
+    }
+}
+
+impl From<Span> for Range<usize> {
+    fn from(span: Span) -> Self {
+        span.as_range()
+    }
 }
 
 impl std::fmt::Debug for Span {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.range().fmt(f)
+        self.as_range().fmt(f)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct FileSpan {
+    pub span: Span,
+    pub file_id: usize,
+}
+
+impl FileSpan {
+    pub fn label_primary(self) -> Label<usize> {
+        Label::primary(self.file_id, self.span)
+    }
+
+    pub fn label_secondary(self) -> Label<usize> {
+        Label::secondary(self.file_id, self.span)
     }
 }
