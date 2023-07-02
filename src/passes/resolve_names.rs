@@ -59,7 +59,7 @@ impl Resolver {
     }
 
     #[must_use]
-    fn forward_declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
+    fn declare_global(&mut self, ident: Ustr, kind: SymbolKind) -> Ident {
         let symbol_entry = self.table.add_and_get_entry(ident, kind);
 
         match self.globals.entry(ident) {
@@ -143,6 +143,7 @@ impl Resolver {
 
 impl Visitor for Resolver {
     fn walk_module(&mut self, module: &mut Module) {
+        // forward declare
         for item in &mut module.items {
             let (ident, kind) = match item {
                 Item::Func(func) => (&mut func.ident, SymbolKind::Function(Def::Undefined)),
@@ -150,12 +151,15 @@ impl Visitor for Resolver {
                 Item::Enum(eenum) => (&mut eenum.ident, SymbolKind::TyEnum(Def::Undefined)),
                 Item::Dummy => unreachable!(),
             };
-            *ident = self.forward_declare_global(ident.unresolved().unwrap(), kind);
+
+            *ident = self.declare_global(ident.unresolved().unwrap(), kind);
         }
 
         for item in &mut module.items {
+            // visit
             self.visit_item(item);
 
+            // define, moving AST into symbol tree
             let item_owned = std::mem::take(item);
             let (ident, kind) = match item_owned {
                 Item::Func(func) => (func.ident, SymbolKind::Function(Def::Ast(func))),
@@ -163,7 +167,6 @@ impl Visitor for Resolver {
                 Item::Enum(eenum) => (eenum.ident, SymbolKind::TyEnum(Def::Ast(eenum))),
                 Item::Dummy => unreachable!(),
             };
-
             self.define_item(ident.resolved().unwrap(), kind);
         }
     }
