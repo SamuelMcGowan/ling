@@ -48,9 +48,7 @@ fn run_source(name: &str, source: &str) {
     let lexer = Lexer::new(source);
     let tokens = token_tree::TokenList::from_lexer(lexer, diagnostics.borrow());
 
-    let mut errors = vec![];
-    let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors, diagnostics);
-
+    let mut parser = parser::Parser::new(tokens.into_iter(), diagnostics);
     let mut ast = parser.parse_module();
 
     let (symbols, name_errors) = Resolver::visit(&mut ast);
@@ -60,5 +58,4 @@ fn run_source(name: &str, source: &str) {
     println!("SYMBOLS: {symbols:#?}\n");
 
     println!("NAME ERRORS: {name_errors:?}");
-    println!("ERRORS: {errors:#?}");
 }

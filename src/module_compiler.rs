@@ -45,9 +45,7 @@ impl ModuleCompiler {
         let lexer = Lexer::new(source);
         let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
-        let mut parse_errors = vec![];
-        let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors, diagnostics);
-
+        let mut parser = Parser::new(tokens.into_iter(), diagnostics);
         let mut ast = parser.parse_module();
 
         let (symbols, name_errors) = Resolver::visit(&mut ast);

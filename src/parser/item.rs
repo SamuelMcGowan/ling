@@ -32,7 +32,7 @@ impl Parser<'_> {
             Some(TokenTree::Token(token)) if token.kind == tkind!(kwd Enum) => {
                 self.parse_enum().map(Item::Enum)
             }
-            other => Err(ParseError::unexpected("an item", other)),
+            other => Err(self.unexpected("an item", other)),
         }
     }
 
@@ -144,7 +144,7 @@ impl Parser<'_> {
                 kind: TokenKind::Ident(ident),
                 ..
             })) => Ok(Ident::Unresolved(ident)),
-            other => Err(ParseError::unexpected("an identifier", other)),
+            other => Err(self.unexpected("an identifier", other)),
         }
     }
 
@@ -176,7 +176,7 @@ impl Parser<'_> {
                 Ok(Ty::Tuple(fields))
             }
 
-            other => Err(ParseError::unexpected("a type", other)),
+            other => Err(self.unexpected("a type", other)),
         }
     }
 
@@ -202,7 +202,9 @@ impl Parser<'_> {
             if expect_delim && !found_delim {
                 // peek so that we can carry on parsing statements
                 if let Some(tt) = parser.tokens.peek() {
-                    parser.report(ParseError::unexpected("semicolon", Some(tt.clone())));
+                    parser
+                        .diagnostics
+                        .report(parser.unexpected("semicolon", Some(tt.clone())));
                 }
                 // don't break, we want to keep parsing
             }
@@ -218,7 +220,8 @@ impl Parser<'_> {
                 Some(Stmt::Expr(expr)) => expr,
                 Some(stmt) => {
                     // this is ok to unwrap since statement will always consume at least one token
-                    self.report(ParseError::InvalidImplicitReturn(final_stmt_span.unwrap()));
+                    self.diagnostics
+                        .report(ParseError::InvalidImplicitReturn(final_stmt_span.unwrap()));
 
                     // add the statement back to the block to improve analysis
                     stmts.push(stmt);

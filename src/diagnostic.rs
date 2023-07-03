@@ -4,7 +4,6 @@ use codespan_reporting::term;
 use codespan_reporting::term::termcolor::NoColor;
 #[cfg(not(test))]
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
-#[cfg(test)]
 use serde::Serialize;
 
 use crate::lexer::token::Bracket;
@@ -113,3 +112,50 @@ impl IntoDiagnostic for BracketMismatch {
             .with_message(format!("mismatched {:?}", self.bracket))
     }
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub(crate) enum ParseError {
+    Unexpected { expected: String, span: Span },
+    InvalidAssignmentTarget(Span),
+    InvalidImplicitReturn(Span),
+    InvalidAccessor(Span),
+}
+
+impl ParseError {
+    pub fn unexpected(expected: impl Into<String>, span: Span) -> Self {
+        Self::Unexpected {
+            expected: expected.into(),
+            span,
+        }
+    }
+}
+
+impl IntoDiagnostic for ParseError {
+    fn into_diagnostic(self, source_id: usize) -> Diagnostic<usize> {
+        macro_rules! label_primary {
+            ($span:expr) => {
+                Label::primary(source_id, $span)
+            };
+        }
+
+        match self {
+            Self::Unexpected { expected, span } => Diagnostic::error()
+                .with_message(format!("expected {expected}"))
+                .with_labels(vec![label_primary!(span)]),
+
+            Self::InvalidAssignmentTarget(span) => Diagnostic::error()
+                .with_message("invalid assignment target")
+                .with_labels(vec![label_primary!(span)]),
+
+            Self::InvalidImplicitReturn(span) => Diagnostic::error()
+                .with_message("invalid implicit return")
+                .with_labels(vec![label_primary!(span)]),
+
+            Self::InvalidAccessor(span) => Diagnostic::error()
+                .with_message("invalid accessor")
+                .with_labels(vec![label_primary!(span)]),
+        }
+    }
+}
+
+pub(crate) type ParseResult<T> = Result<T, ParseError>;

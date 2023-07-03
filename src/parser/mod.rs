@@ -2,49 +2,20 @@ pub mod expr;
 pub mod item;
 
 use crate::ast::Spanned;
-use crate::diagnostic::DiagnosticReporter;
+use crate::diagnostic::{DiagnosticReporter, ParseError, ParseResult};
 use crate::lexer::token::{BracketKind, Token, TokenKind};
-use crate::source::Span;
 use crate::token_tree::{TokenIter, TokenTree};
-
-#[derive(Debug, Clone, serde::Serialize)]
-pub(crate) enum ParseError {
-    Unexpected {
-        expected: String,
-        found: Option<Span>,
-    },
-    InvalidAssignmentTarget(Span),
-    InvalidImplicitReturn(Span),
-    InvalidAccessor(Span),
-}
-
-impl ParseError {
-    fn unexpected(expected: impl Into<String>, found: Option<TokenTree>) -> Self {
-        Self::Unexpected {
-            expected: expected.into(),
-            found: found.map(|tt| tt.span()),
-        }
-    }
-}
-
-pub(crate) type ParseResult<T> = Result<T, ParseError>;
 
 pub(crate) struct Parser<'a> {
     tokens: TokenIter,
-    errors: &'a mut Vec<ParseError>,
     diagnostics: DiagnosticReporter<'a>,
 }
 
 // Utilities.
 impl<'a> Parser<'a> {
-    pub fn new(
-        tokens: TokenIter,
-        errors: &'a mut Vec<ParseError>,
-        diagnostics: DiagnosticReporter<'a>,
-    ) -> Self {
+    pub fn new(tokens: TokenIter, diagnostics: DiagnosticReporter<'a>) -> Self {
         Self {
             tokens,
-            errors,
             diagnostics,
         }
     }
@@ -52,7 +23,6 @@ impl<'a> Parser<'a> {
     fn parser_for_tokens(&mut self, tokens: TokenIter) -> Parser {
         Parser {
             tokens,
-            errors: self.errors,
             diagnostics: self.diagnostics.borrow(),
         }
     }
@@ -70,10 +40,7 @@ impl<'a> Parser<'a> {
     fn expect_kind(&mut self, kind: TokenKind) -> ParseResult<Token> {
         match self.tokens.next() {
             Some(TokenTree::Token(token)) if token.kind == kind => Ok(token),
-            other => Err(ParseError::unexpected(
-                format!("token of kind {kind:?}"),
-                other,
-            )),
+            other => Err(self.unexpected(format!("token of kind {kind:?}"), other)),
         }
     }
 
@@ -88,17 +55,14 @@ impl<'a> Parser<'a> {
                 tokens,
                 ..
             }) if bracket_kind == kind => Ok(tokens.into_iter()),
-            other => Err(ParseError::unexpected(expected.into(), other)),
+            other => Err(self.unexpected(expected, other)),
         }
     }
 
     fn expect_end(&mut self, tree_name: &str) -> ParseResult<()> {
         match self.tokens.next() {
             None => Ok(()),
-            Some(tree) => Err(ParseError::unexpected(
-                format!("end of {tree_name}"),
-                Some(tree),
-            )),
+            Some(tt) => Err(self.unexpected(format!("end of {tree_name}"), Some(tt))),
         }
     }
 
@@ -129,7 +93,7 @@ impl<'a> Parser<'a> {
 
             if !self.eat_kind(delim) {
                 if let Some(token) = self.tokens.next() {
-                    return Err(ParseError::unexpected(
+                    return Err(self.unexpected(
                         format!("token of kind {delim:?} or end of {tree_name:?}"),
                         Some(token),
                     ));
@@ -150,7 +114,7 @@ impl Parser<'_> {
         recover: impl Fn(&mut Self) -> T,
     ) -> T {
         parser(self).unwrap_or_else(|error| {
-            self.report(error);
+            self.diagnostics.report(error);
             recover(self)
         })
     }
@@ -184,8 +148,12 @@ impl Parser<'_> {
             .for_each(|_| {});
     }
 
-    fn report(&mut self, error: ParseError) {
-        self.errors.push(error);
+    fn unexpected(&self, expected: impl Into<String>, tt: Option<TokenTree>) -> ParseError {
+        let span = match &tt {
+            Some(tt) => tt.span(),
+            None => self.tokens.end_span(),
+        };
+        ParseError::unexpected(expected.into(), span)
     }
 }
 
@@ -210,21 +178,18 @@ pub(crate) fn test_lex(
 pub(crate) fn test_parse<T>(
     source: &str,
     f: impl Fn(&mut Parser) -> T,
-) -> (T, crate::diagnostic::DiagnosticOutput, Vec<ParseError>) {
+) -> (T, crate::diagnostic::DiagnosticOutput) {
     use crate::lexer::Lexer;
     use crate::source::with_test_source;
     use crate::token_tree::TokenList;
 
-    let ((res, errors), diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
+    let (res, diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
         let lexer = Lexer::new(source);
         let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
-        let mut errors = vec![];
-        let mut parser = Parser::new(tokens.into_iter(), &mut errors, diagnostics);
-        let res = f(&mut parser);
-
-        (res, errors)
+        let mut parser = Parser::new(tokens.into_iter(), diagnostics);
+        f(&mut parser)
     });
 
-    (res, diagnostic_output, errors)
+    (res, diagnostic_output)
 }

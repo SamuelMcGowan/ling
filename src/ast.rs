@@ -2,7 +2,7 @@ use macro_rules_attribute::{derive, derive_alias};
 use ustr::Ustr;
 
 use crate::constants::ConstIdx;
-use crate::parser::ParseResult;
+use crate::diagnostic::ParseResult;
 use crate::source::Span;
 use crate::symbol_table::SymbolId;
 

@@ -101,7 +101,8 @@ impl<'a> Parser<'a> {
                         })
                     } else {
                         // span is always valid - `parse_prec` always consumes a token
-                        self.report(ParseError::InvalidAccessor(rhs.span.unwrap()));
+                        self.diagnostics
+                            .report(ParseError::InvalidAccessor(rhs.span.unwrap()));
                         Expr::Dummy
                     }
                 }
@@ -144,10 +145,7 @@ impl<'a> Parser<'a> {
                     })
                 }
 
-                _ => Err(ParseError::unexpected(
-                    "an expression",
-                    Some(TokenTree::Token(token)),
-                )),
+                _ => Err(self.unexpected("an expression", Some(TokenTree::Token(token)))),
             },
 
             Some(TokenTree::Group {
@@ -165,7 +163,7 @@ impl<'a> Parser<'a> {
                 }
             }
 
-            other => Err(ParseError::unexpected("an expression", other)),
+            other => Err(self.unexpected("an expression", other)),
         }
     }
 
