@@ -1,10 +1,11 @@
 use super::{TokenStream, TokenTree};
+use crate::diagnostic::{BracketMismatch, DiagnosticReporter};
 use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
 use crate::lexer::Lexer;
-use crate::source::Span;
+use crate::source::{Source, Span};
 
-pub(super) fn build_token_stream(lexer: Lexer) -> (TokenStream, Vec<Token>) {
-    TokenStreamBuilder::new(lexer).build()
+pub(super) fn build_token_stream(source: Source, diagnostics: DiagnosticReporter) -> TokenStream {
+    TokenStreamBuilder::new(source, diagnostics).build()
 }
 
 struct SpareBracket {
@@ -13,19 +14,23 @@ struct SpareBracket {
 }
 
 struct TokenStreamBuilder<'a> {
+    source: Source<'a>,
     lexer: Lexer<'a>,
-    mismatched_brackets: Vec<Token>,
+
+    diagnostics: DiagnosticReporter<'a>,
 }
 
 impl<'a> TokenStreamBuilder<'a> {
-    fn new(lexer: Lexer<'a>) -> Self {
+    fn new(source: Source<'a>, diagnostics: DiagnosticReporter<'a>) -> Self {
         Self {
-            lexer,
-            mismatched_brackets: vec![],
+            source,
+            lexer: Lexer::new(source),
+
+            diagnostics,
         }
     }
 
-    fn build(mut self) -> (TokenStream, Vec<Token>) {
+    fn build(mut self) -> TokenStream {
         let mut nodes = vec![];
 
         while let Some(token) = self.lexer.next() {
@@ -38,11 +43,14 @@ impl<'a> TokenStreamBuilder<'a> {
             // Nobody claimed this poor bracket :(
             if let Some(spare_bracket) = spare_bracket {
                 // we don't emit a node for unmatched closing brackets
-                self.mismatched_brackets.push(spare_bracket.token);
+                self.diagnostics.report(BracketMismatch {
+                    bracket: Bracket::Closing(spare_bracket.kind),
+                    span: spare_bracket.token.span.with_file(self.source.file_id()),
+                });
             }
         }
 
-        (TokenStream(nodes), self.mismatched_brackets)
+        TokenStream(nodes)
     }
 
     fn parse_node(&mut self, token: Token) -> (Option<TokenTree>, Option<SpareBracket>) {
@@ -87,7 +95,10 @@ impl<'a> TokenStreamBuilder<'a> {
             // get a token
             let Some(inner_token) = self.lexer.next() else {
                 // unexpected end of input
-                self.mismatched_brackets.push(token);
+                self.diagnostics.report(BracketMismatch {
+                    bracket: Bracket::Opening(kind),
+                    span: token.span.with_file(self.source.file_id()),
+                });
                 break (prev_span!(), None);
             };
 
@@ -111,7 +122,10 @@ impl<'a> TokenStreamBuilder<'a> {
                 } else {
                     // not our bracket
                     // our bracket was unterminated too, so we report that
-                    self.mismatched_brackets.push(token);
+                    self.diagnostics.report(BracketMismatch {
+                        bracket: Bracket::Opening(kind),
+                        span: token.span.with_file(self.source.file_id()),
+                    });
                     break (prev_span!(), Some(spare_bracket));
                 }
             }

@@ -10,7 +10,7 @@ expression: "test_parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(3))),
   ],
   final_expr: Unit,
-)), [], [
+)), "", [
   Unexpected(
     expected: "semicolon",
     found: Some(Span(

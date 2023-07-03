@@ -8,12 +8,4 @@ expression: "test_parse(\"foo(a: uint, {}\", |p| p.parse_func())"
     start: 13,
     end: 15,
   )),
-)), [
-  Token(
-    span: Span(
-      start: 3,
-      end: 4,
-    ),
-    kind: Bracket(Opening(Round)),
-  ),
-], [])
+)), "error: mismatched Opening(Round)\n  ┌─ ::test_module:1:4\n  │\n1 │ foo(a: uint, {}\n  │    ^\n\n", [])

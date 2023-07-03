@@ -387,9 +387,12 @@ mod tests {
     }
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
-        let tokens: Vec<_> = with_test_source(s, |source| {
-            Lexer::new(source).map(|token| token.kind).collect()
+        let (tokens, _errors) = with_test_source(s, |source, _diagnostics| {
+            Lexer::new(source)
+                .map(|token| token.kind)
+                .collect::<Vec<_>>()
         });
+
         assert_eq!(&tokens, t)
     }
 

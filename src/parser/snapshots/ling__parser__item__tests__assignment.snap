@@ -5,4 +5,4 @@ expression: "test_parse(\"a = 12\", |p| p.parse_stmt())"
 (Ok(Assignment(
   lhs: Simple(Unresolved("a")),
   rhs: Const(ConstIdx(0)),
-)), [], [])
+)), "", [])

@@ -10,7 +10,7 @@ expression: "test_parse(\"{ a = b }\", |p| p.parse_block())"
     ),
   ],
   final_expr: Dummy,
-)), [], [
+)), "", [
   InvalidImplicitReturn(Span(
     start: 2,
     end: 7,

@@ -8,7 +8,7 @@ expression: "test_parse(\"{10; 11 12}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(1))),
   ],
   final_expr: Const(ConstIdx(2)),
-)), [], [
+)), "", [
   Unexpected(
     expected: "semicolon",
     found: Some(Span(

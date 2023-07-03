@@ -14,6 +14,7 @@ mod value;
 use anyhow::{bail, Context, Result};
 use codespan_reporting::files::Files;
 
+use crate::diagnostic::DiagnosticOutput;
 use crate::passes::resolve_names::Resolver;
 use crate::source::{ModulePath, SourceDb};
 
@@ -40,8 +41,10 @@ fn run_source(name: &str, source: &str) {
     let source_id = source_db.add(ModulePath::root(name), source);
     let source = source_db.source(source_id).unwrap();
 
-    let lexer = lexer::Lexer::new(source);
-    let (tokens, mismatched_brackets) = token_stream::TokenStream::from_lexer(lexer);
+    let mut diagnostic_output = DiagnosticOutput::default();
+    let diagnostics = diagnostic_output.reporter(&source_db);
+
+    let tokens = token_stream::TokenStream::from_source(source, diagnostics);
 
     let mut errors = vec![];
     let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors);
@@ -54,7 +57,6 @@ fn run_source(name: &str, source: &str) {
     println!("AST: {ast_ron}",);
     println!("SYMBOLS: {symbols:#?}\n");
 
-    println!("MISMATCHED BRACKETS: {mismatched_brackets:#?}");
     println!("NAME ERRORS: {name_errors:?}");
     println!("ERRORS: {errors:#?}");
 }

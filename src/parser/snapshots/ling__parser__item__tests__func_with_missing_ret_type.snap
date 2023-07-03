@@ -8,4 +8,4 @@ expression: "test_parse(\"foo(a: uint) -> {}\", |p| p.parse_func())"
     start: 16,
     end: 18,
   )),
-)), [], [])
+)), "", [])

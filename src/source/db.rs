@@ -102,12 +102,22 @@ impl AsRef<str> for Source<'_> {
     }
 }
 
+// TODO: put all these test functions in separate modules so we don't have to
+// use full type names.
 #[cfg(test)]
-pub(crate) fn with_test_source<T>(source: &str, mut f: impl FnMut(Source) -> T) -> T {
+pub(crate) fn with_test_source<T>(
+    source: &str,
+    mut f: impl FnMut(Source, crate::diagnostic::DiagnosticReporter) -> T,
+) -> (T, crate::diagnostic::DiagnosticOutput) {
+    use crate::diagnostic::DiagnosticOutput;
+
     let mut source_db = SourceDb::new("");
 
     let source_id = source_db.add(ModulePath::root("test_module"), source);
     let source = source_db.source(source_id).unwrap();
 
-    f(source)
+    let mut diagnostic_output = DiagnosticOutput::default();
+    let diagnostics = diagnostic_output.reporter(&source_db);
+
+    (f(source, diagnostics), diagnostic_output)
 }

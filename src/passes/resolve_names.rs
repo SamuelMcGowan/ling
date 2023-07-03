@@ -280,10 +280,10 @@ mod tests {
     use crate::symbol_table::SymbolTable;
 
     fn test_resolve(source: &str) -> (Module, SymbolTable, Vec<SymbolError>) {
-        let (mut ast, mismatched_brackets, parse_errors) = test_parse(source, |p| p.parse_module());
+        let (mut ast, diagnostic_output, parse_errors) = test_parse(source, |p| p.parse_module());
 
-        if !mismatched_brackets.is_empty() {
-            panic!("mismatched brackets: {mismatched_brackets:?}");
+        if diagnostic_output.had_errors() {
+            panic!("had errors");
         }
 
         if !parse_errors.is_empty() {

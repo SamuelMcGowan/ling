@@ -8,4 +8,4 @@ expression: "test_parse(\"my_struct.field = 12\", |p| p.parse_stmt())"
     field: "field",
   ),
   rhs: Const(ConstIdx(0)),
-)), [], [])
+)), "", [])

@@ -16,7 +16,7 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
       ),
     )),
   ],
-), [], [
+), "", [
   Unexpected(
     expected: "a type",
     found: Some(Span(

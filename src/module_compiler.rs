@@ -2,10 +2,9 @@ use std::collections::HashMap;
 
 use codespan_reporting::files::Files;
 
-use crate::lexer::token::Token;
-use crate::lexer::Lexer;
-use crate::parser::{ParseError, Parser};
-use crate::passes::resolve_names::{Resolver, SymbolError};
+use crate::diagnostic::DiagnosticOutput;
+use crate::parser::Parser;
+use crate::passes::resolve_names::Resolver;
 use crate::source::{ModulePath, SourceDb};
 use crate::symbol_table::SymbolTable;
 use crate::token_stream::TokenStream;
@@ -15,6 +14,8 @@ const MODULE_SEP: &str = "::";
 
 pub struct ModuleCompiler {
     source_db: SourceDb,
+    diagnostics: DiagnosticOutput,
+
     modules: HashMap<ModulePath, ResolvedModule>,
 }
 
@@ -38,8 +39,7 @@ impl ModuleCompiler {
         let source_id = self.source_db.load(path)?;
         let source = self.source_db.source(source_id).unwrap();
 
-        let lexer = Lexer::new(source);
-        let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
+        let tokens = TokenStream::from_source(source, self.diagnostics.reporter(&self.source_db));
 
         let mut parse_errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors);
@@ -48,21 +48,10 @@ impl ModuleCompiler {
 
         let (symbols, name_errors) = Resolver::visit(&mut ast);
 
-        Some(ResolvedModule {
-            symbols,
-
-            mismatched_brackets,
-            parse_errors,
-            name_errors,
-        })
+        Some(ResolvedModule { symbols })
     }
 }
 
 pub struct ResolvedModule {
     symbols: SymbolTable,
-
-    // TODO: handle errors better. Maybe have diagnostics at this point.
-    mismatched_brackets: Vec<Token>,
-    parse_errors: Vec<ParseError>,
-    name_errors: Vec<SymbolError>,
 }

@@ -5,16 +5,16 @@ use std::vec::IntoIter;
 use serde::Serialize;
 
 use self::builder::build_token_stream;
+use crate::diagnostic::DiagnosticReporter;
 use crate::lexer::token::{BracketKind, Token};
-use crate::lexer::Lexer;
-use crate::source::Span;
+use crate::source::{Source, Span};
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct TokenStream(Vec<TokenTree>);
 
 impl TokenStream {
-    pub fn from_lexer(lexer: Lexer) -> (Self, Vec<Token>) {
-        build_token_stream(lexer)
+    pub fn from_source(source: Source, diagnostics: DiagnosticReporter) -> Self {
+        build_token_stream(source, diagnostics)
     }
 
     pub fn len(&self) -> usize {

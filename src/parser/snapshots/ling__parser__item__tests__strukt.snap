@@ -25,4 +25,4 @@ expression: "test_parse(\"data Person { name: string, age: uint }\", |p| p.parse
       ],
     )),
   ],
-), [], [])
+), "", [])

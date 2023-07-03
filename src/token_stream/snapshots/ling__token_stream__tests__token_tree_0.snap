@@ -1,6 +1,6 @@
 ---
 source: src/token_stream/mod.rs
-expression: "get_stream(\"( { ) } ( hello )\")"
+expression: "test_lex(\"( { ) } ( hello )\")"
 ---
 (TokenStream([
   Group(
@@ -36,19 +36,4 @@ expression: "get_stream(\"( { ) } ( hello )\")"
       end: 17,
     ),
   ),
-]), [
-  Token(
-    span: Span(
-      start: 2,
-      end: 3,
-    ),
-    kind: Bracket(Opening(Curly)),
-  ),
-  Token(
-    span: Span(
-      start: 6,
-      end: 7,
-    ),
-    kind: Bracket(Closing(Curly)),
-  ),
-])
+]), "error: mismatched Opening(Curly)\n  ┌─ ::test_module:1:3\n  │\n1 │ ( { ) } ( hello )\n  │   ^\n\nerror: mismatched Closing(Curly)\n  ┌─ ::test_module:1:7\n  │\n1 │ ( { ) } ( hello )\n  │       ^\n\n")

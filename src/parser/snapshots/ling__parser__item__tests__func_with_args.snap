@@ -23,4 +23,4 @@ expression: "test_parse(\"foo(a: uint, b: uint) -> string {}\", |p| p.parse_func
     stmts: [],
     final_expr: Unit,
   ),
-)), [], [])
+)), "", [])

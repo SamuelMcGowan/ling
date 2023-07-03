@@ -2,7 +2,7 @@
 source: src/parser/expr.rs
 expression: "test_parse(\"a.12\", |p| p.parse_expr())"
 ---
-(Ok(Dummy), [], [
+(Ok(Dummy), "", [
   InvalidAccessor(Span(
     start: 2,
     end: 4,
