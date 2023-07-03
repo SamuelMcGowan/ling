@@ -29,8 +29,11 @@ impl TokenTree {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub(crate) struct TokenList(Vec<TokenTree>);
+#[derive(Debug, Clone)]
+pub(crate) struct TokenList {
+    trees: Vec<TokenTree>,
+    end_span: Span,
+}
 
 impl TokenList {
     pub fn from_lexer(lexer: Lexer, diagnostics: DiagnosticReporter) -> Self {
@@ -38,11 +41,11 @@ impl TokenList {
     }
 
     pub fn len(&self) -> usize {
-        self.0.len()
+        self.trees.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.trees.is_empty()
     }
 }
 
@@ -52,15 +55,26 @@ impl IntoIterator for TokenList {
 
     fn into_iter(self) -> Self::IntoIter {
         TokenIter {
-            iter: self.0.into_iter(),
+            iter: self.trees.into_iter(),
             prev_span: None,
+            end_span: self.end_span,
         }
+    }
+}
+
+impl Serialize for TokenList {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.trees.serialize(serializer)
     }
 }
 
 pub(crate) struct TokenIter {
     iter: IntoIter<TokenTree>,
     prev_span: Option<Span>,
+    end_span: Span,
 }
 
 impl TokenIter {
@@ -74,6 +88,10 @@ impl TokenIter {
 
     pub fn prev_span(&self) -> Option<Span> {
         self.prev_span
+    }
+
+    pub fn end_span(&self) -> Span {
+        self.end_span
     }
 }
 

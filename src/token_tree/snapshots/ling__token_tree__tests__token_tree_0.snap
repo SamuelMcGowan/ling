@@ -2,19 +2,19 @@
 source: src/token_tree/mod.rs
 expression: "test_lex(\"( { ) } ( hello )\")"
 ---
-(TokenList([
+([
   Group(
     bracket_kind: Round,
-    tokens: TokenList([
+    tokens: [
       Group(
         bracket_kind: Curly,
-        tokens: TokenList([]),
+        tokens: [],
         span: Span(
           start: 2,
           end: 3,
         ),
       ),
-    ]),
+    ],
     span: Span(
       start: 0,
       end: 5,
@@ -22,7 +22,7 @@ expression: "test_lex(\"( { ) } ( hello )\")"
   ),
   Group(
     bracket_kind: Round,
-    tokens: TokenList([
+    tokens: [
       Token(Token(
         span: Span(
           start: 10,
@@ -30,10 +30,10 @@ expression: "test_lex(\"( { ) } ( hello )\")"
         ),
         kind: Ident("hello"),
       )),
-    ]),
+    ],
     span: Span(
       start: 8,
       end: 17,
     ),
   ),
-]), "error: mismatched Opening(Curly)\n  ┌─ ::test_module:1:3\n  │\n1 │ ( { ) } ( hello )\n  │   ^\n\nerror: mismatched Closing(Curly)\n  ┌─ ::test_module:1:7\n  │\n1 │ ( { ) } ( hello )\n  │       ^\n\n")
+], "error: mismatched Opening(Curly)\n  ┌─ ::test_module:1:3\n  │\n1 │ ( { ) } ( hello )\n  │   ^\n\nerror: mismatched Closing(Curly)\n  ┌─ ::test_module:1:7\n  │\n1 │ ( { ) } ( hello )\n  │       ^\n\n")

@@ -2,10 +2,10 @@
 source: src/token_tree/mod.rs
 expression: "test_lex(\"]{}[\")"
 ---
-(TokenList([
+([
   Group(
     bracket_kind: Curly,
-    tokens: TokenList([]),
+    tokens: [],
     span: Span(
       start: 1,
       end: 3,
@@ -13,10 +13,10 @@ expression: "test_lex(\"]{}[\")"
   ),
   Group(
     bracket_kind: Square,
-    tokens: TokenList([]),
+    tokens: [],
     span: Span(
       start: 3,
       end: 4,
     ),
   ),
-]), "error: mismatched Closing(Square)\n  ┌─ ::test_module:1:1\n  │\n1 │ ]{}[\n  │ ^\n\nerror: mismatched Opening(Square)\n  ┌─ ::test_module:1:4\n  │\n1 │ ]{}[\n  │    ^\n\n")
+], "error: mismatched Closing(Square)\n  ┌─ ::test_module:1:1\n  │\n1 │ ]{}[\n  │ ^\n\nerror: mismatched Opening(Square)\n  ┌─ ::test_module:1:4\n  │\n1 │ ]{}[\n  │    ^\n\n")

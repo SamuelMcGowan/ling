@@ -44,7 +44,10 @@ impl<'a> TokenStreamBuilder<'a> {
             }
         }
 
-        TokenList(trees)
+        TokenList {
+            trees,
+            end_span: self.lexer.peek_span(),
+        }
     }
 
     fn parse_tree(&mut self, token: Token) -> (Option<TokenTree>, Option<SpareBracket>) {
@@ -127,6 +130,13 @@ impl<'a> TokenStreamBuilder<'a> {
 
         let span = token.span.union(end_span);
 
-        (TokenList(trees), span, spare_bracket)
+        (
+            TokenList {
+                trees,
+                end_span: self.lexer.peek_span(),
+            },
+            span,
+            spare_bracket,
+        )
     }
 }

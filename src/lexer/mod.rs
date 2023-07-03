@@ -9,14 +9,33 @@ use crate::value::Value;
 
 pub(crate) struct Lexer<'a> {
     source: SourceIter<'a>,
+    token: Option<Token>,
+
     constants: ConstantPool,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(source: Source<'a>) -> Self {
-        Self {
+        let mut lexer = Self {
             source: source.source_iter(),
+            token: None,
+
             constants: ConstantPool::default(),
+        };
+
+        lexer.token = lexer.lex_token();
+
+        lexer
+    }
+
+    pub fn peek(&self) -> Option<Token> {
+        self.token
+    }
+
+    pub fn peek_span(&self) -> Span {
+        match self.peek() {
+            Some(token) => token.span,
+            None => Span::empty(self.source.as_str_all().len()),
         }
     }
 
@@ -255,7 +274,9 @@ impl Iterator for Lexer<'_> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.lex_token()
+        let token = self.token?;
+        self.token = self.lex_token();
+        Some(token)
     }
 }
 

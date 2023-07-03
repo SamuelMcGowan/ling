@@ -16,6 +16,10 @@ impl Span {
         }
     }
 
+    pub fn empty(start: usize) -> Self {
+        Self { start, end: start }
+    }
+
     pub fn start(&self) -> usize {
         self.start
     }

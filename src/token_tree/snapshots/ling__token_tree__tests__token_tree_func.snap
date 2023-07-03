@@ -2,7 +2,7 @@
 source: src/token_tree/mod.rs
 expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n                a + b\n            }\n        \")"
 ---
-(TokenList([
+([
   Token(Token(
     span: Span(
       start: 13,
@@ -19,7 +19,7 @@ expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n    
   )),
   Group(
     bracket_kind: Round,
-    tokens: TokenList([
+    tokens: [
       Token(Token(
         span: Span(
           start: 22,
@@ -69,7 +69,7 @@ expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n    
         ),
         kind: Ident("uint"),
       )),
-    ]),
+    ],
     span: Span(
       start: 21,
       end: 39,
@@ -91,7 +91,7 @@ expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n    
   )),
   Group(
     bracket_kind: Curly,
-    tokens: TokenList([
+    tokens: [
       Token(Token(
         span: Span(
           start: 66,
@@ -113,10 +113,10 @@ expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n    
         ),
         kind: Ident("b"),
       )),
-    ]),
+    ],
     span: Span(
       start: 48,
       end: 85,
     ),
   ),
-]), "")
+], "")
