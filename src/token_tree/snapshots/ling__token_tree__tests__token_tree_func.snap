@@ -1,8 +1,8 @@
 ---
-source: src/token_stream/mod.rs
-expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n                a + b\n            }\n        \")"
+source: src/token_tree/mod.rs
+expression: "test_lex(\"\n            func foo(a: uint, b: uint) -> uint {\n                a + b\n            }\n        \")"
 ---
-(TokenStream([
+(TokenList([
   Token(Token(
     span: Span(
       start: 13,
@@ -19,7 +19,7 @@ expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n  
   )),
   Group(
     bracket_kind: Round,
-    tokens: TokenStream([
+    tokens: TokenList([
       Token(Token(
         span: Span(
           start: 22,
@@ -91,7 +91,7 @@ expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n  
   )),
   Group(
     bracket_kind: Curly,
-    tokens: TokenStream([
+    tokens: TokenList([
       Token(Token(
         span: Span(
           start: 66,
@@ -119,4 +119,4 @@ expression: "get_stream(\"\n            func foo(a: uint, b: uint) -> uint {\n  
       end: 85,
     ),
   ),
-]), [])
+]), "")

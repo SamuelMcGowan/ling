@@ -1,5 +1,5 @@
 ---
-source: src/token_stream/mod.rs
+source: src/token_tree/mod.rs
 expression: "test_lex(\"( { ) } ( hello )\")"
 ---
 (TokenList([
