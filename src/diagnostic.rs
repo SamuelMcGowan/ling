@@ -1,4 +1,4 @@
-use codespan_reporting::diagnostic::{Diagnostic, Severity};
+use codespan_reporting::diagnostic::{Diagnostic, Label, Severity};
 use codespan_reporting::term;
 #[cfg(test)]
 use codespan_reporting::term::termcolor::NoColor;
@@ -96,7 +96,7 @@ impl<'a> DiagnosticReporter<'a> {
 }
 
 pub trait IntoDiagnostic {
-    fn into_diagnostic(self, file_id: usize) -> Diagnostic<usize>;
+    fn into_diagnostic(self, source_id: usize) -> Diagnostic<usize>;
 }
 
 // TODO: implement `Display` for brackets and tokens.
@@ -107,9 +107,9 @@ pub(crate) struct BracketMismatch {
 }
 
 impl IntoDiagnostic for BracketMismatch {
-    fn into_diagnostic(self, file_id: usize) -> Diagnostic<usize> {
+    fn into_diagnostic(self, source_id: usize) -> Diagnostic<usize> {
         Diagnostic::error()
-            .with_labels(vec![self.span.with_source(file_id).label_primary()])
+            .with_labels(vec![Label::primary(source_id, self.span)])
             .with_message(format!("mismatched {:?}", self.bracket))
     }
 }
