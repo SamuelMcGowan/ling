@@ -54,10 +54,10 @@ impl Span {
         }
     }
 
-    pub fn with_file(self, file_id: usize) -> FileSpan {
-        FileSpan {
+    pub fn with_source(self, source_id: usize) -> SourceSpan {
+        SourceSpan {
             span: self,
-            file_id,
+            source_id,
         }
     }
 }
@@ -75,17 +75,17 @@ impl std::fmt::Debug for Span {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct FileSpan {
+pub(crate) struct SourceSpan {
     pub span: Span,
-    pub file_id: usize,
+    pub source_id: usize,
 }
 
-impl FileSpan {
+impl SourceSpan {
     pub fn label_primary(self) -> Label<usize> {
-        Label::primary(self.file_id, self.span)
+        Label::primary(self.source_id, self.span)
     }
 
     pub fn label_secondary(self) -> Label<usize> {
-        Label::secondary(self.file_id, self.span)
+        Label::secondary(self.source_id, self.span)
     }
 }

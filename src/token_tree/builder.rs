@@ -2,10 +2,10 @@ use super::{TokenList, TokenTree};
 use crate::diagnostic::{BracketMismatch, DiagnosticReporter};
 use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
 use crate::lexer::Lexer;
-use crate::source::{Source, Span};
+use crate::source::Span;
 
-pub(super) fn build_token_stream(source: Source, diagnostics: DiagnosticReporter) -> TokenList {
-    TokenStreamBuilder::new(source, diagnostics).build()
+pub(super) fn build_token_stream(lexer: Lexer, diagnostics: DiagnosticReporter) -> TokenList {
+    TokenStreamBuilder::new(lexer, diagnostics).build()
 }
 
 struct SpareBracket {
@@ -14,20 +14,14 @@ struct SpareBracket {
 }
 
 struct TokenStreamBuilder<'a> {
-    source: Source<'a>,
     lexer: Lexer<'a>,
 
     diagnostics: DiagnosticReporter<'a>,
 }
 
 impl<'a> TokenStreamBuilder<'a> {
-    fn new(source: Source<'a>, diagnostics: DiagnosticReporter<'a>) -> Self {
-        Self {
-            source,
-            lexer: Lexer::new(source),
-
-            diagnostics,
-        }
+    fn new(lexer: Lexer<'a>, diagnostics: DiagnosticReporter<'a>) -> Self {
+        Self { lexer, diagnostics }
     }
 
     fn build(mut self) -> TokenList {
@@ -45,7 +39,7 @@ impl<'a> TokenStreamBuilder<'a> {
                 // we don't emit a tree for unmatched closing brackets
                 self.diagnostics.report(BracketMismatch {
                     bracket: Bracket::Closing(spare_bracket.kind),
-                    span: spare_bracket.token.span.with_file(self.source.file_id()),
+                    span: spare_bracket.token.span,
                 });
             }
         }
@@ -97,7 +91,7 @@ impl<'a> TokenStreamBuilder<'a> {
                 // unexpected end of input
                 self.diagnostics.report(BracketMismatch {
                     bracket: Bracket::Opening(kind),
-                    span: token.span.with_file(self.source.file_id()),
+                    span: token.span,
                 });
                 break (prev_span!(), None);
             };
@@ -124,7 +118,7 @@ impl<'a> TokenStreamBuilder<'a> {
                     // our bracket was unterminated too, so we report that
                     self.diagnostics.report(BracketMismatch {
                         bracket: Bracket::Opening(kind),
-                        span: token.span.with_file(self.source.file_id()),
+                        span: token.span,
                     });
                     break (prev_span!(), Some(spare_bracket));
                 }

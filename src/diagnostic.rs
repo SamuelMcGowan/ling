@@ -8,7 +8,7 @@ use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use serde::Serialize;
 
 use crate::lexer::token::Bracket;
-use crate::source::{FileSpan, SourceDb};
+use crate::source::{SourceDb, Span};
 
 pub(crate) struct DiagnosticOutput {
     #[cfg(not(test))]
@@ -48,10 +48,15 @@ impl Serialize for DiagnosticOutput {
 }
 
 impl DiagnosticOutput {
-    pub fn reporter<'a>(&'a mut self, source_db: &'a SourceDb) -> DiagnosticReporter {
+    pub fn reporter<'a>(
+        &'a mut self,
+        source_db: &'a SourceDb,
+        source_id: usize,
+    ) -> DiagnosticReporter {
         DiagnosticReporter {
-            source_db,
             output: self,
+            source_db,
+            source_id,
         }
     }
 
@@ -61,24 +66,23 @@ impl DiagnosticOutput {
 }
 
 pub(crate) struct DiagnosticReporter<'a> {
-    source_db: &'a SourceDb,
     output: &'a mut DiagnosticOutput,
+
+    source_db: &'a SourceDb,
+    source_id: usize,
 }
 
 impl<'a> DiagnosticReporter<'a> {
-    pub fn new(source_db: &'a SourceDb, output: &'a mut DiagnosticOutput) -> Self {
-        Self { source_db, output }
-    }
-
     pub fn borrow(&mut self) -> DiagnosticReporter {
         DiagnosticReporter {
             source_db: self.source_db,
             output: self.output,
+            source_id: self.source_id,
         }
     }
 
     pub fn report(&mut self, diagnostic: impl IntoDiagnostic) {
-        let diagnostic = diagnostic.into_diagnostic();
+        let diagnostic = diagnostic.into_diagnostic(self.source_id);
         self.output.had_errors |= diagnostic.severity >= Severity::Error;
 
         term::emit(
@@ -92,20 +96,20 @@ impl<'a> DiagnosticReporter<'a> {
 }
 
 pub trait IntoDiagnostic {
-    fn into_diagnostic(self) -> Diagnostic<usize>;
+    fn into_diagnostic(self, file_id: usize) -> Diagnostic<usize>;
 }
 
 // TODO: implement `Display` for brackets and tokens.
 
 pub(crate) struct BracketMismatch {
     pub bracket: Bracket,
-    pub span: FileSpan,
+    pub span: Span,
 }
 
 impl IntoDiagnostic for BracketMismatch {
-    fn into_diagnostic(self) -> Diagnostic<usize> {
+    fn into_diagnostic(self, file_id: usize) -> Diagnostic<usize> {
         Diagnostic::error()
-            .with_labels(vec![self.span.label_primary()])
+            .with_labels(vec![self.span.with_source(file_id).label_primary()])
             .with_message(format!("mismatched {:?}", self.bracket))
     }
 }

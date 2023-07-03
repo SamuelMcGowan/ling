@@ -196,11 +196,13 @@ pub(crate) fn test_lex(
     crate::token_tree::TokenList,
     crate::diagnostic::DiagnosticOutput,
 ) {
+    use crate::lexer::Lexer;
     use crate::source::with_test_source;
     use crate::token_tree::TokenList;
 
     with_test_source(source, |source, diagnostics| {
-        TokenList::from_source(source, diagnostics)
+        let lexer = Lexer::new(source);
+        TokenList::from_lexer(lexer, diagnostics)
     })
 }
 
@@ -209,11 +211,13 @@ pub(crate) fn test_parse<T>(
     source: &str,
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, crate::diagnostic::DiagnosticOutput, Vec<ParseError>) {
+    use crate::lexer::Lexer;
     use crate::source::with_test_source;
     use crate::token_tree::TokenList;
 
     let ((res, errors), diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
-        let tokens = TokenList::from_source(source, diagnostics.borrow());
+        let lexer = Lexer::new(source);
+        let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
         let mut errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut errors, diagnostics);

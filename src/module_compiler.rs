@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
+use crate::lexer::Lexer;
 use crate::parser::Parser;
 use crate::passes::resolve_names::Resolver;
 use crate::source::{ModulePath, SourceDb};
@@ -39,9 +40,10 @@ impl ModuleCompiler {
         let source_id = self.source_db.load(path)?;
         let source = self.source_db.source(source_id).unwrap();
 
-        let mut diagnostics = self.diagnostics.reporter(&self.source_db);
+        let mut diagnostics = self.diagnostics.reporter(&self.source_db, source_id);
 
-        let tokens = TokenList::from_source(source, diagnostics.borrow());
+        let lexer = Lexer::new(source);
+        let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
         let mut parse_errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors, diagnostics);

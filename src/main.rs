@@ -15,6 +15,7 @@ use anyhow::{bail, Context, Result};
 use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
+use crate::lexer::Lexer;
 use crate::passes::resolve_names::Resolver;
 use crate::source::{ModulePath, SourceDb};
 
@@ -42,9 +43,10 @@ fn run_source(name: &str, source: &str) {
     let source = source_db.source(source_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let mut diagnostics = diagnostic_output.reporter(&source_db);
+    let mut diagnostics = diagnostic_output.reporter(&source_db, source_id);
 
-    let tokens = token_tree::TokenList::from_source(source, diagnostics.borrow());
+    let lexer = Lexer::new(source);
+    let tokens = token_tree::TokenList::from_lexer(lexer, diagnostics.borrow());
 
     let mut errors = vec![];
     let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors, diagnostics);

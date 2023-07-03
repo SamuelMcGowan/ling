@@ -7,7 +7,8 @@ use serde::Serialize;
 use self::builder::build_token_stream;
 use crate::diagnostic::DiagnosticReporter;
 use crate::lexer::token::{BracketKind, Token};
-use crate::source::{Source, Span};
+use crate::lexer::Lexer;
+use crate::source::Span;
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) enum TokenTree {
@@ -32,8 +33,8 @@ impl TokenTree {
 pub(crate) struct TokenList(Vec<TokenTree>);
 
 impl TokenList {
-    pub fn from_source(source: Source, diagnostics: DiagnosticReporter) -> Self {
-        build_token_stream(source, diagnostics)
+    pub fn from_lexer(lexer: Lexer, diagnostics: DiagnosticReporter) -> Self {
+        build_token_stream(lexer, diagnostics)
     }
 
     pub fn len(&self) -> usize {

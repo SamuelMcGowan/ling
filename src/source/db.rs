@@ -117,7 +117,7 @@ pub(crate) fn with_test_source<T>(
     let source = source_db.source(source_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let diagnostics = diagnostic_output.reporter(&source_db);
+    let diagnostics = diagnostic_output.reporter(&source_db, source_id);
 
     (f(source, diagnostics), diagnostic_output)
 }
