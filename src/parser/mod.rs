@@ -179,15 +179,23 @@ impl Parser<'_> {
 }
 
 #[cfg(test)]
+pub(crate) fn test_lex(source: &str) -> (crate::token_stream::TokenStream, Vec<Token>) {
+    use crate::lexer::Lexer;
+    use crate::source::with_test_source;
+    use crate::token_stream::TokenStream;
+
+    with_test_source(source, |source| {
+        let lexer = Lexer::new(source);
+        TokenStream::from_lexer(lexer)
+    })
+}
+
+#[cfg(test)]
 pub(crate) fn test_parse<T>(
     source: &str,
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, Vec<Token>, Vec<ParseError>) {
-    use crate::lexer::Lexer;
-    use crate::token_stream::TokenStream;
-
-    let lexer = Lexer::new(source);
-    let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
+    let (tokens, mismatched_brackets) = test_lex(source);
 
     let mut errors = vec![];
     let mut parser = Parser::new(tokens.into_iter(), &mut errors);

@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
+use codespan_reporting::files::Files;
+
 use crate::lexer::token::Token;
 use crate::lexer::Lexer;
 use crate::parser::{ParseError, Parser};
 use crate::passes::resolve_names::{Resolver, SymbolError};
-use crate::source::ModulePath;
+use crate::source::{ModulePath, SourceDb};
 use crate::symbol_table::SymbolTable;
 use crate::token_stream::TokenStream;
 
@@ -12,6 +14,7 @@ const FILE_EXT: &str = "ling";
 const MODULE_SEP: &str = "::";
 
 pub struct ModuleCompiler {
+    source_db: SourceDb,
     modules: HashMap<ModulePath, ResolvedModule>,
 }
 
@@ -32,10 +35,10 @@ impl ModuleCompiler {
     }
 
     fn compile_module(&mut self, path: ModulePath) -> Option<ResolvedModule> {
-        let path = path.into_path_buf();
-        let source = std::fs::read_to_string(path).ok()?;
+        let source_id = self.source_db.load(path)?;
+        let source = self.source_db.source(source_id).unwrap();
 
-        let lexer = Lexer::new(&source);
+        let lexer = Lexer::new(source);
         let (tokens, mismatched_brackets) = TokenStream::from_lexer(lexer);
 
         let mut parse_errors = vec![];

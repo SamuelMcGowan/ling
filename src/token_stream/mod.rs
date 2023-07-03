@@ -96,23 +96,19 @@ impl TokenTree {
 mod tests {
     use insta::assert_ron_snapshot;
 
-    use super::*;
-
-    fn get_stream(source: &str) -> (TokenStream, Vec<Token>) {
-        TokenStream::from_lexer(Lexer::new(source))
-    }
+    use crate::parser::test_lex;
 
     #[test]
     fn simple_tests() {
-        assert_ron_snapshot!("token_tree_0", get_stream("( { ) } ( hello )"));
-        assert_ron_snapshot!("token_tree_1", get_stream("{{{}}}"));
-        assert_ron_snapshot!("token_tree_2", get_stream("((("));
-        assert_ron_snapshot!("token_tree_3", get_stream(")))"));
-        assert_ron_snapshot!("token_tree_4", get_stream("]{}["));
+        assert_ron_snapshot!("token_tree_0", test_lex("( { ) } ( hello )"));
+        assert_ron_snapshot!("token_tree_1", test_lex("{{{}}}"));
+        assert_ron_snapshot!("token_tree_2", test_lex("((("));
+        assert_ron_snapshot!("token_tree_3", test_lex(")))"));
+        assert_ron_snapshot!("token_tree_4", test_lex("]{}["));
 
         assert_ron_snapshot!(
             "token_tree_func",
-            get_stream(
+            test_lex(
                 "
             func foo(a: uint, b: uint) -> uint {
                 a + b

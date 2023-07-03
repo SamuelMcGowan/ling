@@ -1,17 +1,28 @@
 use std::ops::Range;
+use std::path::PathBuf;
 
 use codespan_reporting::files::{Error as FileError, Files, SimpleFile};
 
 use super::{ModulePath, SourceIter};
 
-#[derive(Default, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct SourceDb {
     files: Vec<SimpleFile<ModulePath, String>>,
+    root_dir: PathBuf,
 }
 
 impl SourceDb {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(root_dir: impl Into<PathBuf>) -> Self {
+        Self {
+            files: vec![],
+            root_dir: root_dir.into(),
+        }
+    }
+
+    pub fn load(&mut self, path: ModulePath) -> Option<usize> {
+        let module_path_buf = path.into_path_buf(&self.root_dir);
+        let source = std::fs::read_to_string(module_path_buf).ok()?;
+        Some(self.add(path, source))
     }
 
     pub fn add(&mut self, path: ModulePath, source: impl Into<String>) -> usize {
@@ -89,4 +100,14 @@ impl AsRef<str> for Source<'_> {
     fn as_ref(&self) -> &str {
         self.source()
     }
+}
+
+#[cfg(test)]
+pub(crate) fn with_test_source<T>(source: &str, mut f: impl FnMut(Source) -> T) -> T {
+    let mut source_db = SourceDb::new("");
+
+    let source_id = source_db.add(ModulePath::root("test_module"), source);
+    let source = source_db.source(source_id).unwrap();
+
+    f(source)
 }

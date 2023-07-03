@@ -4,7 +4,7 @@ use ustr::Ustr;
 
 use self::token::{tkind, Token, TokenKind};
 use crate::constants::ConstantPool;
-use crate::source::{SourceIter, Span};
+use crate::source::{Source, SourceIter, Span};
 use crate::value::Value;
 
 pub(crate) struct Lexer<'a> {
@@ -13,9 +13,9 @@ pub(crate) struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(source: &'a str) -> Self {
+    pub fn new(source: Source<'a>) -> Self {
         Self {
-            source: SourceIter::new(source),
+            source: source.source_iter(),
             constants: ConstantPool::default(),
         }
     }
@@ -293,8 +293,11 @@ fn trim_trailing_zeros(mut digits: &[u8]) -> &[u8] {
 
 #[cfg(test)]
 mod tests {
+    use codespan_reporting::files::Files;
+
     use super::*;
     use crate::constants::ConstIdx;
+    use crate::source::{with_test_source, ModulePath, SourceDb};
 
     #[test]
     fn punct_single() {
@@ -384,12 +387,19 @@ mod tests {
     }
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
-        let tokens: Vec<_> = Lexer::new(s).map(|token| token.kind).collect();
+        let tokens: Vec<_> = with_test_source(s, |source| {
+            Lexer::new(source).map(|token| token.kind).collect()
+        });
         assert_eq!(&tokens, t)
     }
 
     fn check_constant(s: &str, value: Value) {
-        let mut lexer = Lexer::new(s);
+        let mut source_db = SourceDb::new("");
+
+        let source_id = source_db.add(ModulePath::root("test_module"), s);
+        let source = source_db.source(source_id).unwrap();
+
+        let mut lexer = Lexer::new(source);
 
         let tokens: Vec<_> = lexer.by_ref().map(|token| token.kind).collect();
         assert_eq!(&tokens, &[tkind!(constant 0)]);

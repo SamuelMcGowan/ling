@@ -1,5 +1,5 @@
 use std::fmt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use ustr::Ustr;
 
@@ -13,6 +13,10 @@ pub struct ModulePath {
 }
 
 impl ModulePath {
+    pub fn root(name: &str) -> Self {
+        Self::new(name, std::iter::empty())
+    }
+
     pub fn new<'a>(name: &'a str, parents: impl Iterator<Item = &'a str>) -> Self {
         let mut parents_str = String::new();
         for part in parents {
@@ -26,8 +30,10 @@ impl ModulePath {
         }
     }
 
-    pub fn into_path_buf(self) -> PathBuf {
+    pub fn into_path_buf(self, root_dir: &Path) -> PathBuf {
         let mut path = PathBuf::new();
+
+        path.push(root_dir);
 
         for segment in self.parents.split(MODULE_SEP) {
             path.push(segment);
