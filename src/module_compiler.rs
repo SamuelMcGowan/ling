@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use codespan_reporting::files::Files;
 
+use crate::ast::Module;
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
@@ -45,15 +46,20 @@ impl ModuleCompiler {
         let lexer = Lexer::new(source);
         let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
-        let mut parser = Parser::new(tokens.into_iter(), diagnostics);
+        let mut parser = Parser::new(tokens.into_iter(), diagnostics.borrow());
         let mut ast = parser.parse_module();
 
-        let (symbols, name_errors) = Resolver::visit(&mut ast);
+        if diagnostics.had_errors() {
+            return None;
+        }
 
-        Some(ResolvedModule { symbols })
+        let symbols = Resolver::visit(&mut ast, diagnostics);
+
+        Some(ResolvedModule { ast, symbols })
     }
 }
 
 pub struct ResolvedModule {
+    ast: Module,
     symbols: SymbolTable,
 }

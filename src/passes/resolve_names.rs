@@ -5,16 +5,10 @@ use ustr::Ustr;
 
 use super::visitor::Visitor;
 use crate::ast::*;
+use crate::diagnostic::{DiagnosticReporter, SymbolError};
 use crate::symbol_table::{Def, Symbol, SymbolId, SymbolKind, SymbolTable};
 
-#[derive(Debug)]
-pub(crate) enum SymbolError {
-    SymbolNotFound(Ustr),
-    GlobalShadowed(Ustr),
-    WrongKind(Ustr),
-}
-
-pub(crate) struct Resolver {
+pub(crate) struct Resolver<'a> {
     table: SymbolTable,
 
     builtins: HashMap<Ustr, SymbolEntry>,
@@ -23,11 +17,11 @@ pub(crate) struct Resolver {
     locals: Vec<SymbolEntry>,
     scopes: Vec<usize>,
 
-    errors: Vec<SymbolError>,
+    diagnostics: DiagnosticReporter<'a>,
 }
 
-impl Resolver {
-    pub fn new() -> Self {
+impl<'a> Resolver<'a> {
+    pub fn new(diagnostics: DiagnosticReporter<'a>) -> Self {
         let mut r = Self {
             table: SymbolTable::default(),
 
@@ -37,7 +31,7 @@ impl Resolver {
 
             scopes: vec![],
 
-            errors: vec![],
+            diagnostics,
         };
 
         r.declare_builtin("int", SymbolKind::TyStruct(Def::Builtin));
@@ -46,10 +40,10 @@ impl Resolver {
         r
     }
 
-    pub fn visit(ast: &mut Module) -> (SymbolTable, Vec<SymbolError>) {
-        let mut resolver = Self::new();
+    pub fn visit(ast: &mut Module, diagnostics: DiagnosticReporter<'a>) -> SymbolTable {
+        let mut resolver = Self::new(diagnostics);
         resolver.visit_module(ast);
-        (resolver.table, resolver.errors)
+        resolver.table
     }
 
     fn declare_builtin(&mut self, ident: impl Into<Ustr>, kind: SymbolKind) {
@@ -64,7 +58,7 @@ impl Resolver {
 
         match self.globals.entry(ident) {
             Entry::Occupied(_) => {
-                self.errors.push(SymbolError::GlobalShadowed(ident));
+                self.diagnostics.report(SymbolError::GlobalShadowed(ident));
             }
             Entry::Vacant(vacant) => {
                 vacant.insert(symbol_entry);
@@ -85,12 +79,15 @@ impl Resolver {
     #[must_use]
     fn resolve(&mut self, ident: Ustr, value: bool) -> Ident {
         let Some(entry) = self.resolve_entry(ident) else {
-            self.errors.push(SymbolError::SymbolNotFound(ident));
+            self.diagnostics.report(SymbolError::SymbolNotFound(ident));
             return Ident::Unresolved(ident);
         };
 
         if entry.is_value != value {
-            self.errors.push(SymbolError::WrongKind(ident));
+            self.diagnostics.report(SymbolError::WrongKind {
+                ident,
+                should_be_value: value,
+            });
             return Ident::Unresolved(ident);
         }
 
@@ -128,7 +125,7 @@ impl SymbolTable {
     }
 }
 
-impl Resolver {
+impl Resolver<'_> {
     fn define_item(&mut self, id: SymbolId, kind: SymbolKind) {
         let symbol = self.table.get_mut(id).unwrap();
         symbol.kind = kind;
@@ -141,7 +138,7 @@ impl Resolver {
     }
 }
 
-impl Visitor for Resolver {
+impl Visitor for Resolver<'_> {
     fn walk_module(&mut self, module: &mut Module) {
         // forward declare
         for item in &mut module.items {
@@ -272,108 +269,123 @@ struct SymbolEntry {
 
 #[cfg(test)]
 mod tests {
-    use insta::assert_debug_snapshot;
+    use insta::assert_ron_snapshot;
 
     use super::{Resolver, SymbolError};
     use crate::ast::Module;
-    use crate::parser::test_parse;
+    use crate::diagnostic::DiagnosticOutput;
+    use crate::lexer::Lexer;
+    use crate::parser::{test_parse, Parser};
+    use crate::source::with_test_source;
     use crate::symbol_table::SymbolTable;
+    use crate::token_tree::TokenList;
 
-    fn test_resolve(source: &str) -> (Module, SymbolTable, Vec<SymbolError>) {
-        let (mut ast, diagnostic_output) = test_parse(source, |p| p.parse_module());
+    fn test_resolve(source: &str) -> Result<SymbolTable, DiagnosticOutput> {
+        let (table, diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
+            let lexer = Lexer::new(source);
+            let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
+
+            let mut parser = Parser::new(tokens.into_iter(), diagnostics.borrow());
+            let mut ast = parser.parse_module();
+
+            if diagnostics.had_errors() {
+                // TODO: pass symbol to resolver rather than waiting for it to return one
+                return SymbolTable::default();
+            }
+
+            Resolver::visit(&mut ast, diagnostics)
+        });
 
         if diagnostic_output.had_errors() {
-            panic!("had errors");
+            Err(diagnostic_output)
+        } else {
+            Ok(table)
         }
-
-        let (table, errors) = Resolver::visit(&mut ast);
-
-        (ast, table, errors)
     }
 
     #[test]
     fn simple() {
-        assert_debug_snapshot!(test_resolve("func foo() {}"));
+        assert_ron_snapshot!(test_resolve("func foo() {}"));
     }
 
     #[test]
     fn shadowed_global() {
-        assert_debug_snapshot!(test_resolve("func foo() { foo() } func foo() { foo() }"));
+        assert_ron_snapshot!(test_resolve("func foo() { foo() } func foo() { foo() }"));
     }
 
     #[test]
     fn shadowed_local() {
-        assert_debug_snapshot!(test_resolve("func foo() { let a = 12; let a = 12; }"));
+        assert_ron_snapshot!(test_resolve("func foo() { let a = 12; let a = 12; }"));
     }
 
     #[test]
     fn shadowed_global_shadowed_local() {
-        assert_debug_snapshot!(test_resolve(
+        assert_ron_snapshot!(test_resolve(
             "func foo() { let a = 12; let a = 12; } func foo() {}"
         ));
     }
 
     #[test]
     fn local_shadowing_global() {
-        assert_debug_snapshot!(test_resolve("func foo() { let foo = 12; let a = foo; }"))
+        assert_ron_snapshot!(test_resolve("func foo() { let foo = 12; let a = foo; }"))
     }
 
     #[test]
     fn global_shadowing_builtin() {
-        assert_debug_snapshot!(test_resolve("func uint() { uint() }"))
+        assert_ron_snapshot!(test_resolve("func uint() { uint() }"))
     }
 
     #[test]
     fn forward_declaration() {
-        assert_debug_snapshot!(test_resolve("func a() { a(); b(); } func b() {}"))
+        assert_ron_snapshot!(test_resolve("func a() { a(); b(); } func b() {}"))
     }
 
     #[test]
     fn argument() {
-        assert_debug_snapshot!(test_resolve("func foo(a: uint) { a } func a() {}"));
+        assert_ron_snapshot!(test_resolve("func foo(a: uint) { a } func a() {}"));
     }
 
     #[test]
     fn argument_shadowed() {
-        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let a = 12; }"))
+        assert_ron_snapshot!(test_resolve("func foo(a: uint) { let a = 12; }"))
     }
 
     #[test]
     fn func_generic() {
-        assert_debug_snapshot!(test_resolve("func foo[A, B]() {}"));
+        assert_ron_snapshot!(test_resolve("func foo[A, B]() {}"));
     }
     #[test]
     fn strukt() {
-        assert_debug_snapshot!(test_resolve("data Person { name: string, age: uint }"));
+        assert_ron_snapshot!(test_resolve("data Person { name: string, age: uint }"));
     }
 
     #[test]
     fn eenum() {
-        assert_debug_snapshot!(test_resolve("enum Result[T, E] { Ok(T), Err(E), }"));
+        assert_ron_snapshot!(test_resolve("enum Result[T, E] { Ok(T), Err(E), }"));
     }
 
     #[test]
     fn tuple() {
-        assert_debug_snapshot!(test_resolve("func a() -> (uint, uint) {}"));
+        assert_ron_snapshot!(test_resolve("func a() -> (uint, uint) {}"));
     }
 
     #[test]
     fn assign_to_generic() {
-        assert_debug_snapshot!(test_resolve("func foo[A]() { A = 12; }"));
+        assert_ron_snapshot!(test_resolve("func foo[A]() { A = 12; }"));
     }
 
     #[test]
     fn resolution() {
-        assert_debug_snapshot!(test_resolve("func foo(a: uint) { let b = a; let c = b; }"));
+        assert_ron_snapshot!(test_resolve("func foo(a: uint) { let b = a; let c = b; }"));
     }
 
     #[test]
     fn scopes() {
-        assert_debug_snapshot!(test_resolve("func foo() { loop { let a = 12; } a;}"));
+        assert_ron_snapshot!(test_resolve("func foo() { loop { let a = 12; } a;}"));
     }
 
     #[test]
     fn unknown_var() {
-        assert_debug_snapshot!(test_resolve("func foo() { bloop() }"))
+        assert_ron_snapshot!(test_resolve("func foo() { bloop() }"))
     }
 }

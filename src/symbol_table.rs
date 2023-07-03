@@ -1,11 +1,12 @@
+use serde::Serialize;
 use ustr::Ustr;
 
 use crate::ast;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) struct SymbolId(usize);
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize)]
 pub(crate) struct SymbolTable {
     symbol_lookup: Vec<Symbol>,
 }
@@ -26,13 +27,13 @@ impl SymbolTable {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Symbol {
     pub ident: Ustr,
     pub kind: SymbolKind,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) enum SymbolKind {
     Function(Def<ast::Func>),
     TyStruct(Def<ast::Struct>),
@@ -49,7 +50,7 @@ impl SymbolKind {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum Def<T> {
     Ast(T),
     Builtin,

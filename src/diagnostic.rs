@@ -5,6 +5,7 @@ use codespan_reporting::term::termcolor::NoColor;
 #[cfg(not(test))]
 use codespan_reporting::term::termcolor::{ColorChoice, StandardStream};
 use serde::Serialize;
+use ustr::Ustr;
 
 use crate::lexer::token::Bracket;
 use crate::source::{SourceDb, Span};
@@ -16,7 +17,7 @@ pub(crate) struct DiagnosticOutput {
     #[cfg(test)]
     output: NoColor<Vec<u8>>,
 
-    config: term::Config,
+    config: Box<term::Config>,
     had_errors: bool,
 }
 
@@ -29,7 +30,7 @@ impl Default for DiagnosticOutput {
             #[cfg(test)]
             output: NoColor::new(vec![]),
 
-            config: term::Config::default(),
+            config: Box::default(),
             had_errors: false,
         }
     }
@@ -91,6 +92,10 @@ impl<'a> DiagnosticReporter<'a> {
             &diagnostic,
         )
         .expect("failed to emit diagnostic");
+    }
+
+    pub fn had_errors(&self) -> bool {
+        self.output.had_errors
     }
 }
 
@@ -159,3 +164,37 @@ impl IntoDiagnostic for ParseError {
 }
 
 pub(crate) type ParseResult<T> = Result<T, ParseError>;
+
+// TODO: store spans instead
+#[derive(Debug)]
+pub(crate) enum SymbolError {
+    WrongKind { ident: Ustr, should_be_value: bool },
+    SymbolNotFound(Ustr),
+    GlobalShadowed(Ustr),
+}
+
+impl IntoDiagnostic for SymbolError {
+    fn into_diagnostic(self, source_id: usize) -> Diagnostic<usize> {
+        match self {
+            Self::WrongKind {
+                ident,
+                should_be_value,
+            } => {
+                let message = if should_be_value {
+                    "expected a value"
+                } else {
+                    "did not expect a value"
+                };
+                Diagnostic::error().with_message(message)
+            }
+
+            Self::SymbolNotFound(ident) => {
+                Diagnostic::error().with_message(format!("symbol `{ident}` not found"))
+            }
+
+            Self::GlobalShadowed(ident) => {
+                Diagnostic::error().with_message(format!("global `{ident}` shadowed"))
+            }
+        }
+    }
+}

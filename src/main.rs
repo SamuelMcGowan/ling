@@ -48,14 +48,16 @@ fn run_source(name: &str, source: &str) {
     let lexer = Lexer::new(source);
     let tokens = token_tree::TokenList::from_lexer(lexer, diagnostics.borrow());
 
-    let mut parser = parser::Parser::new(tokens.into_iter(), diagnostics);
+    let mut parser = parser::Parser::new(tokens.into_iter(), diagnostics.borrow());
     let mut ast = parser.parse_module();
 
-    let (symbols, name_errors) = Resolver::visit(&mut ast);
-
     let ast_ron = to_string_pretty(&ast, PrettyConfig::default()).unwrap();
-    println!("AST: {ast_ron}",);
-    println!("SYMBOLS: {symbols:#?}\n");
+    println!("AST: {ast_ron}");
 
-    println!("NAME ERRORS: {name_errors:?}");
+    if diagnostics.had_errors() {
+        return;
+    }
+
+    let symbols = Resolver::visit(&mut ast, diagnostics);
+    println!("SYMBOLS: {symbols:#?}\n");
 }
