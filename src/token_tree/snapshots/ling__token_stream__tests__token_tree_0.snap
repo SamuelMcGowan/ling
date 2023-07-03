@@ -2,13 +2,13 @@
 source: src/token_stream/mod.rs
 expression: "test_lex(\"( { ) } ( hello )\")"
 ---
-(TokenStream([
+(TokenList([
   Group(
     bracket_kind: Round,
-    tokens: TokenStream([
+    tokens: TokenList([
       Group(
         bracket_kind: Curly,
-        tokens: TokenStream([]),
+        tokens: TokenList([]),
         span: Span(
           start: 2,
           end: 3,
@@ -22,7 +22,7 @@ expression: "test_lex(\"( { ) } ( hello )\")"
   ),
   Group(
     bracket_kind: Round,
-    tokens: TokenStream([
+    tokens: TokenList([
       Token(Token(
         span: Span(
           start: 10,

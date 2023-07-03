@@ -1,10 +1,10 @@
-use super::{TokenStream, TokenTree};
+use super::{TokenList, TokenTree};
 use crate::diagnostic::{BracketMismatch, DiagnosticReporter};
 use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
 use crate::lexer::Lexer;
 use crate::source::{Source, Span};
 
-pub(super) fn build_token_stream(source: Source, diagnostics: DiagnosticReporter) -> TokenStream {
+pub(super) fn build_token_stream(source: Source, diagnostics: DiagnosticReporter) -> TokenList {
     TokenStreamBuilder::new(source, diagnostics).build()
 }
 
@@ -30,19 +30,19 @@ impl<'a> TokenStreamBuilder<'a> {
         }
     }
 
-    fn build(mut self) -> TokenStream {
-        let mut nodes = vec![];
+    fn build(mut self) -> TokenList {
+        let mut trees = vec![];
 
         while let Some(token) = self.lexer.next() {
-            let (node, spare_bracket) = self.parse_node(token);
+            let (tree, spare_bracket) = self.parse_tree(token);
 
-            if let Some(node) = node {
-                nodes.push(node);
+            if let Some(tree) = tree {
+                trees.push(tree);
             }
 
             // Nobody claimed this poor bracket :(
             if let Some(spare_bracket) = spare_bracket {
-                // we don't emit a node for unmatched closing brackets
+                // we don't emit a tree for unmatched closing brackets
                 self.diagnostics.report(BracketMismatch {
                     bracket: Bracket::Closing(spare_bracket.kind),
                     span: spare_bracket.token.span.with_file(self.source.file_id()),
@@ -50,18 +50,18 @@ impl<'a> TokenStreamBuilder<'a> {
             }
         }
 
-        TokenStream(nodes)
+        TokenList(trees)
     }
 
-    fn parse_node(&mut self, token: Token) -> (Option<TokenTree>, Option<SpareBracket>) {
+    fn parse_tree(&mut self, token: Token) -> (Option<TokenTree>, Option<SpareBracket>) {
         match token.kind {
             TokenKind::Bracket(Bracket::Opening(kind)) => {
                 // ooh look, a tree
-                let (nodes, span, spare_bracket) = self.parse_tree(token, kind);
+                let (tokens, span, spare_bracket) = self.parse_group(token, kind);
                 (
                     Some(TokenTree::Group {
                         bracket_kind: kind,
-                        tokens: TokenStream(nodes),
+                        tokens,
                         span,
                     }),
                     spare_bracket,
@@ -75,18 +75,18 @@ impl<'a> TokenStreamBuilder<'a> {
         }
     }
 
-    fn parse_tree(
+    fn parse_group(
         &mut self,
         token: Token,
         kind: BracketKind,
-    ) -> (Vec<TokenTree>, Span, Option<SpareBracket>) {
-        let mut nodes = vec![];
+    ) -> (TokenList, Span, Option<SpareBracket>) {
+        let mut trees = vec![];
 
         macro_rules! prev_span {
             () => {
-                nodes
+                trees
                     .last()
-                    .map(|node: &TokenTree| node.span())
+                    .map(|tree: &TokenTree| tree.span())
                     .unwrap_or(token.span)
             };
         }
@@ -107,11 +107,11 @@ impl<'a> TokenStreamBuilder<'a> {
                 break (inner_token.span, None);
             }
 
-            // parse a child node
-            let (node, spare_bracket) = self.parse_node(inner_token);
+            // parse a child tree
+            let (tree, spare_bracket) = self.parse_tree(inner_token);
 
-            if let Some(node) = node {
-                nodes.push(node);
+            if let Some(tree) = tree {
+                trees.push(tree);
             }
 
             // check the spare bracket
@@ -133,6 +133,6 @@ impl<'a> TokenStreamBuilder<'a> {
 
         let span = token.span.union(end_span);
 
-        (nodes, span, spare_bracket)
+        (TokenList(trees), span, spare_bracket)
     }
 }

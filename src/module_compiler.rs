@@ -7,7 +7,7 @@ use crate::parser::Parser;
 use crate::passes::resolve_names::Resolver;
 use crate::source::{ModulePath, SourceDb};
 use crate::symbol_table::SymbolTable;
-use crate::token_stream::TokenStream;
+use crate::token_tree::TokenList;
 
 const FILE_EXT: &str = "ling";
 const MODULE_SEP: &str = "::";
@@ -39,7 +39,7 @@ impl ModuleCompiler {
         let source_id = self.source_db.load(path)?;
         let source = self.source_db.source(source_id).unwrap();
 
-        let tokens = TokenStream::from_source(source, self.diagnostics.reporter(&self.source_db));
+        let tokens = TokenList::from_source(source, self.diagnostics.reporter(&self.source_db));
 
         let mut parse_errors = vec![];
         let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors);

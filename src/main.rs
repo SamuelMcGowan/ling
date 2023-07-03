@@ -8,7 +8,7 @@ mod parser;
 mod passes;
 mod source;
 mod symbol_table;
-mod token_stream;
+mod token_tree;
 mod value;
 
 use anyhow::{bail, Context, Result};
@@ -44,7 +44,7 @@ fn run_source(name: &str, source: &str) {
     let mut diagnostic_output = DiagnosticOutput::default();
     let diagnostics = diagnostic_output.reporter(&source_db);
 
-    let tokens = token_stream::TokenStream::from_source(source, diagnostics);
+    let tokens = token_tree::TokenList::from_source(source, diagnostics);
 
     let mut errors = vec![];
     let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors);

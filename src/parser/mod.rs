@@ -4,7 +4,7 @@ pub mod item;
 use crate::ast::Spanned;
 use crate::lexer::token::{BracketKind, Token, TokenKind};
 use crate::source::Span;
-use crate::token_stream::{TokenIter, TokenTree};
+use crate::token_tree::{TokenIter, TokenTree};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub(crate) enum ParseError {
@@ -182,14 +182,14 @@ impl Parser<'_> {
 pub(crate) fn test_lex(
     source: &str,
 ) -> (
-    crate::token_stream::TokenStream,
+    crate::token_tree::TokenList,
     crate::diagnostic::DiagnosticOutput,
 ) {
     use crate::source::with_test_source;
-    use crate::token_stream::TokenStream;
+    use crate::token_tree::TokenList;
 
     with_test_source(source, |source, diagnostics| {
-        TokenStream::from_source(source, diagnostics)
+        TokenList::from_source(source, diagnostics)
     })
 }
 

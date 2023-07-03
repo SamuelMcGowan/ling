@@ -10,9 +10,28 @@ use crate::lexer::token::{BracketKind, Token};
 use crate::source::{Source, Span};
 
 #[derive(Debug, Clone, Serialize)]
-pub(crate) struct TokenStream(Vec<TokenTree>);
+pub(crate) enum TokenTree {
+    Token(Token),
+    Group {
+        bracket_kind: BracketKind,
+        tokens: TokenList,
+        span: Span,
+    },
+}
 
-impl TokenStream {
+impl TokenTree {
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Token(token) => token.span,
+            Self::Group { span, .. } => *span,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub(crate) struct TokenList(Vec<TokenTree>);
+
+impl TokenList {
     pub fn from_source(source: Source, diagnostics: DiagnosticReporter) -> Self {
         build_token_stream(source, diagnostics)
     }
@@ -26,7 +45,7 @@ impl TokenStream {
     }
 }
 
-impl IntoIterator for TokenStream {
+impl IntoIterator for TokenList {
     type IntoIter = TokenIter;
     type Item = TokenTree;
 
@@ -72,25 +91,6 @@ impl Iterator for TokenIter {
 }
 
 impl ExactSizeIterator for TokenIter {}
-
-#[derive(Debug, Clone, Serialize)]
-pub(crate) enum TokenTree {
-    Token(Token),
-    Group {
-        bracket_kind: BracketKind,
-        tokens: TokenStream,
-        span: Span,
-    },
-}
-
-impl TokenTree {
-    pub fn span(&self) -> Span {
-        match self {
-            Self::Token(token) => token.span,
-            Self::Group { span, .. } => *span,
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {
