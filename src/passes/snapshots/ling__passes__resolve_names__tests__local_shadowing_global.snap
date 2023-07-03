@@ -2,87 +2,45 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { let foo = 12; let a = foo; }\")"
 ---
-(
-    Module {
-        items: [
-            Dummy,
-        ],
-    },
-    SymbolTable {
-        symbol_lookup: [
-            Symbol {
-                ident: u!("int"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("uint"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("foo"),
-                kind: Function(
-                    Ast(
-                        Func {
-                            ident: Resolved(
-                                SymbolId(
-                                    2,
-                                ),
-                            ),
-                            ty_params: [],
-                            params: [],
-                            ret_ty: Tuple(
-                                [],
-                            ),
-                            body: Block {
-                                stmts: [
-                                    Declaration {
-                                        lhs: Resolved(
-                                            SymbolId(
-                                                3,
-                                            ),
-                                        ),
-                                        rhs: Const(
-                                            ConstIdx(
-                                                0,
-                                            ),
-                                        ),
-                                    },
-                                    Declaration {
-                                        lhs: Resolved(
-                                            SymbolId(
-                                                4,
-                                            ),
-                                        ),
-                                        rhs: Var(
-                                            Simple(
-                                                Resolved(
-                                                    SymbolId(
-                                                        3,
-                                                    ),
-                                                ),
-                                            ),
-                                        ),
-                                    },
-                                ],
-                                final_expr: Unit,
-                            },
-                        },
-                    ),
-                ),
-            },
-            Symbol {
-                ident: u!("foo"),
-                kind: Var,
-            },
-            Symbol {
-                ident: u!("a"),
-                kind: Var,
-            },
-        ],
-    },
-    [],
-)
+Ok(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [],
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [
+            Declaration(
+              lhs: Resolved(SymbolId(3)),
+              rhs: Const(ConstIdx(0)),
+            ),
+            Declaration(
+              lhs: Resolved(SymbolId(4)),
+              rhs: Var(Simple(Resolved(SymbolId(3)))),
+            ),
+          ],
+          final_expr: Unit,
+        ),
+      ))),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Var,
+    ),
+    Symbol(
+      ident: "a",
+      kind: Var,
+    ),
+  ],
+))

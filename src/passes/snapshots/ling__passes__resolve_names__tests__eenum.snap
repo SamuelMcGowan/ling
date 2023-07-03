@@ -2,93 +2,53 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"enum Result[T, E] { Ok(T), Err(E), }\")"
 ---
-(
-    Module {
-        items: [
-            Dummy,
+Ok(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "Result",
+      kind: TyEnum(Ast(Enum(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [
+          Resolved(SymbolId(3)),
+          Resolved(SymbolId(4)),
         ],
-    },
-    SymbolTable {
-        symbol_lookup: [
-            Symbol {
-                ident: u!("int"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("uint"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("Result"),
-                kind: TyEnum(
-                    Ast(
-                        Enum {
-                            ident: Resolved(
-                                SymbolId(
-                                    2,
-                                ),
-                            ),
-                            ty_params: [
-                                Resolved(
-                                    SymbolId(
-                                        3,
-                                    ),
-                                ),
-                                Resolved(
-                                    SymbolId(
-                                        4,
-                                    ),
-                                ),
-                            ],
-                            variants: [
-                                EnumVariant {
-                                    name: u!("Ok"),
-                                    kind: Tuple(
-                                        [
-                                            Constructed {
-                                                ident: Resolved(
-                                                    SymbolId(
-                                                        3,
-                                                    ),
-                                                ),
-                                                params: [],
-                                            },
-                                        ],
-                                    ),
-                                },
-                                EnumVariant {
-                                    name: u!("Err"),
-                                    kind: Tuple(
-                                        [
-                                            Constructed {
-                                                ident: Resolved(
-                                                    SymbolId(
-                                                        4,
-                                                    ),
-                                                ),
-                                                params: [],
-                                            },
-                                        ],
-                                    ),
-                                },
-                            ],
-                        },
-                    ),
-                ),
-            },
-            Symbol {
-                ident: u!("T"),
-                kind: TyParam,
-            },
-            Symbol {
-                ident: u!("E"),
-                kind: TyParam,
-            },
+        variants: [
+          EnumVariant(
+            name: "Ok",
+            kind: Tuple([
+              Constructed(
+                ident: Resolved(SymbolId(3)),
+                params: [],
+              ),
+            ]),
+          ),
+          EnumVariant(
+            name: "Err",
+            kind: Tuple([
+              Constructed(
+                ident: Resolved(SymbolId(4)),
+                params: [],
+              ),
+            ]),
+          ),
         ],
-    },
-    [],
-)
+      ))),
+    ),
+    Symbol(
+      ident: "T",
+      kind: TyParam,
+    ),
+    Symbol(
+      ident: "E",
+      kind: TyParam,
+    ),
+  ],
+))

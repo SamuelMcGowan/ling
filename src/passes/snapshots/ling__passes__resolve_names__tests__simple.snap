@@ -2,50 +2,28 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() {}\")"
 ---
-(
-    Module {
-        items: [
-            Dummy,
-        ],
-    },
-    SymbolTable {
-        symbol_lookup: [
-            Symbol {
-                ident: u!("int"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("uint"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("foo"),
-                kind: Function(
-                    Ast(
-                        Func {
-                            ident: Resolved(
-                                SymbolId(
-                                    2,
-                                ),
-                            ),
-                            ty_params: [],
-                            params: [],
-                            ret_ty: Tuple(
-                                [],
-                            ),
-                            body: Block {
-                                stmts: [],
-                                final_expr: Unit,
-                            },
-                        },
-                    ),
-                ),
-            },
-        ],
-    },
-    [],
-)
+Ok(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [],
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [],
+          final_expr: Unit,
+        ),
+      ))),
+    ),
+  ],
+))

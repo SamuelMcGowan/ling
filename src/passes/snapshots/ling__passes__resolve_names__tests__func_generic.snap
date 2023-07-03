@@ -2,69 +2,39 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo[A, B]() {}\")"
 ---
-(
-    Module {
-        items: [
-            Dummy,
+Ok(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [
+          Resolved(SymbolId(3)),
+          Resolved(SymbolId(4)),
         ],
-    },
-    SymbolTable {
-        symbol_lookup: [
-            Symbol {
-                ident: u!("int"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("uint"),
-                kind: TyStruct(
-                    Builtin,
-                ),
-            },
-            Symbol {
-                ident: u!("foo"),
-                kind: Function(
-                    Ast(
-                        Func {
-                            ident: Resolved(
-                                SymbolId(
-                                    2,
-                                ),
-                            ),
-                            ty_params: [
-                                Resolved(
-                                    SymbolId(
-                                        3,
-                                    ),
-                                ),
-                                Resolved(
-                                    SymbolId(
-                                        4,
-                                    ),
-                                ),
-                            ],
-                            params: [],
-                            ret_ty: Tuple(
-                                [],
-                            ),
-                            body: Block {
-                                stmts: [],
-                                final_expr: Unit,
-                            },
-                        },
-                    ),
-                ),
-            },
-            Symbol {
-                ident: u!("A"),
-                kind: TyParam,
-            },
-            Symbol {
-                ident: u!("B"),
-                kind: TyParam,
-            },
-        ],
-    },
-    [],
-)
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [],
+          final_expr: Unit,
+        ),
+      ))),
+    ),
+    Symbol(
+      ident: "A",
+      kind: TyParam,
+    ),
+    Symbol(
+      ident: "B",
+      kind: TyParam,
+    ),
+  ],
+))
