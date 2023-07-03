@@ -2,6 +2,7 @@ pub mod expr;
 pub mod item;
 
 use crate::ast::Spanned;
+use crate::diagnostic::DiagnosticReporter;
 use crate::lexer::token::{BracketKind, Token, TokenKind};
 use crate::source::Span;
 use crate::token_tree::{TokenIter, TokenTree};
@@ -29,20 +30,30 @@ impl ParseError {
 pub(crate) type ParseResult<T> = Result<T, ParseError>;
 
 pub(crate) struct Parser<'a> {
-    errors: &'a mut Vec<ParseError>,
     tokens: TokenIter,
+    errors: &'a mut Vec<ParseError>,
+    diagnostics: DiagnosticReporter<'a>,
 }
 
 // Utilities.
 impl<'a> Parser<'a> {
-    pub fn new(tokens: TokenIter, errors: &'a mut Vec<ParseError>) -> Self {
-        Self { tokens, errors }
+    pub fn new(
+        tokens: TokenIter,
+        errors: &'a mut Vec<ParseError>,
+        diagnostics: DiagnosticReporter<'a>,
+    ) -> Self {
+        Self {
+            tokens,
+            errors,
+            diagnostics,
+        }
     }
 
     fn parser_for_tokens(&mut self, tokens: TokenIter) -> Parser {
         Parser {
-            errors: self.errors,
             tokens,
+            errors: self.errors,
+            diagnostics: self.diagnostics.borrow(),
         }
     }
 
@@ -198,11 +209,18 @@ pub(crate) fn test_parse<T>(
     source: &str,
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, crate::diagnostic::DiagnosticOutput, Vec<ParseError>) {
-    let (tokens, diagnostic_output) = test_lex(source);
+    use crate::source::with_test_source;
+    use crate::token_tree::TokenList;
 
-    let mut errors = vec![];
-    let mut parser = Parser::new(tokens.into_iter(), &mut errors);
-    let res = f(&mut parser);
+    let ((res, errors), diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
+        let tokens = TokenList::from_source(source, diagnostics.borrow());
+
+        let mut errors = vec![];
+        let mut parser = Parser::new(tokens.into_iter(), &mut errors, diagnostics);
+        let res = f(&mut parser);
+
+        (res, errors)
+    });
 
     (res, diagnostic_output, errors)
 }

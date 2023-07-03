@@ -39,10 +39,12 @@ impl ModuleCompiler {
         let source_id = self.source_db.load(path)?;
         let source = self.source_db.source(source_id).unwrap();
 
-        let tokens = TokenList::from_source(source, self.diagnostics.reporter(&self.source_db));
+        let mut diagnostics = self.diagnostics.reporter(&self.source_db);
+
+        let tokens = TokenList::from_source(source, diagnostics.borrow());
 
         let mut parse_errors = vec![];
-        let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors);
+        let mut parser = Parser::new(tokens.into_iter(), &mut parse_errors, diagnostics);
 
         let mut ast = parser.parse_module();
 

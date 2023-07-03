@@ -42,12 +42,12 @@ fn run_source(name: &str, source: &str) {
     let source = source_db.source(source_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let diagnostics = diagnostic_output.reporter(&source_db);
+    let mut diagnostics = diagnostic_output.reporter(&source_db);
 
-    let tokens = token_tree::TokenList::from_source(source, diagnostics);
+    let tokens = token_tree::TokenList::from_source(source, diagnostics.borrow());
 
     let mut errors = vec![];
-    let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors);
+    let mut parser = parser::Parser::new(tokens.into_iter(), &mut errors, diagnostics);
 
     let mut ast = parser.parse_module();
 

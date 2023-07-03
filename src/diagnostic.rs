@@ -70,6 +70,13 @@ impl<'a> DiagnosticReporter<'a> {
         Self { source_db, output }
     }
 
+    pub fn borrow(&mut self) -> DiagnosticReporter {
+        DiagnosticReporter {
+            source_db: self.source_db,
+            output: self.output,
+        }
+    }
+
     pub fn report(&mut self, diagnostic: impl IntoDiagnostic) {
         let diagnostic = diagnostic.into_diagnostic();
         self.output.had_errors |= diagnostic.severity >= Severity::Error;
