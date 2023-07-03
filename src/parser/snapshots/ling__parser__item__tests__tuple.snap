@@ -11,4 +11,4 @@ expression: "test_parse(\"(uint, uint)\", |p| p.parse_ty())"
     ident: Unresolved("uint"),
     params: [],
   ),
-])), "", [])
+])), "")

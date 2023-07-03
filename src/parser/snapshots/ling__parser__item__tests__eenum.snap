@@ -32,4 +32,4 @@ expression: "test_parse(\"enum Result[T, E] { Ok(T), Err(E), }\", |p| p.parse_mo
       ],
     )),
   ],
-), "", [])
+), "")

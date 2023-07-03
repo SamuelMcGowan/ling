@@ -5,4 +5,4 @@ expression: "test_parse(\"a + b = 12\", |p| p.parse_stmt())"
 (Err(InvalidAssignmentTarget(Span(
   start: 0,
   end: 5,
-))), "", [])
+))), "")

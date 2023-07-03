@@ -10,19 +10,4 @@ expression: "test_parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(3))),
   ],
   final_expr: Unit,
-)), "", [
-  Unexpected(
-    expected: "semicolon",
-    found: Some(Span(
-      start: 8,
-      end: 10,
-    )),
-  ),
-  Unexpected(
-    expected: "semicolon",
-    found: Some(Span(
-      start: 11,
-      end: 13,
-    )),
-  ),
-])
+)), "error: expected semicolon\n  ┌─ ::test_module:1:9\n  │\n1 │ {10; 11 12 13;}\n  │         ^^\n\nerror: expected semicolon\n  ┌─ ::test_module:1:12\n  │\n1 │ {10; 11 12 13;}\n  │            ^^\n\n")

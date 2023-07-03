@@ -4,8 +4,8 @@ expression: "test_parse(\"foo(a: uint) -> {}\", |p| p.parse_func())"
 ---
 (Err(Unexpected(
   expected: "a type",
-  found: Some(Span(
+  span: Span(
     start: 16,
     end: 18,
-  )),
-)), "", [])
+  ),
+)), "")

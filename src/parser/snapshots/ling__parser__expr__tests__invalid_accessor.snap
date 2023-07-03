@@ -2,9 +2,4 @@
 source: src/parser/expr.rs
 expression: "test_parse(\"a.12\", |p| p.parse_expr())"
 ---
-(Ok(Dummy), "", [
-  InvalidAccessor(Span(
-    start: 2,
-    end: 4,
-  )),
-])
+(Ok(Dummy), "error: invalid accessor\n  ┌─ ::test_module:1:3\n  │\n1 │ a.12\n  │   ^^\n\n")

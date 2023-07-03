@@ -14,4 +14,4 @@ expression: "test_parse(\"foo[A, B]() {}\", |p| p.parse_func())"
     stmts: [],
     final_expr: Unit,
   ),
-)), "", [])
+)), "")

@@ -20,4 +20,4 @@ expression: "test_parse(\"foo(a: uint, b: uint,) {}\", |p| p.parse_func())"
     stmts: [],
     final_expr: Unit,
   ),
-)), "", [])
+)), "")

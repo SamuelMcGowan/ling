@@ -20,4 +20,4 @@ expression: "test_parse(\"if a { 12 } else { 14 } + 2\", |p| p.parse_expr())"
     )),
   ),
   rhs: Const(ConstIdx(2)),
-)), "", [])
+)), "")

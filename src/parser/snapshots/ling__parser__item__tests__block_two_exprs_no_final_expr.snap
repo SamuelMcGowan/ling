@@ -8,4 +8,4 @@ expression: "test_parse(\"{14;12;}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(1))),
   ],
   final_expr: Unit,
-)), "", [])
+)), "")

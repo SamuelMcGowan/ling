@@ -16,12 +16,4 @@ expression: "test_parse(\"func foo(a: uint) -> {} {} func my_func() {}\",\n    |
       ),
     )),
   ],
-), "", [
-  Unexpected(
-    expected: "a type",
-    found: Some(Span(
-      start: 21,
-      end: 23,
-    )),
-  ),
-])
+), "error: expected a type\n  ┌─ ::test_module:1:22\n  │\n1 │ func foo(a: uint) -> {} {} func my_func() {}\n  │                      ^^\n\n")

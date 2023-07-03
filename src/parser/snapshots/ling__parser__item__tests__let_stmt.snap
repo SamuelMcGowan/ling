@@ -9,4 +9,4 @@ expression: "test_parse(\"let a = 12 + 3\", |p| p.parse_stmt())"
     lhs: Const(ConstIdx(0)),
     rhs: Const(ConstIdx(1)),
   ),
-)), "", [])
+)), "")
