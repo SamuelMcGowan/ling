@@ -1,6 +1,7 @@
 mod db;
 mod iter;
 mod path;
+mod path2;
 mod span;
 
 #[cfg(test)]

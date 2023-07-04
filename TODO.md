@@ -8,6 +8,12 @@
 - *type checking*
 - resolve field accesses (after type checking)
 
+## Name/module resolution
+
+- after parsing each module, fetch all submodules and parse them
+- global forward declaration pass goes over all modules
+- then it's easy to resolve names between modules as they are stored in a flat list with resolved globals
+
 ## Minor
 
 - generally always recover from parsing within a token tree
