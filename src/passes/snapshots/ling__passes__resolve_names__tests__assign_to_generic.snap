@@ -2,4 +2,39 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo[A]() { A = 12; }\")"
 ---
-Err("error: expected a value\n\n")
+(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [
+          Resolved(SymbolId(3)),
+        ],
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [
+            Assignment(
+              lhs: Simple(Resolved(SymbolId(3))),
+              rhs: Const(ConstIdx(0)),
+            ),
+          ],
+          final_expr: Unit,
+        ),
+      ))),
+    ),
+    Symbol(
+      ident: "A",
+      kind: TyParam,
+    ),
+  ],
+), "error: expected a value\n\n")

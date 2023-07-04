@@ -83,15 +83,16 @@ impl<'a> Resolver<'a> {
             return Ident::Unresolved(ident);
         };
 
+        let symbol_id = entry.symbol_id;
+
         if entry.is_value != value {
             self.diagnostics.report(SymbolError::WrongKind {
                 ident,
                 should_be_value: value,
             });
-            return Ident::Unresolved(ident);
         }
 
-        Ident::Resolved(entry.symbol_id)
+        Ident::Resolved(symbol_id)
     }
 
     fn resolve_entry(&self, ident: Ustr) -> Option<&SymbolEntry> {

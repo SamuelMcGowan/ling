@@ -2,4 +2,31 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { bloop() }\")"
 ---
-Err("error: symbol `bloop` not found\n\n")
+(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [],
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [],
+          final_expr: Call(
+            callee: Var(Simple(Unresolved("bloop"))),
+            args: [],
+          ),
+        ),
+      ))),
+    ),
+  ],
+), "error: symbol `bloop` not found\n\n")

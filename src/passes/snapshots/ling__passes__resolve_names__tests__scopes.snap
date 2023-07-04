@@ -2,4 +2,43 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { loop { let a = 12; } a;}\")"
 ---
-Err("error: symbol `a` not found\n\n")
+(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "foo",
+      kind: Function(Ast(Func(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [],
+        params: [],
+        ret_ty: Tuple([]),
+        body: Block(
+          stmts: [
+            Loop(Block(
+              stmts: [
+                Declaration(
+                  lhs: Resolved(SymbolId(3)),
+                  rhs: Const(ConstIdx(0)),
+                ),
+              ],
+              final_expr: Unit,
+            )),
+            Expr(Var(Simple(Unresolved("a")))),
+          ],
+          final_expr: Unit,
+        ),
+      ))),
+    ),
+    Symbol(
+      ident: "a",
+      kind: Var,
+    ),
+  ],
+), "error: symbol `a` not found\n\n")

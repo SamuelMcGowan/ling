@@ -2,4 +2,38 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"data Person { name: string, age: uint }\")"
 ---
-Err("error: symbol `string` not found\n\n")
+(SymbolTable(
+  symbol_lookup: [
+    Symbol(
+      ident: "int",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "uint",
+      kind: TyStruct(Builtin),
+    ),
+    Symbol(
+      ident: "Person",
+      kind: TyStruct(Ast(Struct(
+        ident: Resolved(SymbolId(2)),
+        ty_params: [],
+        fields: [
+          StructField(
+            name: "name",
+            ty: Constructed(
+              ident: Unresolved("string"),
+              params: [],
+            ),
+          ),
+          StructField(
+            name: "age",
+            ty: Constructed(
+              ident: Resolved(SymbolId(1)),
+              params: [],
+            ),
+          ),
+        ],
+      ))),
+    ),
+  ],
+), "error: symbol `string` not found\n\n")

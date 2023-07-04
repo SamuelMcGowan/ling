@@ -2,7 +2,7 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func uint() { uint() }\")"
 ---
-Ok(SymbolTable(
+(SymbolTable(
   symbol_lookup: [
     Symbol(
       ident: "int",
@@ -29,4 +29,4 @@ Ok(SymbolTable(
       ))),
     ),
   ],
-))
+), "")

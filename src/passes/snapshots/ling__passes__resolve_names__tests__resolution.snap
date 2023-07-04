@@ -2,7 +2,7 @@
 source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo(a: uint) { let b = a; let c = b; }\")"
 ---
-Ok(SymbolTable(
+(SymbolTable(
   symbol_lookup: [
     Symbol(
       ident: "int",
@@ -52,4 +52,4 @@ Ok(SymbolTable(
       kind: Var,
     ),
   ],
-))
+), "")
