@@ -165,10 +165,10 @@ pub(crate) fn test_lex(
     crate::diagnostic::DiagnosticOutput,
 ) {
     use crate::lexer::Lexer;
-    use crate::source::with_test_source;
+    use crate::source::with_test_module;
     use crate::token_tree::TokenList;
 
-    with_test_source(source, |source, diagnostics| {
+    with_test_module(source, |source, diagnostics| {
         let lexer = Lexer::new(source);
         TokenList::from_lexer(lexer, diagnostics)
     })
@@ -180,10 +180,10 @@ pub(crate) fn test_parse<T>(
     f: impl Fn(&mut Parser) -> T,
 ) -> (T, crate::diagnostic::DiagnosticOutput) {
     use crate::lexer::Lexer;
-    use crate::source::with_test_source;
+    use crate::source::with_test_module;
     use crate::token_tree::TokenList;
 
-    let (res, diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
+    let (res, diagnostic_output) = with_test_module(source, |source, mut diagnostics| {
         let lexer = Lexer::new(source);
         let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 

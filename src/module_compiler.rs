@@ -4,9 +4,9 @@ use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
+use crate::source::{ModulePath, ModuleSourceDb};
 use crate::parser::Parser;
 use crate::passes::resolve_names::Resolver;
-use crate::source::{ModulePath, SourceDb};
 use crate::symbol_table::SymbolTable;
 use crate::token_tree::TokenList;
 
@@ -14,7 +14,7 @@ const FILE_EXT: &str = "ling";
 const MODULE_SEP: &str = "::";
 
 pub struct ModuleCompiler {
-    source_db: SourceDb,
+    module_src_db: ModuleSourceDb,
     diagnostics: DiagnosticOutput,
 
     modules: HashMap<ModulePath, ResolvedModule>,
@@ -37,10 +37,10 @@ impl ModuleCompiler {
     }
 
     fn compile_module(&mut self, path: ModulePath) -> Option<ResolvedModule> {
-        let source_id = self.source_db.load(path)?;
-        let source = self.source_db.source(source_id).unwrap();
+        let module_id = self.module_src_db.load(path)?;
+        let source = self.module_src_db.source(module_id).unwrap();
 
-        let mut diagnostics = self.diagnostics.reporter(&self.source_db, source_id);
+        let mut diagnostics = self.diagnostics.reporter(&self.module_src_db, module_id);
 
         let lexer = Lexer::new(source);
         let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());

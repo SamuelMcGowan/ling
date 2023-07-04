@@ -275,13 +275,13 @@ mod tests {
     use super::Resolver;
     use crate::diagnostic::DiagnosticOutput;
     use crate::lexer::Lexer;
+    use crate::source::with_test_module;
     use crate::parser::Parser;
-    use crate::source::with_test_source;
     use crate::symbol_table::SymbolTable;
     use crate::token_tree::TokenList;
 
     fn test_resolve(source: &str) -> (SymbolTable, DiagnosticOutput) {
-        with_test_source(source, |source, mut diagnostics| {
+        with_test_module(source, |source, mut diagnostics| {
             let lexer = Lexer::new(source);
             let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 

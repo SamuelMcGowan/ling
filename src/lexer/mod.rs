@@ -4,7 +4,7 @@ use ustr::Ustr;
 
 use self::token::{tkind, Token, TokenKind};
 use crate::constants::ConstantPool;
-use crate::source::{Source, SourceIter, Span};
+use crate::source::{ModuleSource, SourceIter, Span};
 use crate::value::Value;
 
 pub(crate) struct Lexer<'a> {
@@ -15,7 +15,7 @@ pub(crate) struct Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(source: Source<'a>) -> Self {
+    pub fn new(source: ModuleSource<'a>) -> Self {
         let mut lexer = Self {
             source: source.source_iter(),
             token: None,
@@ -318,7 +318,7 @@ mod tests {
 
     use super::*;
     use crate::constants::ConstIdx;
-    use crate::source::{with_test_source, ModulePath, SourceDb};
+    use crate::source::{with_test_module, ModulePath, ModuleSourceDb};
 
     #[test]
     fn punct_single() {
@@ -408,7 +408,7 @@ mod tests {
     }
 
     fn check_tokens(s: &str, t: &[TokenKind]) {
-        let (tokens, _errors) = with_test_source(s, |source, _diagnostics| {
+        let (tokens, _errors) = with_test_module(s, |source, _diagnostics| {
             Lexer::new(source)
                 .map(|token| token.kind)
                 .collect::<Vec<_>>()
@@ -418,10 +418,10 @@ mod tests {
     }
 
     fn check_constant(s: &str, value: Value) {
-        let mut source_db = SourceDb::new("");
+        let mut module_src_db = ModuleSourceDb::new("");
 
-        let source_id = source_db.add(ModulePath::root("test_module"), s);
-        let source = source_db.source(source_id).unwrap();
+        let module_id = module_src_db.add(ModulePath::root("test_module"), s);
+        let source = module_src_db.source(module_id).unwrap();
 
         let mut lexer = Lexer::new(source);
 

@@ -4,9 +4,9 @@ mod constants;
 mod diagnostic;
 mod lexer;
 mod module_compiler;
+mod source;
 mod parser;
 mod passes;
-mod source;
 mod symbol_table;
 mod token_tree;
 mod value;
@@ -16,8 +16,8 @@ use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
+use crate::source::{ModulePath, ModuleSourceDb};
 use crate::passes::resolve_names::Resolver;
-use crate::source::{ModulePath, SourceDb};
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -37,13 +37,13 @@ fn main() -> Result<()> {
 fn run_source(name: &str, source: &str) {
     use ron::ser::{to_string_pretty, PrettyConfig};
 
-    let mut source_db = SourceDb::new("");
+    let mut module_src_db = ModuleSourceDb::new("");
 
-    let source_id = source_db.add(ModulePath::root(name), source);
-    let source = source_db.source(source_id).unwrap();
+    let module_id = module_src_db.add(ModulePath::root(name), source);
+    let source = module_src_db.source(module_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let mut diagnostics = diagnostic_output.reporter(&source_db, source_id);
+    let mut diagnostics = diagnostic_output.reporter(&module_src_db, module_id);
 
     let lexer = Lexer::new(source);
     let tokens = token_tree::TokenList::from_lexer(lexer, diagnostics.borrow());

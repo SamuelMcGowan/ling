@@ -6,12 +6,12 @@ use codespan_reporting::files::{Error as FileError, Files, SimpleFile};
 use super::{ModulePath, SourceIter};
 
 #[derive(Debug, Clone)]
-pub(crate) struct SourceDb {
+pub(crate) struct ModuleSourceDb {
     files: Vec<SimpleFile<ModulePath, String>>,
     root_dir: PathBuf,
 }
 
-impl SourceDb {
+impl ModuleSourceDb {
     pub fn new(root_dir: impl Into<PathBuf>) -> Self {
         Self {
             files: vec![],
@@ -19,39 +19,39 @@ impl SourceDb {
         }
     }
 
-    pub fn load(&mut self, path: ModulePath) -> Option<usize> {
+    pub fn load(&mut self, path: ModulePath) -> Option<ModuleId> {
         let module_path_buf = path.into_path_buf(&self.root_dir);
         let source = std::fs::read_to_string(module_path_buf).ok()?;
         Some(self.add(path, source))
     }
 
-    pub fn add(&mut self, path: ModulePath, source: impl Into<String>) -> usize {
+    pub fn add(&mut self, path: ModulePath, source: impl Into<String>) -> ModuleId {
         let id = self.files.len();
         self.files.push(SimpleFile::new(path, source.into()));
-        id
+        ModuleId(id)
     }
 
-    fn get(&self, id: usize) -> Result<&SimpleFile<ModulePath, String>, FileError> {
-        self.files.get(id).ok_or(FileError::FileMissing)
+    fn get(&self, id: ModuleId) -> Result<&SimpleFile<ModulePath, String>, FileError> {
+        self.files.get(id.0).ok_or(FileError::FileMissing)
     }
 }
 
-impl<'a> Files<'a> for SourceDb {
-    type FileId = usize;
+impl<'a> Files<'a> for ModuleSourceDb {
+    type FileId = ModuleId;
 
     type Name = ModulePath;
-    type Source = Source<'a>;
+    type Source = ModuleSource<'a>;
 
     fn name(&'a self, id: Self::FileId) -> Result<Self::Name, FileError> {
         self.get(id).map(|file| *file.name())
     }
 
     fn source(&'a self, id: Self::FileId) -> Result<Self::Source, FileError> {
-        self.get(id).map(|file| Source {
+        self.get(id).map(|file| ModuleSource {
             path: *file.name(),
             source: file.source(),
 
-            file_id: id,
+            id,
         })
     }
 
@@ -70,15 +70,18 @@ impl<'a> Files<'a> for SourceDb {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct ModuleId(usize);
+
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct Source<'a> {
+pub(crate) struct ModuleSource<'a> {
     path: ModulePath,
     source: &'a str,
 
-    file_id: usize,
+    id: ModuleId,
 }
 
-impl<'a> Source<'a> {
+impl<'a> ModuleSource<'a> {
     pub fn path(&self) -> ModulePath {
         self.path
     }
@@ -91,12 +94,12 @@ impl<'a> Source<'a> {
         SourceIter::new(self.source)
     }
 
-    pub fn file_id(&self) -> usize {
-        self.file_id
+    pub fn file_id(&self) -> ModuleId {
+        self.id
     }
 }
 
-impl AsRef<str> for Source<'_> {
+impl AsRef<str> for ModuleSource<'_> {
     fn as_ref(&self) -> &str {
         self.source()
     }
@@ -105,19 +108,19 @@ impl AsRef<str> for Source<'_> {
 // TODO: put all these test functions in separate modules so we don't have to
 // use full type names.
 #[cfg(test)]
-pub(crate) fn with_test_source<T>(
+pub(crate) fn with_test_module<T>(
     source: &str,
-    mut f: impl FnMut(Source, crate::diagnostic::DiagnosticReporter) -> T,
+    mut f: impl FnMut(ModuleSource, crate::diagnostic::DiagnosticReporter) -> T,
 ) -> (T, crate::diagnostic::DiagnosticOutput) {
     use crate::diagnostic::DiagnosticOutput;
 
-    let mut source_db = SourceDb::new("");
+    let mut module_src_db = ModuleSourceDb::new("");
 
-    let source_id = source_db.add(ModulePath::root("test_module"), source);
-    let source = source_db.source(source_id).unwrap();
+    let module_id = module_src_db.add(ModulePath::root("test_module"), source);
+    let source = module_src_db.source(module_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let diagnostics = diagnostic_output.reporter(&source_db, source_id);
+    let diagnostics = diagnostic_output.reporter(&module_src_db, module_id);
 
     (f(source, diagnostics), diagnostic_output)
 }
