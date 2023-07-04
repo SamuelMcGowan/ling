@@ -271,17 +271,16 @@ struct SymbolEntry {
 mod tests {
     use insta::assert_ron_snapshot;
 
-    use super::{Resolver, SymbolError};
-    use crate::ast::Module;
+    use super::Resolver;
     use crate::diagnostic::DiagnosticOutput;
     use crate::lexer::Lexer;
-    use crate::parser::{test_parse, Parser};
+    use crate::parser::Parser;
     use crate::source::with_test_source;
     use crate::symbol_table::SymbolTable;
     use crate::token_tree::TokenList;
 
-    fn test_resolve(source: &str) -> Result<SymbolTable, DiagnosticOutput> {
-        let (table, diagnostic_output) = with_test_source(source, |source, mut diagnostics| {
+    fn test_resolve(source: &str) -> (SymbolTable, DiagnosticOutput) {
+        with_test_source(source, |source, mut diagnostics| {
             let lexer = Lexer::new(source);
             let tokens = TokenList::from_lexer(lexer, diagnostics.borrow());
 
@@ -294,13 +293,7 @@ mod tests {
             }
 
             Resolver::visit(&mut ast, diagnostics)
-        });
-
-        if diagnostic_output.had_errors() {
-            Err(diagnostic_output)
-        } else {
-            Ok(table)
-        }
+        })
     }
 
     #[test]

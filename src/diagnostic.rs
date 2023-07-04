@@ -18,7 +18,6 @@ pub(crate) struct DiagnosticOutput {
     output: NoColor<Vec<u8>>,
 
     config: Box<term::Config>,
-    had_errors: bool,
 }
 
 impl Default for DiagnosticOutput {
@@ -31,7 +30,6 @@ impl Default for DiagnosticOutput {
             output: NoColor::new(vec![]),
 
             config: Box::default(),
-            had_errors: false,
         }
     }
 }
@@ -55,18 +53,17 @@ impl DiagnosticOutput {
     ) -> DiagnosticReporter {
         DiagnosticReporter {
             output: self,
+            had_errors: false,
+
             source_db,
             source_id,
         }
-    }
-
-    pub fn had_errors(&self) -> bool {
-        self.had_errors
     }
 }
 
 pub(crate) struct DiagnosticReporter<'a> {
     output: &'a mut DiagnosticOutput,
+    had_errors: bool,
 
     source_db: &'a SourceDb,
     source_id: usize,
@@ -75,15 +72,18 @@ pub(crate) struct DiagnosticReporter<'a> {
 impl<'a> DiagnosticReporter<'a> {
     pub fn borrow(&mut self) -> DiagnosticReporter {
         DiagnosticReporter {
-            source_db: self.source_db,
             output: self.output,
+            had_errors: false,
+
+            source_db: self.source_db,
             source_id: self.source_id,
         }
     }
 
     pub fn report(&mut self, diagnostic: impl IntoDiagnostic) {
         let diagnostic = diagnostic.into_diagnostic(self.source_id);
-        self.output.had_errors |= diagnostic.severity >= Severity::Error;
+
+        self.had_errors |= diagnostic.severity >= Severity::Error;
 
         term::emit(
             &mut self.output.output,
@@ -94,8 +94,9 @@ impl<'a> DiagnosticReporter<'a> {
         .expect("failed to emit diagnostic");
     }
 
+    /// Check if there were any errors reported to this reporter.
     pub fn had_errors(&self) -> bool {
-        self.output.had_errors
+        self.had_errors
     }
 }
 

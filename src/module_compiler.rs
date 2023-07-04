@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use codespan_reporting::files::Files;
 
-use crate::ast::Module;
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
@@ -55,11 +54,10 @@ impl ModuleCompiler {
 
         let symbols = Resolver::visit(&mut ast, diagnostics);
 
-        Some(ResolvedModule { ast, symbols })
+        Some(ResolvedModule { symbols })
     }
 }
 
 pub struct ResolvedModule {
-    ast: Module,
     symbols: SymbolTable,
 }
