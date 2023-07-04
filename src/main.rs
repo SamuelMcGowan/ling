@@ -4,9 +4,9 @@ mod constants;
 mod diagnostic;
 mod lexer;
 mod module_compiler;
-mod source;
 mod parser;
 mod passes;
+mod source;
 mod symbol_table;
 mod token_tree;
 mod value;
@@ -16,8 +16,9 @@ use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
-use crate::source::{ModulePath, ModuleSourceDb};
 use crate::passes::resolve_names::Resolver;
+use crate::source::db::ModuleSourceDb;
+use crate::source::path::ModulePath;
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();

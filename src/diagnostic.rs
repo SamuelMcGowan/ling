@@ -8,7 +8,8 @@ use serde::Serialize;
 use ustr::Ustr;
 
 use crate::lexer::token::Bracket;
-use crate::source::{ModuleId, ModuleSourceDb, Span};
+use crate::source::db::{ModuleId, ModuleSourceDb};
+use crate::source::span::Span;
 
 pub(crate) struct DiagnosticOutput {
     #[cfg(not(test))]

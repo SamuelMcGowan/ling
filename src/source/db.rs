@@ -3,7 +3,8 @@ use std::path::PathBuf;
 
 use codespan_reporting::files::{Error as FileError, Files, SimpleFile};
 
-use super::{ModulePath, SourceIter};
+use super::iter::SourceIter;
+use super::path::ModulePath;
 
 #[derive(Debug, Clone)]
 pub(crate) struct ModuleSourceDb {

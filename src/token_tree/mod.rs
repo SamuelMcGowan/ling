@@ -8,7 +8,7 @@ use self::builder::build_token_stream;
 use crate::diagnostic::DiagnosticReporter;
 use crate::lexer::token::{BracketKind, Token};
 use crate::lexer::Lexer;
-use crate::source::Span;
+use crate::source::span::Span;
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) enum TokenTree {

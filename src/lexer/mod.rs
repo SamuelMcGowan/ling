@@ -4,7 +4,9 @@ use ustr::Ustr;
 
 use self::token::{tkind, Token, TokenKind};
 use crate::constants::ConstantPool;
-use crate::source::{ModuleSource, SourceIter, Span};
+use crate::source::db::ModuleSource;
+use crate::source::iter::SourceIter;
+use crate::source::span::Span;
 use crate::value::Value;
 
 pub(crate) struct Lexer<'a> {
@@ -318,7 +320,8 @@ mod tests {
 
     use super::*;
     use crate::constants::ConstIdx;
-    use crate::source::{with_test_module, ModulePath, ModuleSourceDb};
+    use crate::source::db::{with_test_module, ModuleSourceDb};
+    use crate::source::path::ModulePath;
 
     #[test]
     fn punct_single() {

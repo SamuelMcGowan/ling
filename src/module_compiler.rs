@@ -4,9 +4,10 @@ use codespan_reporting::files::Files;
 
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
-use crate::source::{ModulePath, ModuleSourceDb};
 use crate::parser::Parser;
 use crate::passes::resolve_names::Resolver;
+use crate::source::db::ModuleSourceDb;
+use crate::source::path::ModulePath;
 use crate::symbol_table::SymbolTable;
 use crate::token_tree::TokenList;
 

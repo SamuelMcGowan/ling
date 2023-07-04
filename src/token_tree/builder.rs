@@ -2,7 +2,7 @@ use super::{TokenList, TokenTree};
 use crate::diagnostic::{BracketMismatch, DiagnosticReporter};
 use crate::lexer::token::{Bracket, BracketKind, Token, TokenKind};
 use crate::lexer::Lexer;
-use crate::source::Span;
+use crate::source::span::Span;
 
 pub(super) fn build_token_stream(lexer: Lexer, diagnostics: DiagnosticReporter) -> TokenList {
     TokenStreamBuilder::new(lexer, diagnostics).build()

@@ -3,7 +3,7 @@ use ustr::Ustr;
 
 use crate::constants::ConstIdx;
 use crate::diagnostic::ParseResult;
-use crate::source::Span;
+use crate::source::span::Span;
 use crate::symbol_table::SymbolId;
 
 derive_alias! {

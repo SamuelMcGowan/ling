@@ -275,8 +275,8 @@ mod tests {
     use super::Resolver;
     use crate::diagnostic::DiagnosticOutput;
     use crate::lexer::Lexer;
-    use crate::source::with_test_module;
     use crate::parser::Parser;
+    use crate::source::db::with_test_module;
     use crate::symbol_table::SymbolTable;
     use crate::token_tree::TokenList;
 
