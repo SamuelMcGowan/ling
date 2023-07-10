@@ -4,6 +4,7 @@ mod constants;
 mod diagnostic;
 mod lexer;
 mod module_compiler;
+mod module_compiler_v2;
 mod parser;
 mod passes;
 mod source;
