@@ -10,6 +10,7 @@ mod passes;
 mod source;
 mod symbol_table;
 mod token_tree;
+mod utils;
 mod value;
 
 use anyhow::{bail, Context, Result};

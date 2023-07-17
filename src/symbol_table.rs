@@ -1,3 +1,6 @@
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+
 use serde::Serialize;
 use ustr::Ustr;
 
@@ -6,24 +9,70 @@ use crate::ast;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub(crate) struct SymbolId(usize);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[must_use]
+pub(crate) enum GlobalShadowed {
+    Yes,
+    No,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+pub enum GlobalScope {
+    Builtin,
+    Global,
+}
+
 #[derive(Default, Debug, Serialize)]
 pub(crate) struct SymbolTable {
-    symbol_lookup: Vec<Symbol>,
+    symbols: Vec<Symbol>,
+
+    #[serde(serialize_with = "crate::utils::ordered_map")]
+    globals: HashMap<Ustr, (GlobalScope, SymbolId)>,
 }
 
 impl SymbolTable {
     pub fn add(&mut self, symbol: Symbol) -> SymbolId {
-        let id = self.symbol_lookup.len();
-        self.symbol_lookup.push(symbol);
+        let id = self.symbols.len();
+        self.symbols.push(symbol);
         SymbolId(id)
     }
 
+    /// Returns `None` if global is already defined.
+    pub fn add_global(&mut self, symbol: Symbol, scope: GlobalScope) -> (SymbolId, GlobalShadowed) {
+        let ident = symbol.ident;
+        let id = SymbolId(self.symbols.len());
+
+        self.symbols.push(symbol);
+
+        let shadowed = match self.globals.entry(ident) {
+            Entry::Occupied(mut occupied) => {
+                let &(shadowed_scope, _) = occupied.get();
+                if scope > shadowed_scope {
+                    occupied.insert((scope, id));
+                    GlobalShadowed::No
+                } else {
+                    GlobalShadowed::Yes
+                }
+            }
+            Entry::Vacant(vacant) => {
+                vacant.insert((scope, id));
+                GlobalShadowed::No
+            }
+        };
+
+        (id, shadowed)
+    }
+
+    pub fn get_global(&self, ident: Ustr) -> Option<SymbolId> {
+        self.globals.get(&ident).map(|&(_, id)| id)
+    }
+
     pub fn get(&self, id: SymbolId) -> Option<&Symbol> {
-        self.symbol_lookup.get(id.0)
+        self.symbols.get(id.0)
     }
 
     pub fn get_mut(&mut self, id: SymbolId) -> Option<&mut Symbol> {
-        self.symbol_lookup.get_mut(id.0)
+        self.symbols.get_mut(id.0)
     }
 }
 
