@@ -3,7 +3,7 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func foo() { let a = 12; let a = 12; } func foo() {}\")"
 ---
 (SymbolTable(
-  symbol_lookup: [
+  symbols: [
     Symbol(
       ident: "int",
       kind: TyStruct(Builtin),
@@ -56,4 +56,9 @@ expression: "test_resolve(\"func foo() { let a = 12; let a = 12; } func foo() {}
       kind: Var,
     ),
   ],
+  globals: {
+    "foo": (Global, SymbolId(2)),
+    "int": (Builtin, SymbolId(0)),
+    "uint": (Builtin, SymbolId(1)),
+  },
 ), "error: global `foo` shadowed\n\n")

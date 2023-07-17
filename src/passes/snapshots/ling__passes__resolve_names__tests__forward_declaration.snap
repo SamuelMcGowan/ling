@@ -3,7 +3,7 @@ source: src/passes/resolve_names.rs
 expression: "test_resolve(\"func a() { a(); b(); } func b() {}\")"
 ---
 (SymbolTable(
-  symbol_lookup: [
+  symbols: [
     Symbol(
       ident: "int",
       kind: TyStruct(Builtin),
@@ -48,4 +48,10 @@ expression: "test_resolve(\"func a() { a(); b(); } func b() {}\")"
       ))),
     ),
   ],
+  globals: {
+    "a": (Global, SymbolId(2)),
+    "b": (Global, SymbolId(3)),
+    "int": (Builtin, SymbolId(0)),
+    "uint": (Builtin, SymbolId(1)),
+  },
 ), "")
