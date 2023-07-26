@@ -10,4 +10,4 @@ expression: "test_parse(\"{ a = b }\", |p| p.parse_block())"
     ),
   ],
   final_expr: Dummy,
-)), "error: invalid implicit return\n  ┌─ ::test_module:1:3\n  │\n1 │ { a = b }\n  │   ^^^^^\n\n")
+)), "error: invalid implicit return\n  ┌─ test_source:1:3\n  │\n1 │ { a = b }\n  │   ^^^^^\n\n")

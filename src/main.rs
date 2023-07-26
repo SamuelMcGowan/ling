@@ -18,8 +18,7 @@ use codespan_reporting::files::Files;
 use crate::diagnostic::DiagnosticOutput;
 use crate::lexer::Lexer;
 use crate::passes::resolve_names::Resolver;
-use crate::source::db::ModuleSourceDb;
-use crate::source::path::ModulePath;
+use crate::source::db::SourceDb;
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -39,13 +38,13 @@ fn main() -> Result<()> {
 fn run_source(name: &str, source: &str) {
     use ron::ser::{to_string_pretty, PrettyConfig};
 
-    let mut module_src_db = ModuleSourceDb::new("");
+    let mut source_db = SourceDb::new("");
 
-    let module_id = module_src_db.add(ModulePath::root(name), source);
-    let source = module_src_db.source(module_id).unwrap();
+    let source_id = source_db.add(name, source);
+    let source = source_db.source(source_id).unwrap();
 
     let mut diagnostic_output = DiagnosticOutput::default();
-    let mut diagnostics = diagnostic_output.reporter(&module_src_db, module_id);
+    let mut diagnostics = diagnostic_output.reporter(&source_db, source_id);
 
     let lexer = Lexer::new(source);
     let tokens = token_tree::TokenList::from_lexer(lexer, diagnostics.borrow());

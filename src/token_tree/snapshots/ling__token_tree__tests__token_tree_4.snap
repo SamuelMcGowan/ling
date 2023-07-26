@@ -19,4 +19,4 @@ expression: "test_lex(\"]{}[\")"
       end: 4,
     ),
   ),
-], "error: mismatched Closing(Square)\n  ┌─ ::test_module:1:1\n  │\n1 │ ]{}[\n  │ ^\n\nerror: mismatched Opening(Square)\n  ┌─ ::test_module:1:4\n  │\n1 │ ]{}[\n  │    ^\n\n")
+], "error: mismatched Closing(Square)\n  ┌─ test_source:1:1\n  │\n1 │ ]{}[\n  │ ^\n\nerror: mismatched Opening(Square)\n  ┌─ test_source:1:4\n  │\n1 │ ]{}[\n  │    ^\n\n")

@@ -8,7 +8,7 @@ use serde::Serialize;
 use ustr::Ustr;
 
 use crate::lexer::token::Bracket;
-use crate::source::db::{ModuleId, ModuleSourceDb};
+use crate::source::db::{SourceDb, SourceId};
 use crate::source::span::Span;
 
 pub(crate) struct DiagnosticOutput {
@@ -49,15 +49,15 @@ impl Serialize for DiagnosticOutput {
 impl DiagnosticOutput {
     pub fn reporter<'a>(
         &'a mut self,
-        module_src_db: &'a ModuleSourceDb,
-        module_id: ModuleId,
+        source_db: &'a SourceDb,
+        source_id: SourceId,
     ) -> DiagnosticReporter {
         DiagnosticReporter {
             output: self,
             had_errors: false,
 
-            module_src_db,
-            module_id,
+            source_db,
+            source_id,
         }
     }
 }
@@ -66,8 +66,8 @@ pub(crate) struct DiagnosticReporter<'a> {
     output: &'a mut DiagnosticOutput,
     had_errors: bool,
 
-    module_src_db: &'a ModuleSourceDb,
-    module_id: ModuleId,
+    source_db: &'a SourceDb,
+    source_id: SourceId,
 }
 
 impl<'a> DiagnosticReporter<'a> {
@@ -76,20 +76,20 @@ impl<'a> DiagnosticReporter<'a> {
             output: self.output,
             had_errors: false,
 
-            module_src_db: self.module_src_db,
-            module_id: self.module_id,
+            source_db: self.source_db,
+            source_id: self.source_id,
         }
     }
 
     pub fn report(&mut self, diagnostic: impl IntoDiagnostic) {
-        let diagnostic = diagnostic.into_diagnostic(self.module_id);
+        let diagnostic = diagnostic.into_diagnostic(self.source_id);
 
         self.had_errors |= diagnostic.severity >= Severity::Error;
 
         term::emit(
             &mut self.output.output,
             &self.output.config,
-            self.module_src_db,
+            self.source_db,
             &diagnostic,
         )
         .expect("failed to emit diagnostic");
@@ -102,7 +102,7 @@ impl<'a> DiagnosticReporter<'a> {
 }
 
 pub(crate) trait IntoDiagnostic {
-    fn into_diagnostic(self, module_id: ModuleId) -> Diagnostic<ModuleId>;
+    fn into_diagnostic(self, source_id: SourceId) -> Diagnostic<SourceId>;
 }
 
 // TODO: implement `Display` for brackets and tokens.
@@ -113,9 +113,9 @@ pub(crate) struct BracketMismatch {
 }
 
 impl IntoDiagnostic for BracketMismatch {
-    fn into_diagnostic(self, module_id: ModuleId) -> Diagnostic<ModuleId> {
+    fn into_diagnostic(self, source_id: SourceId) -> Diagnostic<SourceId> {
         Diagnostic::error()
-            .with_labels(vec![Label::primary(module_id, self.span)])
+            .with_labels(vec![Label::primary(source_id, self.span)])
             .with_message(format!("mismatched {:?}", self.bracket))
     }
 }
@@ -138,10 +138,10 @@ impl ParseError {
 }
 
 impl IntoDiagnostic for ParseError {
-    fn into_diagnostic(self, module_id: ModuleId) -> Diagnostic<ModuleId> {
+    fn into_diagnostic(self, source_id: SourceId) -> Diagnostic<SourceId> {
         macro_rules! label_primary {
             ($span:expr) => {
-                Label::primary(module_id, $span)
+                Label::primary(source_id, $span)
             };
         }
 
@@ -176,7 +176,7 @@ pub(crate) enum SymbolError {
 }
 
 impl IntoDiagnostic for SymbolError {
-    fn into_diagnostic(self, module_id: ModuleId) -> Diagnostic<ModuleId> {
+    fn into_diagnostic(self, source_id: SourceId) -> Diagnostic<SourceId> {
         match self {
             Self::WrongKind {
                 ident,

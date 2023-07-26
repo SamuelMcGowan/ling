@@ -50,12 +50,12 @@ impl ModuleTree {
         Some(id)
     }
 
-    pub fn get(&self, module_id: ModuleId) -> Option<&ModuleCompiled> {
-        self.modules.get(module_id.0)
+    pub fn get(&self, source_id: ModuleId) -> Option<&ModuleCompiled> {
+        self.modules.get(source_id.0)
     }
 
-    pub fn get_mut(&mut self, module_id: ModuleId) -> Option<&mut ModuleCompiled> {
-        self.modules.get_mut(module_id.0)
+    pub fn get_mut(&mut self, source_id: ModuleId) -> Option<&mut ModuleCompiled> {
+        self.modules.get_mut(source_id.0)
     }
 }
 

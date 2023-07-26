@@ -10,4 +10,4 @@ expression: "test_parse(\"{10; 11 12 13;}\", |p| p.parse_block())"
     Expr(Const(ConstIdx(3))),
   ],
   final_expr: Unit,
-)), "error: expected semicolon\n  ┌─ ::test_module:1:9\n  │\n1 │ {10; 11 12 13;}\n  │         ^^\n\nerror: expected semicolon\n  ┌─ ::test_module:1:12\n  │\n1 │ {10; 11 12 13;}\n  │            ^^\n\n")
+)), "error: expected semicolon\n  ┌─ test_source:1:9\n  │\n1 │ {10; 11 12 13;}\n  │         ^^\n\nerror: expected semicolon\n  ┌─ test_source:1:12\n  │\n1 │ {10; 11 12 13;}\n  │            ^^\n\n")
